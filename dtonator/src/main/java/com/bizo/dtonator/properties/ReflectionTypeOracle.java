@@ -41,7 +41,7 @@ public class ReflectionTypeOracle implements TypeOracle {
     return values;
   }
 
-  private Class<?> getClass(final String className) {
+  private static Class<?> getClass(final String className) {
     try {
       return Class.forName(className);
     } catch (final ClassNotFoundException e) {
