@@ -1,0 +1,10 @@
+config:
+  dtoPackage: com.bizo.dtonator.dtos
+  domainPackage: com.bizo.dtonator.domain
+  mapperPackage: com.bizo.dtonator.mapper
+
+EmployeeDto:
+  domain: Employee
+
+EmployeeType:
+  domain: EmployeeType
