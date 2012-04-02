@@ -1,37 +1,62 @@
 package com.bizo.detonator.config;
 
-import java.beans.PropertyDescriptor;
+import static org.apache.commons.lang.StringUtils.substringAfterLast;
 
+import com.bizo.detonator.properties.Prop;
+import com.bizo.detonator.properties.TypeOracle;
+
+/** A property to map back/forth between DTO/domain object. */
 public class DtoProperty {
 
-  private final PropertyDescriptor pd;
+  private final TypeOracle oracle;
+  private final RootConfig config;
+  private final Prop p;
 
-  public DtoProperty(final PropertyDescriptor pd) {
-    this.pd = pd;
+  public DtoProperty(final TypeOracle oracle, final RootConfig config, final Prop p) {
+    this.oracle = oracle;
+    this.config = config;
+    this.p = p;
+  }
+
+  public boolean needsConversion() {
+    return !getDomainType().equals(getDtoType());
+  }
+
+  public String getDtoType() {
+    if (getDomainType().startsWith(config.getDomainPackage())) {
+      // in the domain package...just assume we have a dto for it?
+      // should probably skip it
+      // unless it's an enum
+      if (oracle.isEnum(getDomainType())) {
+        return config.getDtoPackage() + "." + substringAfterLast(getDomainType(), ".");
+      }
+    }
+    // assume it's java.lang.String/etc. and doesn't need mapped
+    return getDomainType();
   }
 
   public String getName() {
-    return pd.getName();
+    return p.name;
+  }
+
+  public String getDomainType() {
+    return p.type;
   }
 
   public String getGetterMethodName() {
-    return pd.getReadMethod() == null ? null : pd.getReadMethod().getName();
+    return p.getterMethodName;
   }
 
   public String getSetterMethodName() {
-    return pd.getWriteMethod() == null ? null : pd.getWriteMethod().getName();
-  }
-
-  public Class<?> getType() {
-    return pd.getPropertyType();
+    return p.setterNameMethod;
   }
 
   public boolean isReadOnly() {
-    return pd.getWriteMethod() == null;
+    return p.setterNameMethod == null;
   }
 
   @Override
   public String toString() {
-    return pd.getName();
+    return p.name;
   }
 }

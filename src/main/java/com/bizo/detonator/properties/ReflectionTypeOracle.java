@@ -7,21 +7,23 @@ import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
 
-import com.bizo.detonator.config.DtoProperty;
-
 public class ReflectionTypeOracle implements TypeOracle {
 
   @Override
-  public List<DtoProperty> getProperties(final String className) {
+  public List<Prop> getProperties(final String className) {
     // Do we have to sort these for determinism?
-    final List<DtoProperty> pds = newArrayList();
+    final List<Prop> ps = newArrayList();
     for (final PropertyDescriptor pd : PropertyUtils.getPropertyDescriptors(getClass(className))) {
       if (pd.getName().equals("class") || pd.getName().equals("declaringClass")) {
         continue;
       }
-      pds.add(new DtoProperty(pd));
+      ps.add(new Prop( //
+        pd.getName(),
+        pd.getPropertyType().getName(),
+        pd.getReadMethod() == null ? null : pd.getReadMethod().getName(),
+        pd.getWriteMethod() == null ? null : pd.getWriteMethod().getName()));
     }
-    return pds;
+    return ps;
   }
 
   @Override

@@ -1,8 +1,11 @@
 package com.bizo.detonator.config;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.List;
 import java.util.Map;
 
+import com.bizo.detonator.properties.Prop;
 import com.bizo.detonator.properties.TypeOracle;
 
 public class DtoConfig {
@@ -24,7 +27,11 @@ public class DtoConfig {
   }
 
   public List<DtoProperty> getProperties() {
-    return oracle.getProperties(getFullDomainName());
+    final List<DtoProperty> dps = newArrayList();
+    for (final Prop p : oracle.getProperties(getFullDomainName())) {
+      dps.add(new DtoProperty(oracle, root, p));
+    }
+    return dps;
   }
 
   public String getSimpleName() {

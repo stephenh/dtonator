@@ -1,7 +1,10 @@
 package com.bizo.detonator;
 
 import static joist.sourcegen.Argument.arg;
-import joist.sourcegen.*;
+import joist.sourcegen.GClass;
+import joist.sourcegen.GDirectory;
+import joist.sourcegen.GMethod;
+import joist.sourcegen.GSettings;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -77,8 +80,7 @@ public class Detonator {
 
     // add fields for each property
     for (final DtoProperty dp : dto.getProperties()) {
-      final GField f = gc.getField(dp.getName()).setPublic();
-      f.type(mapDomainTypeIfNeeded(dp.getType()));
+      gc.getField(dp.getName()).setPublic().type(dp.getDtoType());
     }
 
     // no-arg cstr is protected
@@ -88,7 +90,7 @@ public class Detonator {
     final String[] typeAndNames = new String[dto.getProperties().size()];
     int i = 0;
     for (final DtoProperty dp : dto.getProperties()) {
-      typeAndNames[i++] = mapDomainTypeIfNeeded(dp.getType()) + " " + dp.getName();
+      typeAndNames[i++] = dp.getDtoType() + " " + dp.getName();
     }
     final GMethod cstr = gc.getConstructor(typeAndNames);
     for (final DtoProperty dp : dto.getProperties()) {
@@ -101,9 +103,9 @@ public class Detonator {
     toDto.body.line("return new {}(", dto.getFullName());
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.getGetterMethodName() == null) {
-        throw new IllegalStateException("Could not find getter for " + dto.getSimpleName() + "." + dp.getName());
+        throw new IllegalStateException("Could not find getter for " + dto.getFullDomainName() + "." + dp.getName());
       }
-      if (needsConversion(dp.getType())) {
+      if (dp.needsConversion()) {
         toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
       } else {
         toDto.body.line("_ o.{}(),", dp.getGetterMethodName());
@@ -120,30 +122,12 @@ public class Detonator {
       if (dp.isReadOnly()) {
         throw new IllegalStateException("Could not find setter for " + dto.getFullDomainName() + "." + dp.getName());
       }
-      if (needsConversion(dp.getType())) {
+      if (dp.needsConversion()) {
         fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
       } else {
         fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
       }
     }
-  }
-
-  private String mapDomainTypeIfNeeded(final Class<?> domainType) {
-    if (domainType.getName().startsWith(config.getDomainPackage())) {
-      // in the domain package...just assume we have a dto for it?
-      // should probably skip it
-      // unless it's an enum
-      if (domainType.isEnum()) {
-        return config.getDtoPackage() + "." + domainType.getSimpleName();
-      }
-    }
-    return domainType.getName();
-  }
-
-  private boolean needsConversion(final Class<?> domainType) {
-    final String originalType = domainType.getName();
-    final String mappedType = mapDomainTypeIfNeeded(domainType);
-    return !originalType.equals(mappedType);
   }
 
 }
