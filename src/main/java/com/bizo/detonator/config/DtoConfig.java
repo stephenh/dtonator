@@ -24,7 +24,7 @@ public class DtoConfig {
     return root.getDtoPackage() + "." + getSimpleName();
   }
 
-  public List<DtoProperty> getDomainDescriptors() {
+  public List<DtoProperty> getProperties() {
     // Do we have to sort these for determinism?
     final List<DtoProperty> pds = newArrayList();
     for (final PropertyDescriptor pd : PropertyUtils.getPropertyDescriptors(getDomainClass())) {

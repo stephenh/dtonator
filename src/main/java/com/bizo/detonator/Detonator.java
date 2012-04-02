@@ -78,7 +78,7 @@ public class Detonator {
     gc.implementsInterface("com.google.gwt.user.client.rpc.IsSerializable");
 
     // add fields for each property
-    for (final DtoProperty dp : dto.getDomainDescriptors()) {
+    for (final DtoProperty dp : dto.getProperties()) {
       final GField f = gc.getField(dp.getName()).setPublic();
       f.type(mapDomainTypeIfNeeded(dp.getType()));
     }
@@ -87,13 +87,13 @@ public class Detonator {
     gc.getConstructor().setProtected();
 
     // hack until we have getConstructors(List)
-    final String[] typeAndNames = new String[dto.getDomainDescriptors().size()];
+    final String[] typeAndNames = new String[dto.getProperties().size()];
     int i = 0;
-    for (final DtoProperty dp : dto.getDomainDescriptors()) {
+    for (final DtoProperty dp : dto.getProperties()) {
       typeAndNames[i++] = mapDomainTypeIfNeeded(dp.getType()) + " " + dp.getName();
     }
     final GMethod cstr = gc.getConstructor(typeAndNames);
-    for (final DtoProperty dp : dto.getDomainDescriptors()) {
+    for (final DtoProperty dp : dto.getProperties()) {
       cstr.body.line("this.{} = {};", dp.getName(), dp.getName());
     }
 
@@ -101,7 +101,7 @@ public class Detonator {
     final GMethod toDto = mapper.getMethod("toDto", arg(dto.getFullDomainName(), "o"));
     toDto.returnType(dto.getFullName());
     toDto.body.line("return new {}(", dto.getFullName());
-    for (final DtoProperty dp : dto.getDomainDescriptors()) {
+    for (final DtoProperty dp : dto.getProperties()) {
       if (dp.getGetterMethodName() == null) {
         throw new IllegalStateException("Could not find getter for " + dto.getSimpleName() + "." + dp.getName());
       }
@@ -118,7 +118,7 @@ public class Detonator {
     final GMethod fromDto = mapper.getMethod("fromDto", //
       arg(dto.getFullDomainName(), "o"),
       arg(dto.getFullName(), "dto"));
-    for (final DtoProperty dp : dto.getDomainDescriptors()) {
+    for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isReadOnly()) {
         throw new IllegalStateException("Could not find setter for " + dto.getSimpleName() + "." + dp.getName());
       }
