@@ -39,7 +39,15 @@ public class DtoConfig {
   }
 
   public String getFullDomainName() {
-    return root.getDomainPackage() + "." + map.get("domain");
+    final String rawValue = (String) map.get("domain");
+    if (rawValue == null) {
+      throw new IllegalArgumentException("Missing key domain for " + simpleName);
+    }
+    if (rawValue.contains(".")) {
+      return rawValue;
+    } else {
+      return root.getDomainPackage() + "." + rawValue;
+    }
   }
 
   public boolean isEnum() {

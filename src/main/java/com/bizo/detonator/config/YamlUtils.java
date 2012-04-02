@@ -7,8 +7,7 @@ public class YamlUtils {
   @SuppressWarnings("unchecked")
   public static <K, V> Map<K, V> ensureMap(final Object o) {
     if (!(o instanceof Map)) {
-      System.err.println("Expecting a map");
-      System.exit(1);
+      throw new IllegalArgumentException("Expecting a map: " + o);
     }
     return (Map<K, V>) o;
   }
