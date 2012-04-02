@@ -29,4 +29,9 @@ public class DtoProperty {
   public boolean isReadOnly() {
     return pd.getWriteMethod() == null;
   }
+
+  @Override
+  public String toString() {
+    return pd.getName();
+  }
 }

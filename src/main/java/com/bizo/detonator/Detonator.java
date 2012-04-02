@@ -8,13 +8,14 @@ import org.yaml.snakeyaml.Yaml;
 import com.bizo.detonator.config.DtoConfig;
 import com.bizo.detonator.config.DtoProperty;
 import com.bizo.detonator.config.RootConfig;
+import com.bizo.detonator.properties.ReflectionTypeOracle;
 
 public class Detonator {
 
   public static void main(final String args[]) {
     final Yaml y = new Yaml();
     final Object root = y.load(Detonator.class.getResourceAsStream("/detonator.yaml"));
-    new Detonator(new RootConfig(root)).run();
+    new Detonator(new RootConfig(new ReflectionTypeOracle(), root)).run();
   }
 
   private final RootConfig config;
@@ -31,7 +32,7 @@ public class Detonator {
   public void run() {
     final GClass mapper = out.getClass(config.getMapperPackage() + ".Mapper");
     for (final DtoConfig dto : config.getDtos()) {
-      if (dto.getDomainClass().isEnum()) {
+      if (dto.isEnum()) {
         generateEnum(mapper, dto);
       } else {
         generateDto(mapper, dto);
@@ -44,17 +45,15 @@ public class Detonator {
     System.out.println("Generating " + dto.getSimpleName());
 
     final GClass gc = out.getClass(dto.getFullName()).setEnum();
-    for (final Object o : dto.getDomainClass().getEnumConstants()) {
-      final Enum<?> e = (Enum<?>) o;
-      gc.addEnumValue(e.name());
+    for (final String name : dto.getEnumValues()) {
+      gc.addEnumValue(name);
     }
 
-    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainClass().getName(), "e"));
+    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getFullDomainName(), "e"));
     toDto.returnType(dto.getFullName());
     toDto.body.line("switch (e) {");
-    for (final Object o : dto.getDomainClass().getEnumConstants()) {
-      final Enum<?> e = (Enum<?>) o;
-      toDto.body.line("_ case {}: return {}.{};", e.name(), dto.getFullName(), e.name());
+    for (final String name : dto.getEnumValues()) {
+      toDto.body.line("_ case {}: return {}.{};", name, dto.getFullName(), name);
     }
     toDto.body.line("}");
     toDto.body.line("return null;");
@@ -62,9 +61,8 @@ public class Detonator {
     final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getFullName(), "e"));
     fromDto.returnType(dto.getFullDomainName());
     fromDto.body.line("switch (e) {");
-    for (final Object o : dto.getDomainClass().getEnumConstants()) {
-      final Enum<?> e = (Enum<?>) o;
-      fromDto.body.line("_ case {}: return {}.{};", e.name(), dto.getFullDomainName(), e.name());
+    for (final String name : dto.getEnumValues()) {
+      fromDto.body.line("_ case {}: return {}.{};", name, dto.getFullDomainName(), name);
     }
     fromDto.body.line("}");
     fromDto.body.line("return null;");
@@ -120,7 +118,7 @@ public class Detonator {
       arg(dto.getFullName(), "dto"));
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isReadOnly()) {
-        throw new IllegalStateException("Could not find setter for " + dto.getSimpleName() + "." + dp.getName());
+        throw new IllegalStateException("Could not find setter for " + dto.getFullDomainName() + "." + dp.getName());
       }
       if (needsConversion(dp.getType())) {
         fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());

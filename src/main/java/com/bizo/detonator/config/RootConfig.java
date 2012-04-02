@@ -6,12 +6,16 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.bizo.detonator.properties.TypeOracle;
+
 public class RootConfig {
 
   private static final String configKey = "config";
+  private final TypeOracle oracle;
   private final Map<String, Object> root;
 
-  public RootConfig(final Object root) {
+  public RootConfig(final TypeOracle oracle, final Object root) {
+    this.oracle = oracle;
     this.root = YamlUtils.ensureMap(root);
   }
 
@@ -33,7 +37,7 @@ public class RootConfig {
       if (simpleName.equals(configKey)) {
         continue;
       }
-      dtos.add(new DtoConfig(this, simpleName, root.get(simpleName)));
+      dtos.add(new DtoConfig(oracle, this, simpleName, root.get(simpleName)));
     }
     return dtos;
   }

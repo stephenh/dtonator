@@ -1,20 +1,19 @@
 package com.bizo.detonator.config;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.beans.PropertyDescriptor;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.beanutils.PropertyUtils;
+import com.bizo.detonator.properties.TypeOracle;
 
 public class DtoConfig {
 
+  private final TypeOracle oracle;
   private final RootConfig root;
   private final String simpleName;
   private final Map<String, Object> map;
 
-  public DtoConfig(final RootConfig root, final String simpleName, final Object map) {
+  public DtoConfig(final TypeOracle oracle, final RootConfig root, final String simpleName, final Object map) {
+    this.oracle = oracle;
     this.root = root;
     this.simpleName = simpleName;
     this.map = YamlUtils.ensureMap(map);
@@ -25,15 +24,7 @@ public class DtoConfig {
   }
 
   public List<DtoProperty> getProperties() {
-    // Do we have to sort these for determinism?
-    final List<DtoProperty> pds = newArrayList();
-    for (final PropertyDescriptor pd : PropertyUtils.getPropertyDescriptors(getDomainClass())) {
-      if (pd.getName().equals("class") || pd.getName().equals("declaringClass")) {
-        continue;
-      }
-      pds.add(new DtoProperty(pd));
-    }
-    return pds;
+    return oracle.getProperties(getFullDomainName());
   }
 
   public String getSimpleName() {
@@ -44,11 +35,12 @@ public class DtoConfig {
     return root.getDomainPackage() + "." + map.get("domain");
   }
 
-  public Class<?> getDomainClass() {
-    try {
-      return Class.forName(getFullDomainName());
-    } catch (final ClassNotFoundException e) {
-      throw new IllegalArgumentException("Domain object not found " + getFullDomainName());
-    }
+  public boolean isEnum() {
+    return oracle.isEnum(getFullDomainName());
   }
+
+  public List<String> getEnumValues() {
+    return oracle.getEnumValues(getFullDomainName());
+  }
+
 }
