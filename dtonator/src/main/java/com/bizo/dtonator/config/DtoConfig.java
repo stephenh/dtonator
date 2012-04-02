@@ -22,13 +22,9 @@ public class DtoConfig {
     this.map = YamlUtils.ensureMap(map);
   }
 
-  public String getFullName() {
-    return root.getDtoPackage() + "." + getSimpleName();
-  }
-
   public List<DtoProperty> getProperties() {
     final List<DtoProperty> dps = newArrayList();
-    for (final Prop p : oracle.getProperties(getFullDomainName())) {
+    for (final Prop p : oracle.getProperties(getDomainType())) {
       dps.add(new DtoProperty(oracle, root, p));
     }
     return dps;
@@ -38,7 +34,11 @@ public class DtoConfig {
     return simpleName;
   }
 
-  public String getFullDomainName() {
+  public String getDtoType() {
+    return root.getDtoPackage() + "." + getSimpleName();
+  }
+
+  public String getDomainType() {
     final String rawValue = (String) map.get("domain");
     if (rawValue == null) {
       throw new IllegalArgumentException("Missing key domain for " + simpleName);
@@ -51,11 +51,11 @@ public class DtoConfig {
   }
 
   public boolean isEnum() {
-    return oracle.isEnum(getFullDomainName());
+    return oracle.isEnum(getDomainType());
   }
 
   public List<String> getEnumValues() {
-    return oracle.getEnumValues(getFullDomainName());
+    return oracle.getEnumValues(getDomainType());
   }
 
 }

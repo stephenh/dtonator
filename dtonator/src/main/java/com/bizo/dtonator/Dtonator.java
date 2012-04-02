@@ -25,6 +25,7 @@ public class Dtonator {
   private final GDirectory out = new GDirectory("target/gen-java-src");
 
   static {
+    // move to config file
     GSettings.setDefaultIndentation("  ");
   }
 
@@ -47,25 +48,25 @@ public class Dtonator {
   private void generateEnum(final GClass mapper, final DtoConfig dto) {
     System.out.println("Generating " + dto.getSimpleName());
 
-    final GClass gc = out.getClass(dto.getFullName()).setEnum();
+    final GClass gc = out.getClass(dto.getDtoType()).setEnum();
     for (final String name : dto.getEnumValues()) {
       gc.addEnumValue(name);
     }
 
-    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getFullDomainName(), "e"));
-    toDto.returnType(dto.getFullName());
+    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainType(), "e"));
+    toDto.returnType(dto.getDtoType());
     toDto.body.line("switch (e) {");
     for (final String name : dto.getEnumValues()) {
-      toDto.body.line("_ case {}: return {}.{};", name, dto.getFullName(), name);
+      toDto.body.line("_ case {}: return {}.{};", name, dto.getDtoType(), name);
     }
     toDto.body.line("}");
     toDto.body.line("return null;");
 
-    final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getFullName(), "e"));
-    fromDto.returnType(dto.getFullDomainName());
+    final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getDtoType(), "e"));
+    fromDto.returnType(dto.getDomainType());
     fromDto.body.line("switch (e) {");
     for (final String name : dto.getEnumValues()) {
-      fromDto.body.line("_ case {}: return {}.{};", name, dto.getFullDomainName(), name);
+      fromDto.body.line("_ case {}: return {}.{};", name, dto.getDomainType(), name);
     }
     fromDto.body.line("}");
     fromDto.body.line("return null;");
@@ -74,7 +75,7 @@ public class Dtonator {
   private void generateDto(final GClass mapper, final DtoConfig dto) {
     System.out.println("Generating " + dto.getSimpleName());
 
-    final GClass gc = out.getClass(dto.getFullName());
+    final GClass gc = out.getClass(dto.getDtoType());
     // hardcoding GWT dependency for now
     gc.implementsInterface("com.google.gwt.user.client.rpc.IsSerializable");
 
@@ -98,12 +99,12 @@ public class Dtonator {
     }
 
     // add toDto to mapper
-    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getFullDomainName(), "o"));
-    toDto.returnType(dto.getFullName());
-    toDto.body.line("return new {}(", dto.getFullName());
+    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainType(), "o"));
+    toDto.returnType(dto.getDtoType());
+    toDto.body.line("return new {}(", dto.getDtoType());
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.getGetterMethodName() == null) {
-        throw new IllegalStateException("Could not find getter for " + dto.getFullDomainName() + "." + dp.getName());
+        throw new IllegalStateException("Could not find getter for " + dto.getDomainType() + "." + dp.getName());
       }
       if (dp.needsConversion()) {
         toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
@@ -116,11 +117,11 @@ public class Dtonator {
 
     // add fromDto to mapper
     final GMethod fromDto = mapper.getMethod("fromDto", //
-      arg(dto.getFullDomainName(), "o"),
-      arg(dto.getFullName(), "dto"));
+      arg(dto.getDomainType(), "o"),
+      arg(dto.getDtoType(), "dto"));
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isReadOnly()) {
-        throw new IllegalStateException("Could not find setter for " + dto.getFullDomainName() + "." + dp.getName());
+        throw new IllegalStateException("Could not find setter for " + dto.getDomainType() + "." + dp.getName());
       }
       if (dp.needsConversion()) {
         fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
