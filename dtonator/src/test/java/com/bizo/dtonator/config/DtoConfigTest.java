@@ -3,6 +3,7 @@ package com.bizo.dtonator.config;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
@@ -66,6 +67,26 @@ public class DtoConfigTest {
     final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
     // then we have only 1
     assertThat(dc.getProperties().size(), is(1));
+  }
+
+  @Test
+  public void testPropertiesOnlySupportedOne() {
+    // given two properties
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
+    // and an override to skip b
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    map.put("properties", "a, -b");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // it fails
+    try {
+      dc.getProperties();
+      fail();
+    } catch (final IllegalArgumentException iae) {
+      assertThat(iae.getMessage(), is("Can't mix inclusions and exclusions: [a, -b]"));
+    }
   }
 
 }

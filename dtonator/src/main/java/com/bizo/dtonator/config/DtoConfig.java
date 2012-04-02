@@ -80,12 +80,19 @@ public class DtoConfig {
   }
 
   private static boolean hasExclusion(final List<String> pc) {
+    boolean foundExclusion = false;
+    boolean foundInclusion = false;
     for (final String p : pc) {
       if (p.startsWith("-")) {
-        return true;
+        foundExclusion = true;
+      } else {
+        foundInclusion = true;
       }
     }
-    return false;
+    if (foundInclusion && foundExclusion) {
+      throw new IllegalArgumentException("Can't mix inclusions and exclusions: " + pc);
+    }
+    return foundExclusion;
   }
 
 }
