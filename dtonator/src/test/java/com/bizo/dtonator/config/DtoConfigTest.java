@@ -9,8 +9,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.bizo.dtonator.config.DtoConfig;
-import com.bizo.dtonator.config.RootConfig;
 import com.bizo.dtonator.properties.StubTypeOracle;
 
 public class DtoConfigTest {
@@ -38,6 +36,36 @@ public class DtoConfigTest {
     final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
     // then we have both
     assertThat(dc.getProperties().size(), is(2));
+  }
+
+  @Test
+  public void testPropertiesExclusion() {
+    // given two properties
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
+    // and an override to skip b
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    map.put("properties", "-b");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we have only 1
+    assertThat(dc.getProperties().size(), is(1));
+  }
+
+  @Test
+  public void testPropertiesInclusion() {
+    // given two properties
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
+    // and an override to skip b
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    map.put("properties", "a");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we have only 1
+    assertThat(dc.getProperties().size(), is(1));
   }
 
 }
