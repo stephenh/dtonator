@@ -1,4 +1,4 @@
-package com.bizo.detonator.properties;
+package com.bizo.dtonator.properties;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
@@ -6,6 +6,9 @@ import static org.apache.commons.lang.StringUtils.capitalize;
 
 import java.util.List;
 import java.util.Map;
+
+import com.bizo.dtonator.properties.Prop;
+import com.bizo.dtonator.properties.TypeOracle;
 
 public class StubTypeOracle implements TypeOracle {
 

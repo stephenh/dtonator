@@ -1,4 +1,4 @@
-package com.bizo.detonator.properties;
+package com.bizo.dtonator.properties;
 
 import static com.google.common.collect.Lists.newArrayList;
 

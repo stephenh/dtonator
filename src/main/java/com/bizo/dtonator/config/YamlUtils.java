@@ -1,4 +1,4 @@
-package com.bizo.detonator.config;
+package com.bizo.dtonator.config;
 
 import java.util.Map;
 

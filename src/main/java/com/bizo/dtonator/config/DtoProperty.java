@@ -1,9 +1,9 @@
-package com.bizo.detonator.config;
+package com.bizo.dtonator.config;
 
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 
-import com.bizo.detonator.properties.Prop;
-import com.bizo.detonator.properties.TypeOracle;
+import com.bizo.dtonator.properties.Prop;
+import com.bizo.dtonator.properties.TypeOracle;
 
 /** A property to map back/forth between DTO/domain object. */
 public class DtoProperty {

@@ -1,4 +1,4 @@
-package com.bizo.detonator.config;
+package com.bizo.dtonator.config;
 
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.bizo.detonator.properties.TypeOracle;
+import com.bizo.dtonator.properties.TypeOracle;
 
 public class RootConfig {
 

@@ -1,4 +1,4 @@
-package com.bizo.detonator;
+package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
 import joist.sourcegen.GClass;
@@ -8,17 +8,17 @@ import joist.sourcegen.GSettings;
 
 import org.yaml.snakeyaml.Yaml;
 
-import com.bizo.detonator.config.DtoConfig;
-import com.bizo.detonator.config.DtoProperty;
-import com.bizo.detonator.config.RootConfig;
-import com.bizo.detonator.properties.ReflectionTypeOracle;
+import com.bizo.dtonator.config.DtoConfig;
+import com.bizo.dtonator.config.DtoProperty;
+import com.bizo.dtonator.config.RootConfig;
+import com.bizo.dtonator.properties.ReflectionTypeOracle;
 
-public class Detonator {
+public class Dtonator {
 
   public static void main(final String args[]) {
     final Yaml y = new Yaml();
-    final Object root = y.load(Detonator.class.getResourceAsStream("/detonator.yaml"));
-    new Detonator(new RootConfig(new ReflectionTypeOracle(), root)).run();
+    final Object root = y.load(Dtonator.class.getResourceAsStream("/dtonator.yaml"));
+    new Dtonator(new RootConfig(new ReflectionTypeOracle(), root)).run();
   }
 
   private final RootConfig config;
@@ -28,7 +28,7 @@ public class Detonator {
     GSettings.setDefaultIndentation("  ");
   }
 
-  public Detonator(final RootConfig root) {
+  public Dtonator(final RootConfig root) {
     config = root;
   }
 

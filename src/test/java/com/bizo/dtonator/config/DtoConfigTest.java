@@ -1,4 +1,4 @@
-package com.bizo.detonator.config;
+package com.bizo.dtonator.config;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.is;
@@ -9,7 +9,9 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.bizo.detonator.properties.StubTypeOracle;
+import com.bizo.dtonator.config.DtoConfig;
+import com.bizo.dtonator.config.RootConfig;
+import com.bizo.dtonator.properties.StubTypeOracle;
 
 public class DtoConfigTest {
 
