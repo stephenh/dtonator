@@ -49,6 +49,7 @@ public class Dtonator {
     System.out.println("Generating " + dto.getSimpleName());
 
     final GClass gc = out.getClass(dto.getDtoType()).setEnum();
+    gc.addAnnotation("@javax.annotation.Generated(\"dtonator\")");
     for (final String name : dto.getEnumValues()) {
       gc.addEnumValue(name);
     }
@@ -76,6 +77,7 @@ public class Dtonator {
     System.out.println("Generating " + dto.getSimpleName());
 
     final GClass gc = out.getClass(dto.getDtoType());
+    gc.addAnnotation("@javax.annotation.Generated(\"dtonator\")");
     // hardcoding GWT dependency for now
     gc.implementsInterface("com.google.gwt.user.client.rpc.IsSerializable");
 
