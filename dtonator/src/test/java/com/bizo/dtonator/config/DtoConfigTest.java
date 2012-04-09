@@ -125,4 +125,55 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(1).getDtoType(), is("java.lang.String"));
   }
 
+  @Test
+  public void testExtensionPropertiesFromJavaUtil() {
+    // given a domain object Foo
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    // and an extension property of ArrayList
+    map.put("properties", "a ArrayList<String>");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we get the right type
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<String>"));
+  }
+
+  @Test
+  public void testSortedAlphabetically() {
+    // given two properties
+    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    // and no overrides
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we've sorted them
+    assertThat(dc.getProperties().size(), is(2));
+    assertThat(dc.getProperties().get(0).getName(), is("a"));
+    assertThat(dc.getProperties().get(1).getName(), is("b"));
+  }
+
+  @Test
+  public void testSortedByConfigFirst() {
+    // given four properties, initially out of order
+    oracle.addProperty("com.domain.Foo", "d", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "c", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    // and overrides putting d, c first
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    map.put("properties", "d, c String, b, a");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we've sorted them
+    assertThat(dc.getProperties().size(), is(4));
+    assertThat(dc.getProperties().get(0).getName(), is("d"));
+    assertThat(dc.getProperties().get(1).getName(), is("c"));
+    assertThat(dc.getProperties().get(2).getName(), is("b"));
+    assertThat(dc.getProperties().get(3).getName(), is("a"));
+  }
+
 }

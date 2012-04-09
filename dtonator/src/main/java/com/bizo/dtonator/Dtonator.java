@@ -155,7 +155,7 @@ public class Dtonator {
       toDto.body.line("return new {}(", dto.getDtoType());
       for (final DtoProperty dp : dto.getProperties()) {
         if (dp.isExtension()) {
-          toDto.body.line("{}.{}ToDto(o),", mapperFieldName(dto), dp.getName());
+          toDto.body.line("_ {}.{}ToDto(o),", mapperFieldName(dto), dp.getName());
         } else if (dp.needsConversion()) {
           toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
         } else {

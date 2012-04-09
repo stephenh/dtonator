@@ -14,4 +14,9 @@ public class Prop {
     this.getterMethodName = getterMethodName;
     this.setterNameMethod = setterNameMethod;
   }
+
+  @Override
+  public String toString() {
+    return name + " " + type;
+  }
 }
