@@ -176,4 +176,19 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(3).getName(), is("a"));
   }
 
+  @Test
+  public void testReadOnly() {
+    // given Foo.a
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    // and marked as read only
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    map.put("properties", "~a");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then know it's read only
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).isReadOnly(), is(true));
+  }
+
 }

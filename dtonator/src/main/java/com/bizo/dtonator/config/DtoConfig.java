@@ -41,11 +41,13 @@ public class DtoConfig {
                 p.name,
                 pc.type != null ? pc.type : p.type,
                 pc.type != null ? null : p.getterMethodName,
-                pc.type != null ? null : p.setterNameMethod)));
-              pc.markMapped();
+                pc.type != null || pc.isReadOnly ? null : p.setterNameMethod)));
             } else {
               properties.add(new DtoProperty(oracle, root, p));
             }
+          }
+          if (pc != null) {
+            pc.markMapped();
           }
         }
         // now look for extension properties
@@ -192,9 +194,16 @@ public class DtoConfig {
     private final String name;
     private final String type;
     private final boolean isExclusion;
+    private final boolean isReadOnly;
     private boolean mapped = false;
 
-    private PropConfig(final String value) {
+    private PropConfig(String value) {
+      if (value.startsWith("~")) {
+        isReadOnly = true;
+        value = value.substring(1);
+      } else {
+        isReadOnly = false;
+      }
       if (value.contains(" ")) {
         final String[] parts = splitIntoNameAndType(value);
         name = parts[0];

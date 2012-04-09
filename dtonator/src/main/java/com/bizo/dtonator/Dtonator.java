@@ -174,7 +174,7 @@ public class Dtonator {
           fromDto.body.line("{}.{}FromDto(o, dto.{});", mapperFieldName(dto), dp.getName(), dp.getName());
         } else if (dp.needsConversion()) {
           fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
-        } else {
+        } else if (!dp.isReadOnly()) {
           fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
         }
       }
