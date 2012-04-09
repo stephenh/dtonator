@@ -100,35 +100,37 @@ public class Dtonator {
       cstr.body.line("this.{} = {};", dp.getName(), dp.getName());
     }
 
-    // add toDto to mapper
-    final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainType(), "o"));
-    toDto.returnType(dto.getDtoType());
-    toDto.body.line("return new {}(", dto.getDtoType());
-    for (final DtoProperty dp : dto.getProperties()) {
-      if (dp.getGetterMethodName() == null) {
-        throw new IllegalStateException("Could not find getter for " + dto.getDomainType() + "." + dp.getName());
+    if (!dto.isManualDto()) {
+      // add toDto to mapper
+      final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainType(), "o"));
+      toDto.returnType(dto.getDtoType());
+      toDto.body.line("return new {}(", dto.getDtoType());
+      for (final DtoProperty dp : dto.getProperties()) {
+        if (dp.getGetterMethodName() == null) {
+          throw new IllegalStateException("Could not find getter for " + dto.getDomainType() + "." + dp.getName());
+        }
+        if (dp.needsConversion()) {
+          toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
+        } else {
+          toDto.body.line("_ o.{}(),", dp.getGetterMethodName());
+        }
       }
-      if (dp.needsConversion()) {
-        toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
-      } else {
-        toDto.body.line("_ o.{}(),", dp.getGetterMethodName());
-      }
-    }
-    toDto.body.stripLastCharacterOnPreviousLine();
-    toDto.body.line(");");
+      toDto.body.stripLastCharacterOnPreviousLine();
+      toDto.body.line(");");
 
-    // add fromDto to mapper
-    final GMethod fromDto = mapper.getMethod("fromDto", //
-      arg(dto.getDomainType(), "o"),
-      arg(dto.getDtoType(), "dto"));
-    for (final DtoProperty dp : dto.getProperties()) {
-      if (dp.isReadOnly()) {
-        throw new IllegalStateException("Could not find setter for " + dto.getDomainType() + "." + dp.getName());
-      }
-      if (dp.needsConversion()) {
-        fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
-      } else {
-        fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
+      // add fromDto to mapper
+      final GMethod fromDto = mapper.getMethod("fromDto", //
+        arg(dto.getDomainType(), "o"),
+        arg(dto.getDtoType(), "dto"));
+      for (final DtoProperty dp : dto.getProperties()) {
+        if (dp.isReadOnly()) {
+          throw new IllegalStateException("Could not find setter for " + dto.getDomainType() + "." + dp.getName());
+        }
+        if (dp.needsConversion()) {
+          fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+        } else {
+          fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
+        }
       }
     }
   }

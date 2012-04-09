@@ -36,6 +36,7 @@
     <dependency org="cobertura" name="cobertura" rev="1.9.4.1" conf="buildtime"/>
 
     <!-- test time only dependencies -->
-    <dependency org="junit" name="junit" rev="4.8.2" conf="test"/>
+    <dependency org="junit" name="junit-dep" rev="4.8.2" conf="test"/>
+    <dependency org="org.hamcrest" name="hamcrest" rev="1.2" conf="default,test->default" />
   </dependencies>
 </ivy-module>

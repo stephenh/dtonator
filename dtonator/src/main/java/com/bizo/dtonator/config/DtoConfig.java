@@ -27,13 +27,30 @@ public class DtoConfig {
     if (properties == null) {
       properties = newArrayList();
       final List<String> pc = getPropertiesConfig();
-      final boolean returnAll = pc == null;
-      final boolean exclusionMode = !returnAll && hasExclusion(pc);
-      for (final Prop p : oracle.getProperties(getDomainType())) {
-        if (returnAll //
-          || (exclusionMode && !pc.contains("-" + p.name))
-          || (!exclusionMode && pc.contains(p.name))) {
-          properties.add(new DtoProperty(oracle, root, p));
+      if (getDomainType() != null) {
+        final boolean returnAll = pc == null;
+        final boolean exclusionMode = !returnAll && hasExclusion(pc);
+        for (final Prop p : oracle.getProperties(getDomainType())) {
+          if (returnAll //
+            || (exclusionMode && !pc.contains("-" + p.name))
+            || (!exclusionMode && pc.contains(p.name))) {
+            // TODO Support a "id Long" type override here
+            properties.add(new DtoProperty(oracle, root, p));
+          }
+        }
+      } else if (pc != null) {
+        for (final String p : pc) {
+          final String[] parts = p.split(" ");
+          if (parts.length != 2) {
+            throw new IllegalArgumentException("Properties of manual DTOs must be '<name> <type>'");
+          }
+          final String name = parts[0];
+          String type = parts[1];
+          // add java.lang prefix? what about domain types?
+          if (type.indexOf(".") == -1 && type.matches("^[A-Z].*")) {
+            type = "java.lang." + type;
+          }
+          properties.add(new DtoProperty(oracle, root, new Prop(name, type, null, null)));
         }
       }
     }
@@ -51,7 +68,7 @@ public class DtoConfig {
   public String getDomainType() {
     final String rawValue = (String) map.get("domain");
     if (rawValue == null) {
-      throw new IllegalArgumentException("Missing key domain for " + simpleName);
+      return null;
     }
     if (rawValue.contains(".")) {
       return rawValue;
@@ -61,11 +78,15 @@ public class DtoConfig {
   }
 
   public boolean isEnum() {
-    return oracle.isEnum(getDomainType());
+    return !isManualDto() && oracle.isEnum(getDomainType());
   }
 
   public List<String> getEnumValues() {
     return oracle.getEnumValues(getDomainType());
+  }
+
+  public boolean isManualDto() {
+    return getDomainType() == null;
   }
 
   private List<String> getPropertiesConfig() {

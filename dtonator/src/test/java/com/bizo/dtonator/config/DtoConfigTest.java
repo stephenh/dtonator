@@ -89,4 +89,22 @@ public class DtoConfigTest {
     }
   }
 
+  @Test
+  public void testManualProperties() {
+    // given no domain object set
+    final Map<String, Object> map = newHashMap();
+    // map.put("domain", "Foo");
+    // but manually speified properties
+    map.put("properties", "id Integer, name String");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we have both
+    assertThat(dc.getProperties().size(), is(2));
+    assertThat(dc.getProperties().get(0).getName(), is("id"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.lang.Integer"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.lang.Integer"));
+    assertThat(dc.getProperties().get(1).getName(), is("name"));
+    assertThat(dc.getProperties().get(1).getDtoType(), is("java.lang.String"));
+  }
+
 }
