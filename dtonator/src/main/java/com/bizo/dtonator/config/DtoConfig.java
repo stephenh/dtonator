@@ -38,20 +38,22 @@ public class DtoConfig {
             // TODO Support a "id Long" type override here
             properties.add(new DtoProperty(oracle, root, p));
           }
+          if (pc != null) {
+            pc.remove(p.name);
+            pc.remove("-" + p.name);
+          }
+        }
+        if (pc != null) {
+          // now look for extension properties
+          for (final String p : pc) {
+            final String[] parts = splitIntoNameAndType(p);
+            properties.add(new DtoProperty(oracle, root, new Prop(parts[0], parts[1], null, null)));
+          }
         }
       } else if (pc != null) {
         for (final String p : pc) {
-          final String[] parts = p.split(" ");
-          if (parts.length != 2) {
-            throw new IllegalArgumentException("Properties of manual DTOs must be '<name> <type>'");
-          }
-          final String name = parts[0];
-          String type = parts[1];
-          // add java.lang prefix? what about domain types?
-          if (type.indexOf(".") == -1 && type.matches("^[A-Z].*")) {
-            type = "java.lang." + type;
-          }
-          properties.add(new DtoProperty(oracle, root, new Prop(name, type, null, null)));
+          final String[] parts = splitIntoNameAndType(p);
+          properties.add(new DtoProperty(oracle, root, new Prop(parts[0], parts[1], null, null)));
         }
       }
     }
@@ -102,6 +104,15 @@ public class DtoConfig {
     return getDomainType() == null;
   }
 
+  public boolean hasExtensionProperties() {
+    for (final DtoProperty p : getProperties()) {
+      if (p.isExtension()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private List<String> getPropertiesConfig() {
     final Object rawValue = map.get("properties");
     if (rawValue == null) {
@@ -129,4 +140,17 @@ public class DtoConfig {
     return foundExclusion;
   }
 
+  private static String[] splitIntoNameAndType(final String value) {
+    final String[] parts = value.split(" ");
+    if (parts.length != 2) {
+      throw new IllegalArgumentException("Value '<name> <type>': " + value);
+    }
+    final String name = parts[0];
+    String type = parts[1];
+    // add java.lang prefix? what about domain types?
+    if (type.indexOf(".") == -1 && type.matches("^[A-Z].*")) {
+      type = "java.lang." + type;
+    }
+    return new String[] { name, type };
+  }
 }

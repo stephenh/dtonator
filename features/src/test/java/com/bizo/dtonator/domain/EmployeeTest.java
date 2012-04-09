@@ -10,7 +10,7 @@ import com.bizo.dtonator.mapper.Mapper;
 
 public class EmployeeTest {
 
-  private final Mapper mapper = new Mapper();
+  private final Mapper mapper = new Mapper(null);
 
   @Test
   public void testToDto() {

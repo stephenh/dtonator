@@ -1,13 +1,12 @@
 package com.bizo.dtonator;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
+import static org.apache.commons.lang.StringUtils.uncapitalize;
 
 import java.util.List;
 
-import joist.sourcegen.GClass;
-import joist.sourcegen.GDirectory;
-import joist.sourcegen.GMethod;
-import joist.sourcegen.GSettings;
+import joist.sourcegen.*;
 
 import org.yaml.snakeyaml.Yaml;
 
@@ -26,6 +25,7 @@ public class Dtonator {
 
   private final RootConfig config;
   private final GDirectory out = new GDirectory("target/gen-java-src");
+  private final List<String> takenToDtoOverloads = newArrayList();
 
   static {
     // move to config file
@@ -38,6 +38,21 @@ public class Dtonator {
 
   public void run() {
     final GClass mapper = out.getClass(config.getMapperPackage() + ".Mapper");
+
+    // add constructor for extension mappers
+    final List<Argument> args = newArrayList();
+    for (final DtoConfig dto : config.getDtos()) {
+      if (!dto.isManualDto() && dto.hasExtensionProperties()) {
+        args.add(arg(mapperAbstractType(config, dto), mapperFieldName(dto)));
+      }
+    }
+    if (args.size() > 0) {
+      for (final Argument arg : args) {
+        mapper.getField(arg.name).type(arg.type).setFinal();
+      }
+      mapper.getConstructor(args).assignFields();
+    }
+
     for (final DtoConfig dto : config.getDtos()) {
       if (dto.isEnum()) {
         generateEnum(mapper, dto);
@@ -104,15 +119,44 @@ public class Dtonator {
     }
 
     if (!dto.isManualDto()) {
+      // do we need a custom mapper?
+      final GClass mb;
+      if (dto.hasExtensionProperties()) {
+        mb = out.getClass(mapperAbstractType(config, dto)).setAbstract();
+        for (final DtoProperty p : dto.getProperties()) {
+          if (p.isExtension()) {
+            // add abstract {name}FromDto
+            mb.getMethod(//
+              p.getName() + "FromDto",
+              arg(dto.getDomainType(), "domain"),
+              arg(p.getDtoType(), "value")).setAbstract();
+            // add abstract {name}ToDto
+            mb
+              .getMethod(p.getName() + "ToDto", arg(dto.getDomainType(), "domain"))
+              .setAbstract()
+              .returnType(p.getDtoType());
+          }
+        }
+      } else {
+        mb = null;
+      }
+
+      final String toDtoName;
+      if (takenToDtoOverloads.contains(dto.getDomainType())) {
+        toDtoName = "to" + dto.getSimpleName();
+      } else {
+        toDtoName = "toDto";
+        takenToDtoOverloads.add(dto.getDomainType());
+      }
+
       // add toDto to mapper
-      final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainType(), "o"));
+      final GMethod toDto = mapper.getMethod(toDtoName, arg(dto.getDomainType(), "o"));
       toDto.returnType(dto.getDtoType());
       toDto.body.line("return new {}(", dto.getDtoType());
       for (final DtoProperty dp : dto.getProperties()) {
-        if (dp.getGetterMethodName() == null) {
-          throw new IllegalStateException("Could not find getter for " + dto.getDomainType() + "." + dp.getName());
-        }
-        if (dp.needsConversion()) {
+        if (dp.isExtension()) {
+          toDto.body.line("{}.{}ToDto(o),", mapperFieldName(dto), dp.getName());
+        } else if (dp.needsConversion()) {
           toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
         } else {
           toDto.body.line("_ o.{}(),", dp.getGetterMethodName());
@@ -126,10 +170,9 @@ public class Dtonator {
         arg(dto.getDomainType(), "o"),
         arg(dto.getDtoType(), "dto"));
       for (final DtoProperty dp : dto.getProperties()) {
-        if (dp.isReadOnly()) {
-          throw new IllegalStateException("Could not find setter for " + dto.getDomainType() + "." + dp.getName());
-        }
-        if (dp.needsConversion()) {
+        if (dp.isExtension()) {
+          fromDto.body.line("{}.{}FromDto(o, dto.{});", mapperFieldName(dto), dp.getName(), dp.getName());
+        } else if (dp.needsConversion()) {
           fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
         } else {
           fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
@@ -144,4 +187,15 @@ public class Dtonator {
     }
   }
 
+  private static String mapperFieldName(final DtoConfig dc) {
+    return uncapitalize(dc.getSimpleName()) + "Mapper";
+  }
+
+  private static String mapperAbstractType(final RootConfig rc, final DtoConfig dc) {
+    return rc.getMapperPackage() + ".Abstract" + dc.getSimpleName() + "Mapper";
+  }
+
+  private static String mapperType(final RootConfig rc, final DtoConfig dc) {
+    return rc.getMapperPackage() + "." + dc.getSimpleName() + "Mapper";
+  }
 }

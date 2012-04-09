@@ -9,6 +9,10 @@ EmployeeDto:
 EmployeeType:
   domain: EmployeeType
 
+EmployeeExtensionDto:
+  domain: Employee
+  properties: id, extensionValue Integer
+
 ClientOnlyDto:
   properties: id Long, name String
   equality: id

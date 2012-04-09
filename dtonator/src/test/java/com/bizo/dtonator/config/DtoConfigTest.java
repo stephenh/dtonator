@@ -107,4 +107,22 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(1).getDtoType(), is("java.lang.String"));
   }
 
+  @Test
+  public void testExtensionProperties() {
+    // given a domain object with Foo.a
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    // but we specify both a and b
+    map.put("properties", "a, b String");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we have both
+    assertThat(dc.getProperties().size(), is(2));
+    assertThat(dc.getProperties().get(0).getName(), is("a"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.lang.String"));
+    assertThat(dc.getProperties().get(1).getName(), is("b"));
+    assertThat(dc.getProperties().get(1).getDtoType(), is("java.lang.String"));
+  }
+
 }

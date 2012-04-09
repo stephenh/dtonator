@@ -55,6 +55,11 @@ public class DtoProperty {
     return p.setterNameMethod == null;
   }
 
+  /** only meaningful for non-manual dtos */
+  public boolean isExtension() {
+    return p.getterMethodName == null && p.setterNameMethod == null;
+  }
+
   @Override
   public String toString() {
     return p.name;
