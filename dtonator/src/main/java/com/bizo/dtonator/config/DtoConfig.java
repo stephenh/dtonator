@@ -2,6 +2,7 @@ package com.bizo.dtonator.config;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -74,6 +75,18 @@ public class DtoConfig {
       return rawValue;
     } else {
       return root.getDomainPackage() + "." + rawValue;
+    }
+  }
+
+  public List<String> getEquality() {
+    final Object value = map.get("equality");
+    if (value == null) {
+      return null;
+    }
+    if (!(value instanceof String)) {
+      throw new IllegalArgumentException("Expected a string for equality key");
+    } else {
+      return Arrays.asList(((String) value).split(" "));
     }
   }
 

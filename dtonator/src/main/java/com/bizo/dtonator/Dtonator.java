@@ -1,6 +1,9 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
+
+import java.util.List;
+
 import joist.sourcegen.GClass;
 import joist.sourcegen.GDirectory;
 import joist.sourcegen.GMethod;
@@ -132,6 +135,12 @@ public class Dtonator {
           fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
         }
       }
+    }
+
+    // optionally generate equals + hashCode
+    final List<String> eq = dto.getEquality();
+    if (eq != null) {
+      gc.addEquals(eq).addHashCode(eq);
     }
   }
 

@@ -28,7 +28,7 @@
     <dependency org="org.yaml" name="snakeyaml" rev="1.8"/>
     <dependency org="slf4j" name="slf4j" rev="1.6.1" conf="default->api;test->jdk14"/>
 
-    <dependency org="joist" name="joist-util" rev="1.2.15" />
+    <dependency org="joist" name="joist-util" rev="1.3.2" />
 
     <!-- build time only dependencies -->
     <dependency org="findbugs" name="findbugs" rev="1.3.9" conf="buildtime"/>

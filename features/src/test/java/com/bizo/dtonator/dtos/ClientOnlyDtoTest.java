@@ -14,4 +14,12 @@ public class ClientOnlyDtoTest {
     assertThat(d.name, is("asdf"));
   }
 
+  @Test
+  public void testEquals() {
+    final ClientOnlyDto d1 = new ClientOnlyDto(1l, "asdf1");
+    final ClientOnlyDto d2 = new ClientOnlyDto(1l, "asdf2");
+    assertThat(d1.equals(d2), is(true));
+    assertThat(d1.hashCode() == d2.hashCode(), is(true));
+  }
+
 }
