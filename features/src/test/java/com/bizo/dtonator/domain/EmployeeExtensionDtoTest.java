@@ -13,7 +13,7 @@ import com.bizo.dtonator.mapper.Mapper;
 public class EmployeeExtensionDtoTest {
 
   private final StubEmployeeExtensionMapper employeeExtMapper = new StubEmployeeExtensionMapper();
-  private final Mapper mapper = new Mapper(null, employeeExtMapper, new DollarsMapper());
+  private final Mapper mapper = new Mapper(null, null, employeeExtMapper, new DollarsMapper());
 
   @Test
   public void testToDto() {

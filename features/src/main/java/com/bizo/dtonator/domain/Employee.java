@@ -11,6 +11,18 @@ public class Employee {
   private Dollars salary;
   private List<EmployeeAccount> accounts;
 
+  public Employee() {
+  }
+
+  public Employee(final Long id, final String name) {
+    setId(id);
+    setName(name);
+  }
+
+  public Employee(final String name) {
+    setName(name);
+  }
+
   public Long getId() {
     return id;
   }

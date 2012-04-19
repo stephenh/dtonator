@@ -13,6 +13,7 @@ public class RootConfig {
   private static final String configKey = "config";
   private final TypeOracle oracle;
   private final Map<String, Object> root;
+  private List<DtoConfig> dtos = null;
 
   public RootConfig(final TypeOracle oracle, final Object root) {
     this.oracle = oracle;
@@ -32,14 +33,25 @@ public class RootConfig {
   }
 
   public Collection<DtoConfig> getDtos() {
-    final List<DtoConfig> dtos = newArrayList();
-    for (final String simpleName : root.keySet()) {
-      if (simpleName.equals(configKey)) {
-        continue;
+    if (dtos == null) {
+      dtos = newArrayList();
+      for (final String simpleName : root.keySet()) {
+        if (simpleName.equals(configKey)) {
+          continue;
+        }
+        dtos.add(new DtoConfig(oracle, this, simpleName, root.get(simpleName)));
       }
-      dtos.add(new DtoConfig(oracle, this, simpleName, root.get(simpleName)));
     }
     return dtos;
+  }
+
+  public DtoConfig getDto(final String simpleName) {
+    for (final DtoConfig dto : getDtos()) {
+      if (dto.getSimpleName().equals(simpleName)) {
+        return dto;
+      }
+    }
+    return null;
   }
 
   public UserTypeConfig getUserTypeForDomainType(final String domainType) {

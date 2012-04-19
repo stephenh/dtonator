@@ -41,8 +41,11 @@ public class Dtonator {
   public void run() {
     final GClass mapper = out.getClass(config.getMapperPackage() + ".Mapper");
 
-    // add constructor for extension mappers
+    // create the mapper cstr
     final List<Argument> args = newArrayList();
+    // always need a DomainObjectLookup
+    args.add(arg(DomainObjectLookup.class.getName(), "lookup"));
+    // add arguments for extension mappers
     for (final DtoConfig dto : config.getDtos()) {
       if (!dto.isManualDto() && dto.hasExtensionProperties()) {
         args.add(arg(mapperAbstractType(config, dto), mapperFieldName(dto)));
@@ -52,12 +55,11 @@ public class Dtonator {
     for (final UserTypeConfig utc : config.getUserTypes()) {
       args.add(arg(mapperAbstractType(config, utc), mapperFieldName(utc)));
     }
-    if (args.size() > 0) {
-      for (final Argument arg : args) {
-        mapper.getField(arg.name).type(arg.type).setFinal();
-      }
-      mapper.getConstructor(args).assignFields();
+    // make fields for all of the arguments
+    for (final Argument arg : args) {
+      mapper.getField(arg.name).type(arg.type).setFinal();
     }
+    mapper.getConstructor(args).assignFields();
 
     for (final DtoConfig dto : config.getDtos()) {
       if (dto.isEnum()) {
@@ -87,6 +89,9 @@ public class Dtonator {
 
     final GMethod toDto = mapper.getMethod("toDto", arg(dto.getDomainType(), "e"));
     toDto.returnType(dto.getDtoType());
+    toDto.body.line("if (e == null) {");
+    toDto.body.line("_ return null;");
+    toDto.body.line("}");
     toDto.body.line("switch (e) {");
     for (final String name : dto.getEnumValues()) {
       toDto.body.line("_ case {}: return {}.{};", name, dto.getDtoType(), name);
@@ -96,6 +101,9 @@ public class Dtonator {
 
     final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getDtoType(), "e"));
     fromDto.returnType(dto.getDomainType());
+    fromDto.body.line("if (e == null) {");
+    fromDto.body.line("_ return null;");
+    fromDto.body.line("}");
     fromDto.body.line("switch (e) {");
     for (final String name : dto.getEnumValues()) {
       fromDto.body.line("_ case {}: return {}.{};", name, dto.getDomainType(), name);
@@ -183,6 +191,16 @@ public class Dtonator {
             dp.getGetterMethodName());
         } else if (dp.isEnum()) {
           toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
+        } else if (dp.isListOfEntities()) {
+          toDto.body.line("_ {}For{}(o.{}()),", dp.getName(), dto.getSimpleName(), dp.getGetterMethodName());
+          final GMethod c = mapper.getMethod(dp.getName() + "For" + dto.getSimpleName(), arg(dp.getDomainType(), "os"));
+          c.returnType(dp.getDtoType()).setPrivate();
+          // TODO assumes dto type can be instantiated
+          c.body.line("{} dtos = new {}();", dp.getDtoType(), dp.getDtoType());
+          c.body.line("for ({} o : os) {", dp.getSingleDomainType());
+          c.body.line("_ dtos.add(to{}(o));", dp.getSimpleSingleDtoType());
+          c.body.line("}");
+          c.body.line("return dtos;");
         } else {
           toDto.body.line("_ o.{}(),", dp.getGetterMethodName());
         }
@@ -217,6 +235,19 @@ public class Dtonator {
             dp.getName());
         } else if (dp.isEnum()) {
           fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+        } else if (dp.isListOfEntities()) {
+          final String helperMethod = dp.getName() + "For" + dto.getSimpleName();
+          fromDto.body.line("o.{}({}(dto.{}));", dp.getSetterMethodName(), helperMethod, dp.getName());
+          final GMethod c = mapper.getMethod(helperMethod, arg(dp.getDtoType(), "dtos"));
+          c.returnType(dp.getDomainType()).setPrivate();
+          // assumes List->ArrayList
+          c.body.line("{} os = new {}();", dp.getDomainType(), dp.getDomainType().replace("List", "ArrayList"));
+          c.body.line("for ({} dto : dtos) {", dp.getSingleDtoType());
+          // assumes dto.id is the key
+          c.body.line("_ os.add(lookup.lookup({}.class, dto.id));", dp.getSingleDomainType());
+          // TODO conditionally add a fromDto if we want to write back?
+          c.body.line("}");
+          c.body.line("return os;");
         } else {
           fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
         }

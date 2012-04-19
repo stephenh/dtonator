@@ -21,6 +21,7 @@ public class DtoConfigTest {
   @Before
   public void setupRootConfig() {
     config.put("domainPackage", "com.domain");
+    config.put("dtoPackage", "com.dto");
     root.put("config", config);
   }
 
@@ -30,11 +31,9 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     // and no overrides
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    addDto("FooDto", domain("Foo"));
     // then we have both
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(2));
   }
 
@@ -217,6 +216,31 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.UserType"));
   }
 
+  @Test
+  public void testChildDomainObject() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
+    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
+    // and the child dto has an entry in the yaml file
+    addDto("ChildDto");
+    // and no overrides
+    addDto("ParentDto", domain("Parent"));
+    // then we map Child to the ChildDto
+    final DtoConfig dc = rootConfig.getDto("ParentDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("children"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.List<com.domain.Child>"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.ChildDto>"));
+  }
+
+  private void addDto(final String simpleName, final Entry... entries) {
+    final Map<String, Object> map = newHashMap();
+    for (final Entry entry : entries) {
+      map.put(entry.name, entry.value);
+    }
+    root.put(simpleName, map);
+  }
+
   @SuppressWarnings("unchecked")
   private static Map<String, String> getUserTypes(final Map<String, Object> config) {
     Object value = config.get("userTypes");
@@ -225,6 +249,24 @@ public class DtoConfigTest {
       config.put("userTypes", value);
     }
     return (Map<String, String>) value;
+  }
+
+  private static Entry domain(final String value) {
+    return new Entry("domain", value);
+  }
+
+  private static Entry properties(final String value) {
+    return new Entry("properties", value);
+  }
+
+  private static class Entry {
+    private final String name;
+    private final Object value;
+
+    private Entry(final String name, final Object value) {
+      this.name = name;
+      this.value = value;
+    }
   }
 
 }

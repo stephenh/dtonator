@@ -6,6 +6,14 @@ public class EmployeeAccount {
   private String name;
   private Dollars balance;
 
+  public EmployeeAccount() {
+  }
+
+  public EmployeeAccount(final Long id, final String name) {
+    setId(id);
+    setName(name);
+  }
+
   public Long getId() {
     return id;
   }

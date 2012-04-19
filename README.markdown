@@ -17,6 +17,10 @@ Todo
 * Make mappers for every type, even if not needed
   * `fromDto` uses mapper `fooFromDto`, `barFromDto` with default implementations (unless extension/manual, then abstract)
 * Default values for lists/etc.
+* Support renaming `properties: clientName->domainName`
+* Read vs. read/write children, e.g.:
+  * Save `parent.children` and write back into each `child`
+  * Save `parent` but use the children just for the list
 
 Configuration
 =============

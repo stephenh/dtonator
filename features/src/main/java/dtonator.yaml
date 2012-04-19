@@ -9,10 +9,20 @@ EmployeeDto:
   domain: Employee
   properties: -accounts, *
 
-EmployeeWithAccountDto:
+# testing a list of ids
+EmployeeWithAccountIdsDto:
   domain: Employee
   properties: accounts ArrayList<Integer>, *
   publicConstructor: true
+
+# testing a list of entites
+EmployeeWithAccountsDto:
+  domain: Employee
+  properties: id, name, accounts
+
+# need the EmployeeAccountDto
+EmployeeAccountDto:
+  domain: EmployeeAccount
 
 EmployeeType:
   domain: EmployeeType

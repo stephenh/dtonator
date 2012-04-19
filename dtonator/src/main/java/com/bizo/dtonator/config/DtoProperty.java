@@ -1,6 +1,7 @@
 package com.bizo.dtonator.config;
 
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
+import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import com.bizo.dtonator.properties.Prop;
 import com.bizo.dtonator.properties.TypeOracle;
@@ -16,11 +17,24 @@ public class DtoProperty {
     this.oracle = oracle;
     this.config = config;
     this.p = p;
+    if (p.type == null) {
+      throw new IllegalStateException("Type not found for " + p.name);
+    }
   }
 
   public String getDtoType() {
     if (getUserTypeConfig() != null) {
       return getUserTypeConfig().dtoType;
+    }
+    if (isListOfEntities()) {
+      // have they mapped this to a dto?
+      final String guessedSimpleName = substringAfterLast(getSingleDomainType(), ".") + "Dto";
+      final DtoConfig childConfig = config.getDto(guessedSimpleName);
+      if (childConfig == null) {
+        throw new IllegalStateException("Could not find a default dto " + guessedSimpleName + " for " + getDomainType());
+      }
+      // TODO hardcoding j.u.ArrayList for now
+      return "java.util.ArrayList<" + childConfig.getDtoType() + ">";
     }
     if (getDomainType().startsWith(config.getDomainPackage())) {
       // in the domain package...just assume we have a dto for it?
@@ -52,6 +66,26 @@ public class DtoProperty {
 
   public boolean isReadOnly() {
     return p.readOnly;
+  }
+
+  public boolean isListOfEntities() {
+    // TODO should also check if dtoType is java.util.ArrayList? or is that isListOfDtos?
+    return getDomainType().startsWith("java.util.List<" + config.getDomainPackage());
+  }
+
+  public String getSingleDtoType() {
+    // assumes isListOfEntities
+    return substringBetween(getDtoType(), "<", ">");
+  }
+
+  public String getSimpleSingleDtoType() {
+    // assumes isListOfEntities
+    return substringAfterLast(getSingleDtoType(), ".");
+  }
+
+  public String getSingleDomainType() {
+    // assumes isListOfEntities
+    return substringBetween(getDomainType(), "<", ">");
   }
 
   public boolean isUserType() {

@@ -32,6 +32,7 @@ public class DtoConfig {
         final boolean includeUnmapped = pcs.size() == 0 || hasPropertiesInclude();
         for (final Prop p : oracle.getProperties(getDomainType())) {
           final PropConfig pc = findPropConfig(pcs, p.name);
+          // if we found a property in the oracle, we know this isn't an extension
           if (pc != null) {
             pc.markMapped();
           }
