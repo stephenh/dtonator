@@ -168,16 +168,8 @@ public class Dtonator {
         mb = null;
       }
 
-      final String toDtoName;
-      if (takenToDtoOverloads.contains(dto.getDomainType())) {
-        toDtoName = "to" + dto.getSimpleName();
-      } else {
-        toDtoName = "toDto";
-        takenToDtoOverloads.add(dto.getDomainType());
-      }
-
-      // add toDto to mapper
-      final GMethod toDto = mapper.getMethod(toDtoName, arg(dto.getDomainType(), "o"));
+      // add toXxxDto to mapper
+      final GMethod toDto = mapper.getMethod("to" + dto.getSimpleName(), arg(dto.getDomainType(), "o"));
       toDto.returnType(dto.getDtoType());
       toDto.body.line("return new {}(", dto.getDtoType());
       for (final DtoProperty dp : dto.getProperties()) {
@@ -197,6 +189,14 @@ public class Dtonator {
       }
       toDto.body.stripLastCharacterOnPreviousLine();
       toDto.body.line(");");
+
+      // if no name classes, add an overload for toDto(Domain) to mapper
+      if (!takenToDtoOverloads.contains(dto.getDomainType())) {
+        final GMethod toDtoOverload = mapper.getMethod("toDto", arg(dto.getDomainType(), "o"));
+        toDtoOverload.returnType(dto.getDtoType());
+        toDtoOverload.body.line("return to{}(o);", dto.getSimpleName());
+        takenToDtoOverloads.add(dto.getDomainType());
+      }
 
       // add fromDto to mapper
       final GMethod fromDto = mapper.getMethod("fromDto", //
