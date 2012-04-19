@@ -3,7 +3,6 @@ package com.bizo.dtonator.config;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.fail;
 
 import java.util.Map;
 
@@ -17,10 +16,10 @@ public class DtoConfigTest {
   private final StubTypeOracle oracle = new StubTypeOracle();
   private final Map<String, Object> root = newHashMap();
   private final RootConfig rootConfig = new RootConfig(oracle, root);
+  private final Map<String, Object> config = newHashMap();
 
   @Before
   public void setupRootConfig() {
-    final Map<String, Object> config = newHashMap();
     config.put("domainPackage", "com.domain");
     root.put("config", config);
   }
@@ -47,7 +46,7 @@ public class DtoConfigTest {
     // and an override to skip b
     final Map<String, Object> map = newHashMap();
     map.put("domain", "Foo");
-    map.put("properties", "-b");
+    map.put("properties", "-b, *");
     // when asked
     final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
     // then we have only 1
@@ -70,23 +69,35 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testPropertiesOnlySupportedOne() {
-    // given two properties
-    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
-    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
-    // and an override to skip b
+  public void testPropertiesOverrideType() {
+    // given a property of just List
+    oracle.addProperty("com.domain.Foo", "a", "java.util.List");
+    // and an override to change it to ArrayList<Integer>
     final Map<String, Object> map = newHashMap();
     map.put("domain", "Foo");
-    map.put("properties", "a, -b");
+    map.put("properties", "a ArrayList<Integer>");
     // when asked
     final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
-    // it fails
-    try {
-      dc.getProperties();
-      fail();
-    } catch (final IllegalArgumentException iae) {
-      assertThat(iae.getMessage(), is("Can't mix inclusions and exclusions: [a, -b]"));
-    }
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("a"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<Integer>"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.ArrayList<Integer>"));
+  }
+
+  @Test
+  public void testPropertiesOverrideTypeAndIncludesAll() {
+    // given a property of List and another string
+    oracle.addProperty("com.domain.Foo", "a", "java.util.List");
+    oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
+    // and an override for a and * to include b
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    map.put("properties", "a ArrayList<Integer>, *");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    assertThat(dc.getProperties().size(), is(2));
+    assertThat(dc.getProperties().get(0).getName(), is("a"));
+    assertThat(dc.getProperties().get(1).getName(), is("b"));
   }
 
   @Test
@@ -189,6 +200,31 @@ public class DtoConfigTest {
     // then know it's read only
     assertThat(dc.getProperties().size(), is(1));
     assertThat(dc.getProperties().get(0).isReadOnly(), is(true));
+  }
+
+  @Test
+  public void testUserTypes() {
+    // given a domain object with a user type
+    oracle.addProperty("com.domain.Foo", "a", "com.domain.UserType");
+    // and the user type configured
+    getUserTypes(config).put("com.domain.UserType", "com.dto.UserType");
+    // and no overrides
+    final Map<String, Object> map = newHashMap();
+    map.put("domain", "Foo");
+    // when asked
+    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // then we know the right dto type
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.UserType"));
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, String> getUserTypes(final Map<String, Object> config) {
+    Object value = config.get("userTypes");
+    if (value == null) {
+      value = newHashMap();
+      config.put("userTypes", value);
+    }
+    return (Map<String, String>) value;
   }
 
 }

@@ -2,6 +2,7 @@ package com.bizo.dtonator;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
+import static org.apache.commons.lang.StringUtils.capitalize;
 import static org.apache.commons.lang.StringUtils.uncapitalize;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import org.yaml.snakeyaml.Yaml;
 import com.bizo.dtonator.config.DtoConfig;
 import com.bizo.dtonator.config.DtoProperty;
 import com.bizo.dtonator.config.RootConfig;
+import com.bizo.dtonator.config.UserTypeConfig;
 import com.bizo.dtonator.properties.ReflectionTypeOracle;
 
 public class Dtonator {
@@ -46,6 +48,10 @@ public class Dtonator {
         args.add(arg(mapperAbstractType(config, dto), mapperFieldName(dto)));
       }
     }
+    // include user type mappers
+    for (final UserTypeConfig utc : config.getUserTypes()) {
+      args.add(arg(mapperAbstractType(config, utc), mapperFieldName(utc)));
+    }
     if (args.size() > 0) {
       for (final Argument arg : args) {
         mapper.getField(arg.name).type(arg.type).setFinal();
@@ -60,6 +66,13 @@ public class Dtonator {
         generateDto(mapper, dto);
       }
     }
+
+    for (final UserTypeConfig utc : config.getUserTypes()) {
+      final GClass utcg = out.getClass(mapperAbstractType(config, utc)).setAbstract();
+      utcg.getMethod("toDto", arg(utc.domainType, utc.name)).returnType(utc.dtoType).setAbstract();
+      utcg.getMethod("fromDto", arg(utc.dtoType, utc.name)).returnType(utc.domainType).setAbstract();
+    }
+
     out.output();
   }
 
@@ -99,19 +112,31 @@ public class Dtonator {
     // hardcoding GWT dependency for now
     gc.implementsInterface("com.google.gwt.user.client.rpc.IsSerializable");
 
+    for (final String annotation : dto.getAnnotations()) {
+      gc.addAnnotation(annotation);
+    }
+
     // add fields for each property
     for (final DtoProperty dp : dto.getProperties()) {
       gc.getField(dp.getName()).setPublic().type(dp.getDtoType());
     }
 
-    // no-arg cstr is protected
-    gc.getConstructor().setProtected();
+    // no-arg cstr is protected, hardcoded for now...
+    final GMethod cstr0 = gc.getConstructor();
+    if (dto.shouldAddPublicConstructor()) {
+      // keep public
+      for (final DtoProperty dp : dto.getProperties()) {
+        if (dp.getDtoType().startsWith("java.util.ArrayList")) {
+          cstr0.body.line("this.{} = new {}();", dp.getName(), dp.getDtoType());
+        }
+      }
+    } else {
+      cstr0.setProtected();
+    }
 
-    // hack until we have getConstructors(List)
-    final String[] typeAndNames = new String[dto.getProperties().size()];
-    int i = 0;
+    final List<Argument> typeAndNames = newArrayList();
     for (final DtoProperty dp : dto.getProperties()) {
-      typeAndNames[i++] = dp.getDtoType() + " " + dp.getName();
+      typeAndNames.add(arg(dp.getDtoType(), dp.getName()));
     }
     final GMethod cstr = gc.getConstructor(typeAndNames);
     for (final DtoProperty dp : dto.getProperties()) {
@@ -125,16 +150,18 @@ public class Dtonator {
         mb = out.getClass(mapperAbstractType(config, dto)).setAbstract();
         for (final DtoProperty p : dto.getProperties()) {
           if (p.isExtension()) {
-            // add abstract {name}FromDto
-            mb.getMethod(//
-              p.getName() + "FromDto",
-              arg(dto.getDomainType(), "domain"),
-              arg(p.getDtoType(), "value")).setAbstract();
             // add abstract {name}ToDto
             mb
               .getMethod(p.getName() + "ToDto", arg(dto.getDomainType(), "domain"))
               .setAbstract()
               .returnType(p.getDtoType());
+            if (!p.isReadOnly()) {
+              // add abstract {name}FromDto
+              mb.getMethod(//
+                p.getName() + "FromDto",
+                arg(dto.getDomainType(), "domain"),
+                arg(p.getDtoType(), "value")).setAbstract();
+            }
           }
         }
       } else {
@@ -156,7 +183,13 @@ public class Dtonator {
       for (final DtoProperty dp : dto.getProperties()) {
         if (dp.isExtension()) {
           toDto.body.line("_ {}.{}ToDto(o),", mapperFieldName(dto), dp.getName());
-        } else if (dp.needsConversion()) {
+        } else if (dp.isUserType()) {
+          toDto.body.line(
+            "_ o.{}() == null ? null : {}.toDto(o.{}()),",
+            dp.getGetterMethodName(),
+            mapperFieldName(dp.getUserTypeConfig()),
+            dp.getGetterMethodName());
+        } else if (dp.isEnum()) {
           toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
         } else {
           toDto.body.line("_ o.{}(),", dp.getGetterMethodName());
@@ -170,11 +203,21 @@ public class Dtonator {
         arg(dto.getDomainType(), "o"),
         arg(dto.getDtoType(), "dto"));
       for (final DtoProperty dp : dto.getProperties()) {
+        if (dp.isReadOnly()) {
+          continue;
+        }
         if (dp.isExtension()) {
           fromDto.body.line("{}.{}FromDto(o, dto.{});", mapperFieldName(dto), dp.getName(), dp.getName());
-        } else if (dp.needsConversion()) {
+        } else if (dp.isUserType()) {
+          fromDto.body.line(
+            "o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));",
+            dp.getSetterMethodName(),
+            dp.getName(),
+            mapperFieldName(dp.getUserTypeConfig()),
+            dp.getName());
+        } else if (dp.isEnum()) {
           fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
-        } else if (!dp.isReadOnly()) {
+        } else {
           fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
         }
       }
@@ -191,8 +234,16 @@ public class Dtonator {
     return uncapitalize(dc.getSimpleName()) + "Mapper";
   }
 
+  private static String mapperFieldName(final UserTypeConfig utc) {
+    return utc.name + "Mapper";
+  }
+
   private static String mapperAbstractType(final RootConfig rc, final DtoConfig dc) {
     return rc.getMapperPackage() + ".Abstract" + dc.getSimpleName() + "Mapper";
+  }
+
+  private static String mapperAbstractType(final RootConfig rc, final UserTypeConfig utc) {
+    return rc.getMapperPackage() + ".Abstract" + capitalize(utc.name) + "Mapper";
   }
 
   private static String mapperType(final RootConfig rc, final DtoConfig dc) {

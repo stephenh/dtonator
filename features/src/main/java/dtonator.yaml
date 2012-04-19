@@ -2,9 +2,17 @@ config:
   dtoPackage: com.bizo.dtonator.dtos
   domainPackage: com.bizo.dtonator.domain
   mapperPackage: com.bizo.dtonator.mapper
+  userTypes:
+    com.bizo.dtonator.domain.Dollars: com.bizo.dtonator.dtos.Dollars
 
 EmployeeDto:
   domain: Employee
+  properties: -accounts, *
+
+EmployeeWithAccountDto:
+  domain: Employee
+  properties: accounts ArrayList<Integer>, *
+  publicConstructor: true
 
 EmployeeType:
   domain: EmployeeType

@@ -18,11 +18,10 @@ public class DtoProperty {
     this.p = p;
   }
 
-  public boolean needsConversion() {
-    return !getDomainType().equals(getDtoType());
-  }
-
   public String getDtoType() {
+    if (getUserTypeConfig() != null) {
+      return getUserTypeConfig().dtoType;
+    }
     if (getDomainType().startsWith(config.getDomainPackage())) {
       // in the domain package...just assume we have a dto for it?
       // should probably skip it
@@ -52,7 +51,19 @@ public class DtoProperty {
   }
 
   public boolean isReadOnly() {
-    return p.setterNameMethod == null;
+    return p.readOnly;
+  }
+
+  public boolean isUserType() {
+    return getUserTypeConfig() != null;
+  }
+
+  public boolean isEnum() {
+    return oracle.isEnum(getDomainType());
+  }
+
+  public UserTypeConfig getUserTypeConfig() {
+    return config.getUserTypeForDomainType(getDomainType());
   }
 
   /** only meaningful for non-manual dtos */
@@ -64,4 +75,5 @@ public class DtoProperty {
   public String toString() {
     return p.name;
   }
+
 }

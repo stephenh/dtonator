@@ -37,7 +37,7 @@ public class StubTypeOracle implements TypeOracle {
       properties = newArrayList();
       this.properties.put(className, properties);
     }
-    properties.add(new Prop(name, type, "get" + capitalize(name), "set" + capitalize(name)));
+    properties.add(new Prop(name, type, false, "get" + capitalize(name), "set" + capitalize(name)));
   }
 
   public void setProperties(final String className, final List<Prop> properties) {

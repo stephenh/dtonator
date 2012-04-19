@@ -1,6 +1,8 @@
 package com.bizo.dtonator.config;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.Boolean.TRUE;
+import static org.apache.commons.lang.StringUtils.defaultString;
 
 import java.util.*;
 
@@ -27,39 +29,38 @@ public class DtoConfig {
       properties = newArrayList();
       final List<PropConfig> pcs = getPropertiesConfig();
       if (getDomainType() != null) {
-        final boolean returnAll = pcs.size() == 0;
-        final boolean exclusionMode = !returnAll && hasExclusion(pcs);
+        final boolean includeUnmapped = pcs.size() == 0 || hasPropertiesInclude();
         for (final Prop p : oracle.getProperties(getDomainType())) {
           final PropConfig pc = findPropConfig(pcs, p.name);
-          if (returnAll //
-            || (exclusionMode && (pc == null || pc.isExclusion == false))
-            || (!exclusionMode && pc != null)) {
-            if (pc != null) {
-              // allow user to override the type
-              // TODO see if we can use converters?
-              properties.add(new DtoProperty(oracle, root, new Prop(
-                p.name,
-                pc.type != null ? pc.type : p.type,
-                pc.type != null ? null : p.getterMethodName,
-                pc.type != null || pc.isReadOnly ? null : p.setterNameMethod)));
-            } else {
-              properties.add(new DtoProperty(oracle, root, p));
-            }
-          }
           if (pc != null) {
             pc.markMapped();
+          }
+          final boolean doNotMap = (pc != null && pc.isExclusion) || (pc == null && !includeUnmapped);
+          if (doNotMap) {
+            continue;
+          }
+          if (pc != null) {
+            // allow user to override the type
+            properties.add(new DtoProperty(oracle, root, new Prop(
+              p.name,
+              pc.type != null ? pc.type : p.type,
+              pc.isReadOnly,
+              pc.type != null ? null : p.getterMethodName,
+              pc.type != null || pc.isReadOnly ? null : p.setterNameMethod)));
+          } else {
+            properties.add(new DtoProperty(oracle, root, p));
           }
         }
         // now look for extension properties
         for (final PropConfig pc : pcs) {
           if (!pc.mapped) {
-            properties.add(new DtoProperty(oracle, root, new Prop(pc.name, pc.type, null, null)));
+            properties.add(new DtoProperty(oracle, root, new Prop(pc.name, pc.type, pc.isReadOnly, null, null)));
           }
         }
       } else if (pcs.size() > 0) {
         // this is a manual dto
         for (final PropConfig pc : pcs) {
-          properties.add(new DtoProperty(oracle, root, new Prop(pc.name, pc.type, null, null)));
+          properties.add(new DtoProperty(oracle, root, new Prop(pc.name, pc.type, pc.isReadOnly, null, null)));
         }
       }
       Collections.sort(properties, new Comparator<DtoProperty>() {
@@ -87,6 +88,20 @@ public class DtoConfig {
 
   public String getDtoType() {
     return root.getDtoPackage() + "." + getSimpleName();
+  }
+
+  public boolean shouldAddPublicConstructor() {
+    return TRUE.equals(map.get("publicConstructor"));
+  }
+
+  public List<String> getAnnotations() {
+    final List<String> annotations = newArrayList();
+    if (map.get("annotations") != null) {
+      for (final String annotation : defaultString((String) map.get("annotations")).split(", ?")) {
+        annotations.add("@" + annotation);
+      }
+    }
+    return annotations;
   }
 
   public String getDomainType() {
@@ -139,7 +154,22 @@ public class DtoConfig {
     return getSimpleName();
   }
 
+  /** @return the `properties: a, b` as parsed {@link PropConfig}, skipping the `*` character. */
   private List<PropConfig> getPropertiesConfig() {
+    final List<PropConfig> args = newArrayList();
+    for (final String eachValue : getPropertiesConfigRaw()) {
+      if (!"*".equals(eachValue)) {
+        args.add(new PropConfig(eachValue));
+      }
+    }
+    return args;
+  }
+
+  private boolean hasPropertiesInclude() {
+    return getPropertiesConfigRaw().contains("*");
+  }
+
+  private List<String> getPropertiesConfigRaw() {
     final Object rawValue = map.get("properties");
     if (rawValue == null) {
       return newArrayList();
@@ -147,27 +177,7 @@ public class DtoConfig {
     if (!(rawValue instanceof String)) {
       throw new IllegalStateException("Expecting a string value for key properties: " + rawValue);
     }
-    final List<PropConfig> args = newArrayList();
-    for (final String eachValue : ((String) rawValue).split(", ?")) {
-      args.add(new PropConfig(eachValue));
-    }
-    return args;
-  }
-
-  private static boolean hasExclusion(final List<PropConfig> pc) {
-    boolean foundExclusion = false;
-    boolean foundInclusion = false;
-    for (final PropConfig p : pc) {
-      if (p.isExclusion) {
-        foundExclusion = true;
-      } else {
-        foundInclusion = true;
-      }
-    }
-    if (foundInclusion && foundExclusion) {
-      throw new IllegalArgumentException("Can't mix inclusions and exclusions: " + pc);
-    }
-    return foundExclusion;
+    return newArrayList(((String) rawValue).split(", ?"));
   }
 
   private static String[] splitIntoNameAndType(final String value) {
@@ -190,6 +200,7 @@ public class DtoConfig {
     return new String[] { name, type };
   }
 
+  /** Small abstraction around the property strings in the YAML file. */
   private static class PropConfig {
     private final String name;
     private final String type;

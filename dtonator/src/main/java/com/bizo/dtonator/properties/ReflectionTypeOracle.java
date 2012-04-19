@@ -20,6 +20,7 @@ public class ReflectionTypeOracle implements TypeOracle {
       ps.add(new Prop( //
         pd.getName(),
         pd.getPropertyType().getName(),
+        pd.getWriteMethod() == null,
         pd.getReadMethod() == null ? null : pd.getReadMethod().getName(),
         pd.getWriteMethod() == null ? null : pd.getWriteMethod().getName()));
     }
@@ -28,7 +29,11 @@ public class ReflectionTypeOracle implements TypeOracle {
 
   @Override
   public boolean isEnum(final String className) {
-    return getClass(className).isEnum();
+    try {
+      return getClass(className).isEnum();
+    } catch (final IllegalArgumentException iae) {
+      return false; // for primitives like boolean
+    }
   }
 
   @Override

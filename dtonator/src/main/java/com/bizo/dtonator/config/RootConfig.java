@@ -42,6 +42,27 @@ public class RootConfig {
     return dtos;
   }
 
+  public UserTypeConfig getUserTypeForDomainType(final String domainType) {
+    for (final UserTypeConfig utc : getUserTypes()) {
+      if (utc.domainType.equals(domainType)) {
+        return utc;
+      }
+    }
+    return null;
+  }
+
+  public List<UserTypeConfig> getUserTypes() {
+    final Object value = getConfig().get("userTypes");
+    if (value == null) {
+      return newArrayList();
+    }
+    final List<UserTypeConfig> userTypes = newArrayList();
+    for (final Map.Entry<Object, Object> e : YamlUtils.ensureMap(value).entrySet()) {
+      userTypes.add(new UserTypeConfig(e));
+    }
+    return userTypes;
+  }
+
   private Map<String, String> getConfig() {
     return YamlUtils.ensureMap(root.get(configKey));
   }

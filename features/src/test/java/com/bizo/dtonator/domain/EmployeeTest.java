@@ -5,12 +5,14 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import com.bizo.dtonator.dtos.Dollars;
 import com.bizo.dtonator.dtos.EmployeeDto;
+import com.bizo.dtonator.mapper.DollarsMapper;
 import com.bizo.dtonator.mapper.Mapper;
 
 public class EmployeeTest {
 
-  private final Mapper mapper = new Mapper(null);
+  private final Mapper mapper = new Mapper(null, null, new DollarsMapper());
 
   @Test
   public void testToDto() {
@@ -29,7 +31,7 @@ public class EmployeeTest {
 
   @Test
   public void testFromDto() {
-    final EmployeeDto dto = new EmployeeDto(1l, "e", com.bizo.dtonator.dtos.EmployeeType.LARGE, true);
+    final EmployeeDto dto = new EmployeeDto(1l, "e", new Dollars(100), com.bizo.dtonator.dtos.EmployeeType.LARGE, true);
 
     final Employee e = new Employee();
     mapper.fromDto(e, dto);
