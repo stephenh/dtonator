@@ -36,7 +36,10 @@ public class DtoConfig {
           if (pc != null) {
             pc.markMapped();
           }
-          final boolean doNotMap = (pc != null && pc.isExclusion) || (pc == null && !includeUnmapped);
+          final boolean doNotMap =
+            (pc != null && pc.isExclusion)
+              || (pc == null && !includeUnmapped)
+              || (pc == null && p.type.startsWith("java.util.List"));
           if (doNotMap) {
             continue;
           }

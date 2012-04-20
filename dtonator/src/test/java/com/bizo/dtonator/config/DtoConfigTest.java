@@ -217,14 +217,30 @@ public class DtoConfigTest {
   }
 
   @Test
+  public void testChildDomainObjectAreSkippedUnlessSpecified() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "name", "java.lang.String");
+    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
+    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
+    // and the child dto has an entry in the yaml file
+    addDto("ChildDto");
+    // and but the parent doesn't out in the children
+    addDto("ParentDto", domain("Parent"));
+    // then it only has the name property
+    final DtoConfig dc = rootConfig.getDto("ParentDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("name"));
+  }
+
+  @Test
   public void testChildDomainObject() {
     // given a parent and child
     oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
     oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
     // and the child dto has an entry in the yaml file
     addDto("ChildDto");
-    // and no overrides
-    addDto("ParentDto", domain("Parent"));
+    // and explicitly asking for children
+    addDto("ParentDto", domain("Parent"), properties("children"));
     // then we map Child to the ChildDto
     final DtoConfig dc = rootConfig.getDto("ParentDto");
     assertThat(dc.getProperties().size(), is(1));
