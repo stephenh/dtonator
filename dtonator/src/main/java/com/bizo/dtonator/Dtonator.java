@@ -224,6 +224,10 @@ public class Dtonator {
         if (dp.isReadOnly()) {
           continue;
         }
+        // given we already have an instance of o, assume we shouldn't change the id
+        if ("id".equals(dp.getName())) {
+          continue;
+        }
         if (dp.isExtension()) {
           fromDto.body.line("{}.{}FromDto(o, dto.{});", mapperFieldName(dto), dp.getName(), dp.getName());
         } else if (dp.isUserType()) {

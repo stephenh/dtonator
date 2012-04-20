@@ -1,6 +1,7 @@
 package com.bizo.dtonator.domain;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -35,7 +36,8 @@ public class EmployeeTest {
 
     final Employee e = new Employee();
     mapper.fromDto(e, dto);
-    assertThat(e.getId(), is(1l));
+    // the id should have been set when looking up the Employee...don't overwrite it
+    assertThat(e.getId(), is(nullValue()));
     assertThat(e.getName(), is("e"));
     assertThat(e.isWorking(), is(true));
     assertThat(e.getType(), is(com.bizo.dtonator.domain.EmployeeType.LARGE));
