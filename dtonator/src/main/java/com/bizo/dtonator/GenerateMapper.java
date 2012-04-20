@@ -11,7 +11,7 @@ import joist.sourcegen.GDirectory;
 
 import com.bizo.dtonator.config.DtoConfig;
 import com.bizo.dtonator.config.RootConfig;
-import com.bizo.dtonator.config.UserTypeConfig;
+import com.bizo.dtonator.config.ValueTypeConfig;
 
 public class GenerateMapper {
 
@@ -43,7 +43,7 @@ public class GenerateMapper {
       }
     }
     // include user type mappers
-    for (final UserTypeConfig utc : config.getUserTypes()) {
+    for (final ValueTypeConfig utc : config.getValueTypes()) {
       args.add(arg(Names.mapperAbstractType(config, utc), Names.mapperFieldName(utc)));
     }
     // make fields for all of the arguments

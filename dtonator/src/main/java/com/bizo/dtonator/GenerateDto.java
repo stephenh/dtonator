@@ -144,12 +144,12 @@ public class GenerateDto {
       if (dp.isExtension()) {
         // delegate to the user's mapper method for this property
         toDto.body.line("_ {}.{}ToDto(o),", mapperFieldName(dto), dp.getName());
-      } else if (dp.isUserType()) {
+      } else if (dp.isValueType()) {
         // delegate to the user type mapper for this property
         toDto.body.line(
           "_ o.{}() == null ? null : {}.toDto(o.{}()),",
           dp.getGetterMethodName(),
-          mapperFieldName(dp.getUserTypeConfig()),
+          mapperFieldName(dp.getValueTypeConfig()),
           dp.getGetterMethodName());
       } else if (dp.isEnum()) {
         // delegate to the enum converter
@@ -199,12 +199,12 @@ public class GenerateDto {
       }
       if (dp.isExtension()) {
         fromDto.body.line("{}.{}FromDto(o, dto.{});", mapperFieldName(dto), dp.getName(), dp.getName());
-      } else if (dp.isUserType()) {
+      } else if (dp.isValueType()) {
         fromDto.body.line(
           "o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));",
           dp.getSetterMethodName(),
           dp.getName(),
-          mapperFieldName(dp.getUserTypeConfig()),
+          mapperFieldName(dp.getValueTypeConfig()),
           dp.getName());
       } else if (dp.isEnum()) {
         fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());

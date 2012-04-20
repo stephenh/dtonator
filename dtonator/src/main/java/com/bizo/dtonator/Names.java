@@ -5,7 +5,7 @@ import static org.apache.commons.lang.StringUtils.uncapitalize;
 
 import com.bizo.dtonator.config.DtoConfig;
 import com.bizo.dtonator.config.RootConfig;
-import com.bizo.dtonator.config.UserTypeConfig;
+import com.bizo.dtonator.config.ValueTypeConfig;
 
 public class Names {
 
@@ -13,16 +13,16 @@ public class Names {
     return uncapitalize(dc.getSimpleName()) + "Mapper";
   }
 
-  static String mapperFieldName(final UserTypeConfig utc) {
-    return utc.name + "Mapper";
+  static String mapperFieldName(final ValueTypeConfig vtc) {
+    return vtc.name + "Mapper";
   }
 
   static String mapperAbstractType(final RootConfig rc, final DtoConfig dc) {
     return rc.getMapperPackage() + ".Abstract" + dc.getSimpleName() + "Mapper";
   }
 
-  static String mapperAbstractType(final RootConfig rc, final UserTypeConfig utc) {
-    return rc.getMapperPackage() + ".Abstract" + capitalize(utc.name) + "Mapper";
+  static String mapperAbstractType(final RootConfig rc, final ValueTypeConfig vtc) {
+    return rc.getMapperPackage() + ".Abstract" + capitalize(vtc.name) + "Mapper";
   }
 
   static String mapperType(final RootConfig rc, final DtoConfig dc) {

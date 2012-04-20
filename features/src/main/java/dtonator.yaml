@@ -2,7 +2,7 @@ config:
   dtoPackage: com.bizo.dtonator.dtos
   domainPackage: com.bizo.dtonator.domain
   mapperPackage: com.bizo.dtonator.mapper
-  userTypes:
+  valueTypes:
     com.bizo.dtonator.domain.Dollars: com.bizo.dtonator.dtos.Dollars
 
 EmployeeDto:

@@ -54,25 +54,25 @@ public class RootConfig {
     return null;
   }
 
-  public UserTypeConfig getUserTypeForDomainType(final String domainType) {
-    for (final UserTypeConfig utc : getUserTypes()) {
-      if (utc.domainType.equals(domainType)) {
-        return utc;
+  public ValueTypeConfig getValueTypeForDomainType(final String domainType) {
+    for (final ValueTypeConfig vtc : getValueTypes()) {
+      if (vtc.domainType.equals(domainType)) {
+        return vtc;
       }
     }
     return null;
   }
 
-  public List<UserTypeConfig> getUserTypes() {
-    final Object value = getConfig().get("userTypes");
+  public List<ValueTypeConfig> getValueTypes() {
+    final Object value = getConfig().get("valueTypes");
     if (value == null) {
       return newArrayList();
     }
-    final List<UserTypeConfig> userTypes = newArrayList();
+    final List<ValueTypeConfig> valueTypes = newArrayList();
     for (final Map.Entry<Object, Object> e : YamlUtils.ensureMap(value).entrySet()) {
-      userTypes.add(new UserTypeConfig(e));
+      valueTypes.add(new ValueTypeConfig(e));
     }
-    return userTypes;
+    return valueTypes;
   }
 
   private Map<String, String> getConfig() {

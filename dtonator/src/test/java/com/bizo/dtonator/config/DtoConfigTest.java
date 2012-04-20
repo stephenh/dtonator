@@ -202,18 +202,18 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testUserTypes() {
+  public void testValueTypes() {
     // given a domain object with a user type
-    oracle.addProperty("com.domain.Foo", "a", "com.domain.UserType");
-    // and the user type configured
-    getUserTypes(config).put("com.domain.UserType", "com.dto.UserType");
+    oracle.addProperty("com.domain.Foo", "a", "com.domain.ValueType");
+    // and the value type configured
+    valueTypes().put("com.domain.ValueType", "com.dto.ValueType");
     // and no overrides
     final Map<String, Object> map = newHashMap();
     map.put("domain", "Foo");
     // when asked
     final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
     // then we know the right dto type
-    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.UserType"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
   }
 
   @Test
@@ -258,11 +258,11 @@ public class DtoConfigTest {
   }
 
   @SuppressWarnings("unchecked")
-  private static Map<String, String> getUserTypes(final Map<String, Object> config) {
-    Object value = config.get("userTypes");
+  private Map<String, String> valueTypes() {
+    Object value = config.get("valueTypes");
     if (value == null) {
       value = newHashMap();
-      config.put("userTypes", value);
+      config.put("valueTypes", value);
     }
     return (Map<String, String>) value;
   }

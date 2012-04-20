@@ -14,7 +14,7 @@ import org.yaml.snakeyaml.Yaml;
 
 import com.bizo.dtonator.config.DtoConfig;
 import com.bizo.dtonator.config.RootConfig;
-import com.bizo.dtonator.config.UserTypeConfig;
+import com.bizo.dtonator.config.ValueTypeConfig;
 import com.bizo.dtonator.properties.ReflectionTypeOracle;
 
 /**
@@ -54,10 +54,10 @@ public class Dtonator {
     }
 
     // create interfaces (currently abstract classes) for the user type mappers
-    for (final UserTypeConfig utc : config.getUserTypes()) {
-      final GClass utcg = out.getClass(mapperAbstractType(config, utc)).setAbstract();
-      utcg.getMethod("toDto", arg(utc.domainType, utc.name)).returnType(utc.dtoType).setAbstract();
-      utcg.getMethod("fromDto", arg(utc.dtoType, utc.name)).returnType(utc.domainType).setAbstract();
+    for (final ValueTypeConfig vtc : config.getValueTypes()) {
+      final GClass vtcg = out.getClass(mapperAbstractType(config, vtc)).setAbstract();
+      vtcg.getMethod("toDto", arg(vtc.domainType, vtc.name)).returnType(vtc.dtoType).setAbstract();
+      vtcg.getMethod("fromDto", arg(vtc.dtoType, vtc.name)).returnType(vtc.domainType).setAbstract();
     }
 
     out.output();

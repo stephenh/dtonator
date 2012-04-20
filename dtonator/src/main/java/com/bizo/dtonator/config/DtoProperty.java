@@ -23,8 +23,8 @@ public class DtoProperty {
   }
 
   public String getDtoType() {
-    if (getUserTypeConfig() != null) {
-      return getUserTypeConfig().dtoType;
+    if (getValueTypeConfig() != null) {
+      return getValueTypeConfig().dtoType;
     }
     if (isListOfEntities()) {
       // have they mapped this to a dto?
@@ -88,16 +88,16 @@ public class DtoProperty {
     return substringBetween(getDomainType(), "<", ">");
   }
 
-  public boolean isUserType() {
-    return getUserTypeConfig() != null;
+  public boolean isValueType() {
+    return getValueTypeConfig() != null;
   }
 
   public boolean isEnum() {
     return oracle.isEnum(getDomainType());
   }
 
-  public UserTypeConfig getUserTypeConfig() {
-    return config.getUserTypeForDomainType(getDomainType());
+  public ValueTypeConfig getValueTypeConfig() {
+    return config.getValueTypeForDomainType(getDomainType());
   }
 
   /** only meaningful for non-manual dtos */
