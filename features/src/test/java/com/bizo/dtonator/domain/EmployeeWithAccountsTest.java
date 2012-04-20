@@ -33,11 +33,10 @@ public class EmployeeWithAccountsTest {
     lookup.store(2l, ea1);
 
     // incoming employee with an account
-    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(1l, "e1", newArrayList( //
+    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", newArrayList( //
       new EmployeeAccountDto(null, 2l, "changed name")));
 
-    final Employee ee = new Employee();
-    mapper.fromDto(ee, dto);
+    final Employee ee = mapper.fromDto(dto);
     assertThat(ee.getAccounts().size(), is(1));
     // the same ea1 instance from lookup was used
     assertThat(ee.getAccounts(), contains(ea1));
