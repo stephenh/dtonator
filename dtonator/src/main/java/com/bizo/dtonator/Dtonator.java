@@ -1,6 +1,6 @@
 package com.bizo.dtonator;
 
-import static com.bizo.dtonator.Names.mapperAbstractType;
+import static com.bizo.dtonator.Names.mapperInterface;
 import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
 
@@ -53,11 +53,11 @@ public class Dtonator {
       }
     }
 
-    // create interfaces (currently abstract classes) for the user type mappers
+    // create interfaces (currently abstract classes) for the value types
     for (final ValueTypeConfig vtc : config.getValueTypes()) {
-      final GClass vtcg = out.getClass(mapperAbstractType(config, vtc)).setAbstract();
-      vtcg.getMethod("toDto", arg(vtc.domainType, vtc.name)).returnType(vtc.dtoType).setAbstract();
-      vtcg.getMethod("fromDto", arg(vtc.dtoType, vtc.name)).returnType(vtc.domainType).setAbstract();
+      final GClass vtcg = out.getClass(mapperInterface(config, vtc)).setInterface();
+      vtcg.getMethod("toDto", arg(vtc.domainType, vtc.name)).returnType(vtc.dtoType);
+      vtcg.getMethod("fromDto", arg(vtc.dtoType, vtc.name)).returnType(vtc.domainType);
     }
 
     out.output();

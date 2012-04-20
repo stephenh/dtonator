@@ -9,13 +9,13 @@ import org.junit.Test;
 
 import com.bizo.dtonator.dtos.Dollars;
 import com.bizo.dtonator.dtos.EmployeeDto;
-import com.bizo.dtonator.mapper.DollarsMapper;
+import com.bizo.dtonator.mapper.DefaultDollarsMapper;
 import com.bizo.dtonator.mapper.Mapper;
 
 public class EmployeeTest {
 
   private final StubDomainLookup lookup = new StubDomainLookup();
-  private final Mapper mapper = new Mapper(lookup, null, null, new DollarsMapper());
+  private final Mapper mapper = new Mapper(lookup, null, null, new DefaultDollarsMapper());
 
   @Test
   public void testToDto() {
@@ -72,5 +72,20 @@ public class EmployeeTest {
     // and it got mapped
     assertThat(e.getId(), is(nullValue()));
     assertThat(e.getName(), is("e"));
+  }
+
+  @Test
+  public void testDollarsValueTypeToDto() {
+    final Employee e = new Employee();
+    e.setSalary(new com.bizo.dtonator.domain.Dollars(100));
+    final EmployeeDto dto = mapper.toDto(e);
+    assertThat(dto.salary.cents, is(100));
+  }
+
+  @Test
+  public void testDollarsValueTypeFromDto() {
+    final EmployeeDto dto = new EmployeeDto(null, "e", new Dollars(100), null, true);
+    final Employee e = mapper.fromDto(dto);
+    assertThat(e.getSalary().cents, is(100));
   }
 }

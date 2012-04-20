@@ -21,8 +21,8 @@ public class Names {
     return rc.getMapperPackage() + ".Abstract" + dc.getSimpleName() + "Mapper";
   }
 
-  static String mapperAbstractType(final RootConfig rc, final ValueTypeConfig vtc) {
-    return rc.getMapperPackage() + ".Abstract" + capitalize(vtc.name) + "Mapper";
+  static String mapperInterface(final RootConfig rc, final ValueTypeConfig vtc) {
+    return rc.getMapperPackage() + "." + capitalize(vtc.name) + "Mapper";
   }
 
   static String mapperType(final RootConfig rc, final DtoConfig dc) {

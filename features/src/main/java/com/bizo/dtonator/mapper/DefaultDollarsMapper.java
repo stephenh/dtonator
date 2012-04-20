@@ -2,7 +2,7 @@ package com.bizo.dtonator.mapper;
 
 import com.bizo.dtonator.dtos.Dollars;
 
-public class DollarsMapper extends AbstractDollarsMapper {
+public class DefaultDollarsMapper implements DollarsMapper {
 
   @Override
   public Dollars toDto(final com.bizo.dtonator.domain.Dollars dollars) {

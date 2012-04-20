@@ -1,5 +1,8 @@
 package com.bizo.dtonator;
 
+import static com.bizo.dtonator.Names.mapperAbstractType;
+import static com.bizo.dtonator.Names.mapperFieldName;
+import static com.bizo.dtonator.Names.mapperInterface;
 import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
 
@@ -39,12 +42,12 @@ public class GenerateMapper {
     // add arguments for extension mappers, if any
     for (final DtoConfig dto : config.getDtos()) {
       if (!dto.isManualDto() && dto.hasExtensionProperties()) {
-        args.add(arg(Names.mapperAbstractType(config, dto), Names.mapperFieldName(dto)));
+        args.add(arg(mapperAbstractType(config, dto), mapperFieldName(dto)));
       }
     }
     // include user type mappers
     for (final ValueTypeConfig utc : config.getValueTypes()) {
-      args.add(arg(Names.mapperAbstractType(config, utc), Names.mapperFieldName(utc)));
+      args.add(arg(mapperInterface(config, utc), mapperFieldName(utc)));
     }
     // make fields for all of the arguments
     for (final Argument arg : args) {

@@ -7,13 +7,13 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.bizo.dtonator.dtos.EmployeeExtensionDto;
-import com.bizo.dtonator.mapper.DollarsMapper;
+import com.bizo.dtonator.mapper.DefaultDollarsMapper;
 import com.bizo.dtonator.mapper.Mapper;
 
 public class EmployeeExtensionDtoTest {
 
   private final StubEmployeeExtensionMapper employeeExtMapper = new StubEmployeeExtensionMapper();
-  private final Mapper mapper = new Mapper(null, null, employeeExtMapper, new DollarsMapper());
+  private final Mapper mapper = new Mapper(null, null, employeeExtMapper, new DefaultDollarsMapper());
 
   @Test
   public void testToDto() {
