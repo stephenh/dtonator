@@ -154,15 +154,17 @@ public class DtoConfigTest {
     // given two properties
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    oracle.addProperty("com.domain.Foo", "id", "java.lang.Integer");
     // and no overrides
     final Map<String, Object> map = newHashMap();
     map.put("domain", "Foo");
     // when asked
     final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
     // then we've sorted them
-    assertThat(dc.getProperties().size(), is(2));
-    assertThat(dc.getProperties().get(0).getName(), is("a"));
-    assertThat(dc.getProperties().get(1).getName(), is("b"));
+    assertThat(dc.getProperties().size(), is(3));
+    assertThat(dc.getProperties().get(0).getName(), is("id"));
+    assertThat(dc.getProperties().get(1).getName(), is("a"));
+    assertThat(dc.getProperties().get(2).getName(), is("b"));
   }
 
   @Test

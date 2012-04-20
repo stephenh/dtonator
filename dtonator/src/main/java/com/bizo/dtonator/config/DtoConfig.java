@@ -78,6 +78,13 @@ public class DtoConfig {
           } else if (pc1 == null && pc2 != null) {
             return 1;
           } else {
+            if ("id".equals(o1.getName()) && "id".equals(o2.getName())) {
+              return 0;
+            } else if ("id".equals(o1.getName())) {
+              return -1;
+            } else if ("id".equals(o2.getName())) {
+              return 1;
+            }
             return o1.getName().compareTo(o2.getName());
           }
         }

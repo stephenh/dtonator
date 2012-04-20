@@ -34,7 +34,7 @@ public class EmployeeWithAccountsTest {
 
     // incoming employee with an account
     final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", newArrayList( //
-      new EmployeeAccountDto(null, 2l, "changed name")));
+      new EmployeeAccountDto(2l, null, "changed name")));
 
     final Employee ee = mapper.fromDto(dto);
     assertThat(ee.getAccounts().size(), is(1));
