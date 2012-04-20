@@ -129,8 +129,14 @@ public class GenerateDto {
     if (dto.isManualDto()) {
       return;
     }
+    addToDtoMethodToMapper();
+    addToDtoOverloadToMapperIfAble();
+    addFromDtoMethodToMapper();
+    addFromOnlyDtoMethodToMapper();
+  }
 
-    // add toXxxDto to mapper
+  /** Adds {@code mapper.toXxxDto(Domain)}. */
+  private void addToDtoMethodToMapper() {
     final GMethod toDto = mapper.getMethod("to" + dto.getSimpleName(), arg(dto.getDomainType(), "o"));
     toDto.returnType(dto.getDtoType());
     toDto.body.line("return new {}(", dto.getDtoType());
@@ -166,16 +172,20 @@ public class GenerateDto {
     }
     toDto.body.stripLastCharacterOnPreviousLine();
     toDto.body.line(");");
+  }
 
-    // if no name clashes, add an overload for toDto(Domain) to mapper
+  /** Adds {@code mapper.toDto(domain)} (no "Xxx") if the overload isn't taken yet. */
+  private void addToDtoOverloadToMapperIfAble() {
     if (!takenToDtoOverloads.contains(dto.getDomainType())) {
       final GMethod toDtoOverload = mapper.getMethod("toDto", arg(dto.getDomainType(), "o"));
       toDtoOverload.returnType(dto.getDtoType());
       toDtoOverload.body.line("return to{}(o);", dto.getSimpleName());
       takenToDtoOverloads.add(dto.getDomainType());
     }
+  }
 
-    // add fromDto(Domain, Dto) to mapper
+  /** Adds {@code mapper.fromDto(domain, dto)}, the client is responsible for finding {@code domain}. */
+  private void addFromDtoMethodToMapper() {
     final GMethod fromDto = mapper.getMethod("fromDto", //
       arg(dto.getDomainType(), "o"),
       arg(dto.getDtoType(), "dto"));
@@ -215,6 +225,20 @@ public class GenerateDto {
         fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
       }
     }
+  }
+
+  /** Adds {@code mapper.fromDto(dto)}, using the {@code id} and {@link DomainObjectLookup}. */
+  private void addFromOnlyDtoMethodToMapper() {
+    final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getDtoType(), "dto"));
+    fromDto.returnType(dto.getDomainType());
+    fromDto.body.line("final {} o;", dto.getDomainType());
+    fromDto.body.line("if (dto.id != null) {");
+    fromDto.body.line("_ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());
+    fromDto.body.line("} else {");
+    fromDto.body.line("_ o = new {}();", dto.getDomainType());
+    fromDto.body.line("}");
+    fromDto.body.line("fromDto(o, dto);");
+    fromDto.body.line("return o;");
   }
 
 }

@@ -2,6 +2,7 @@ package com.bizo.dtonator.domain;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -13,7 +14,8 @@ import com.bizo.dtonator.mapper.Mapper;
 
 public class EmployeeTest {
 
-  private final Mapper mapper = new Mapper(null, null, null, new DollarsMapper());
+  private final StubDomainLookup lookup = new StubDomainLookup();
+  private final Mapper mapper = new Mapper(lookup, null, null, new DollarsMapper());
 
   @Test
   public void testToDto() {
@@ -41,5 +43,34 @@ public class EmployeeTest {
     assertThat(e.getName(), is("e"));
     assertThat(e.isWorking(), is(true));
     assertThat(e.getType(), is(com.bizo.dtonator.domain.EmployeeType.LARGE));
+  }
+
+  @Test
+  public void testFromDtoWithLookupExisting() {
+    // given an existing employee
+    final Employee e = new Employee();
+    e.setId(1l);
+    lookup.store(1l, e);
+
+    // when a dto comes in with id == 1
+    final EmployeeDto dto = new EmployeeDto(1l, "e", new Dollars(100), com.bizo.dtonator.dtos.EmployeeType.LARGE, true);
+    final Employee e2 = mapper.fromDto(dto);
+
+    // we have the same instance
+    assertThat(e2, is(sameInstance(e)));
+    // and it got updated
+    assertThat(e2.getName(), is("e"));
+  }
+
+  @Test
+  public void testFromDtoWithLookupButNewInstance() {
+    // when a dto comes in with id == null
+    final EmployeeDto dto =
+      new EmployeeDto(null, "e", new Dollars(100), com.bizo.dtonator.dtos.EmployeeType.LARGE, true);
+    // then we get a new instance
+    final Employee e = mapper.fromDto(dto);
+    // and it got mapped
+    assertThat(e.getId(), is(nullValue()));
+    assertThat(e.getName(), is("e"));
   }
 }
