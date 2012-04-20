@@ -7,7 +7,6 @@ config:
 
 EmployeeDto:
   domain: Employee
-  properties: -accounts, *
 
 # testing a list of ids
 EmployeeWithAccountIdsDto:
