@@ -21,6 +21,8 @@ Todo
 * Read vs. read/write children, e.g.:
   * Save `parent.children` and write back into each `child`
   * Save `parent` but use the children just for the list
+* datamapper-style chaining
+  * `properties: parentId -> parent.id`, read/write for `id`, otherwise read, e.g. `parentName`
 
 Configuration
 =============
@@ -41,4 +43,13 @@ Configuration
       FooDto:
         domain: Foo
         properties: a, b
+
+* Include a list of children:
+
+      EmployerDto:
+        domain: Employer
+        properties: employees
+
+      EmployeeDto:
+        domain: Employee
 
