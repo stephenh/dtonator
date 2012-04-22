@@ -10,42 +10,64 @@ dtonator uses a `dtonator.yaml` file to configure what it generates.
 
 A sample configuration file looks like:
 
-    config:
-      dtoPackage: com.bizo.dtonator.dtos
-      domainPackage: com.bizo.dtonator.domain
-      mapperPackage: com.bizo.dtonator.mapper
+```yaml
+config:
+  dtoPackage: com.bizo.dtonator.dtos
+  domainPackage: com.bizo.dtonator.domain
+  mapperPackage: com.bizo.dtonator.mapper
 
-    EmployeeDto:
-      domain: Employee
+EmployeeDto:
+  domain: Employee
+```
 
-Given this dtonator will create an `EmployeeDto` with all of the primitive properties of `Employee` and a `Mapper` class that gets/sets the properties. You could use it like:
+Given this dtonator will generate an `EmployeeDto` with all of the primitive properties of `Employee` (discovered via reflection) and a `Mapper` class that gets/sets the properties. You would use the result like:
 
-    Mapper mapper = new Mapper(...);
+```java
+// Mapper is generated
+Mapper mapper = new Mapper(...);
 
-    // dto -> domain
-    Employee ee = mapper.fromDto(employeeDto);
+// dto -> domain
+// EmployeeDto is generated
+EmployeeDto dto = new EmployeeDto(1,  "ee1");
+// sets the DTO values back into Employee
+Employee ee = mapper.fromDto(dto);
 
-    // domain -> dto
-    EmployeeDto dto = mapper.toDto(ee);
+// domain -> dto
+EmployeeDto dto = mapper.toDto(ee);
+```
 
-Besides simple mappings where the names and types match, dtonator supports a number of boundary cases that come up when mapping DTOs.
+Besides simple mappings where the names and types match, dtonator supports a number of cases that come up when mapping DTOs.
 
-* Map all properties as is:
+* Mapping all basic (non-entity/non-list) properties is the default behavior:
   
       FooDto:
         domain: Foo
 
-* Map all properties except one (skip `a`):
+* Map all properties except one (skip `a`, include the rest `*`):
 
       FooDto:
         domain: Foo
         properties: -a, *
 
-* Map only explicitly listed properties (`a` and `b`):
+* Map only certain properties (`a` and `b`):
 
       FooDto:
         domain: Foo
         properties: a, b
+
+* Map extra properties that aren't on the domain object
+
+     FooDto:
+       domain: Foo
+       properties: a, newProperty String
+
+  For dtonator to get/set the value of this unknown `newProperty`, it generates an interface, `FooDtoMapper`, which you must implement to provide the `newProperty` semantics:
+
+      public interface FooDtoMapper {
+        String getNewProperty(Foo foo);
+
+        void setNewProperty(Foo foo, String newProperty);
+      }
 
 * Include a list of child objects:
 
