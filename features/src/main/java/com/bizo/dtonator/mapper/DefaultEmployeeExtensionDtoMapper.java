@@ -2,7 +2,7 @@ package com.bizo.dtonator.mapper;
 
 import com.bizo.dtonator.domain.Employee;
 
-public class EmployeeExtensionDtoMapper extends AbstractEmployeeExtensionDtoMapper {
+public class DefaultEmployeeExtensionDtoMapper implements EmployeeExtensionDtoMapper {
 
   @Override
   public void extensionValueFromDto(final Employee domain, final Integer value) {

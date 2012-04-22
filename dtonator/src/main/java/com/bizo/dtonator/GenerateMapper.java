@@ -1,6 +1,5 @@
 package com.bizo.dtonator;
 
-import static com.bizo.dtonator.Names.mapperAbstractType;
 import static com.bizo.dtonator.Names.mapperFieldName;
 import static com.bizo.dtonator.Names.mapperInterface;
 import static com.google.common.collect.Lists.newArrayList;
@@ -42,7 +41,7 @@ public class GenerateMapper {
     // add arguments for extension mappers, if any
     for (final DtoConfig dto : config.getDtos()) {
       if (!dto.isManualDto() && dto.hasExtensionProperties()) {
-        args.add(arg(mapperAbstractType(config, dto), mapperFieldName(dto)));
+        args.add(arg(mapperInterface(config, dto), mapperFieldName(dto)));
       }
     }
     // include user type mappers

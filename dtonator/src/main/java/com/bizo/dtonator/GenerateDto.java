@@ -1,7 +1,7 @@
 package com.bizo.dtonator;
 
-import static com.bizo.dtonator.Names.mapperAbstractType;
 import static com.bizo.dtonator.Names.mapperFieldName;
+import static com.bizo.dtonator.Names.mapperInterface;
 import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
 
@@ -106,21 +106,16 @@ public class GenerateDto {
     if (dto.isManualDto() || !dto.hasExtensionProperties()) {
       return;
     }
-    final GClass mb = out.getClass(mapperAbstractType(config, dto)).setAbstract();
+    final GClass mb = out.getClass(mapperInterface(config, dto)).setInterface();
     for (final DtoProperty p : dto.getProperties()) {
       if (!p.isExtension()) {
         continue;
       }
-      // add abstract {propertyName}ToDto
-      mb.getMethod(//
-        p.getName() + "ToDto",
-        arg(dto.getDomainType(), "domain")).setAbstract().returnType(p.getDtoType());
+      // add {propertyName}ToDto
+      mb.getMethod(p.getName() + "ToDto", arg(dto.getDomainType(), "domain")).returnType(p.getDtoType());
       if (!p.isReadOnly()) {
-        // add abstract {propertyName}FromDto
-        mb.getMethod(//
-          p.getName() + "FromDto",
-          arg(dto.getDomainType(), "domain"),
-          arg(p.getDtoType(), "value")).setAbstract();
+        // add {propertyName}FromDto
+        mb.getMethod(p.getName() + "FromDto", arg(dto.getDomainType(), "domain"), arg(p.getDtoType(), "value"));
       }
     }
   }

@@ -17,16 +17,12 @@ public class Names {
     return vtc.name + "Mapper";
   }
 
-  static String mapperAbstractType(final RootConfig rc, final DtoConfig dc) {
-    return rc.getMapperPackage() + ".Abstract" + dc.getSimpleName() + "Mapper";
+  static String mapperInterface(final RootConfig rc, final DtoConfig dc) {
+    return rc.getMapperPackage() + "." + dc.getSimpleName() + "Mapper";
   }
 
   static String mapperInterface(final RootConfig rc, final ValueTypeConfig vtc) {
     return rc.getMapperPackage() + "." + capitalize(vtc.name) + "Mapper";
-  }
-
-  static String mapperType(final RootConfig rc, final DtoConfig dc) {
-    return rc.getMapperPackage() + "." + dc.getSimpleName() + "Mapper";
   }
 
 }

@@ -4,9 +4,9 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import com.bizo.dtonator.mapper.AbstractEmployeeExtensionDtoMapper;
+import com.bizo.dtonator.mapper.EmployeeExtensionDtoMapper;
 
-public class StubEmployeeExtensionMapper extends AbstractEmployeeExtensionDtoMapper {
+public class StubEmployeeExtensionMapper implements EmployeeExtensionDtoMapper {
 
   public List<Integer> extensionValues = newArrayList();
 
