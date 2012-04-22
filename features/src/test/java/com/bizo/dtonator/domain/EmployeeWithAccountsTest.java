@@ -43,4 +43,14 @@ public class EmployeeWithAccountsTest {
     // and we didn't override the name (for now/in this configuration)
     assertThat(ea1.getName(), is("ea1"));
   }
+
+  @Test
+  public void testFromDtoWithANewChild() {
+    // incoming employee with a new account
+    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", newArrayList( //
+      new EmployeeAccountDto(null, null, "changed name")));
+    final Employee ee = mapper.fromDto(dto);
+    // since recursive writes are disabled, we just skipped it...this makes sense, right?
+    assertThat(ee.getAccounts().size(), is(0));
+  }
 }

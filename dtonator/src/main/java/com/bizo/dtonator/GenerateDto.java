@@ -217,7 +217,9 @@ public class GenerateDto {
         c.body.line("{} os = new {}();", dp.getDomainType(), dp.getDomainType().replace("List", "ArrayList"));
         c.body.line("for ({} dto : dtos) {", dp.getSingleDtoType());
         // assumes dto.id is the key
-        c.body.line("_ os.add(lookup.lookup({}.class, dto.id));", dp.getSingleDomainType());
+        c.body.line("_ if (dto.id != null) {");
+        c.body.line("_ _ os.add(lookup.lookup({}.class, dto.id));", dp.getSingleDomainType());
+        c.body.line("_ }");
         // TODO conditionally add a fromDto if we want to write back?
         c.body.line("}");
         c.body.line("return os;");
