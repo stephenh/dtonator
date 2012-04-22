@@ -14,7 +14,7 @@ EmployeeWithAccountIdsDto:
   properties: accounts ArrayList<Integer>, *
   publicConstructor: true
 
-# testing a list of entites
+# testing a list of entites that guesses the EmployeeWithAccountDto
 EmployeeWithAccountsDto:
   domain: Employee
   properties: id, name, accounts
@@ -23,6 +23,16 @@ EmployeeWithAccountsDto:
 EmployeeAccountDto:
   domain: EmployeeAccount
 
+# testing a list of entities that uses an explicit child dto
+EmployeeWithSimpleAccountsDto:
+  domain: Employee
+  properties: id, name, accounts ArrayList<EmployeeSimpleAccountDto>
+
+EmployeeSimpleAccountDto:
+  domain: EmployeeAccount
+  properties: id, name # skip dollars
+
+# enums
 EmployeeType:
   domain: EmployeeType
 

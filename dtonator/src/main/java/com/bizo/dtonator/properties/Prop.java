@@ -1,5 +1,6 @@
 package com.bizo.dtonator.properties;
 
+/** A simple DTO to abstract discovering properties via reflection. */
 public class Prop {
 
   public final String name;

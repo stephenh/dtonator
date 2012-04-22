@@ -63,6 +63,15 @@ public class RootConfig {
     return null;
   }
 
+  public ValueTypeConfig getValueTypeForDtoType(final String dtoType) {
+    for (final ValueTypeConfig vtc : getValueTypes()) {
+      if (vtc.dtoType.endsWith(dtoType)) { // allow simple class names
+        return vtc;
+      }
+    }
+    return null;
+  }
+
   public List<ValueTypeConfig> getValueTypes() {
     final Object value = getConfig().get("valueTypes");
     if (value == null) {

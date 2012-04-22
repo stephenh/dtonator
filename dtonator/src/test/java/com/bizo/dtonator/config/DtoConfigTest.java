@@ -1,5 +1,6 @@
 package com.bizo.dtonator.config;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -68,22 +69,6 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testPropertiesOverrideType() {
-    // given a property of just List
-    oracle.addProperty("com.domain.Foo", "a", "java.util.List");
-    // and an override to change it to ArrayList<Integer>
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    map.put("properties", "a ArrayList<Integer>");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
-    assertThat(dc.getProperties().size(), is(1));
-    assertThat(dc.getProperties().get(0).getName(), is("a"));
-    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<Integer>"));
-    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.ArrayList<Integer>"));
-  }
-
-  @Test
   public void testPropertiesOverrideTypeAndIncludesAll() {
     // given a property of List and another string
     oracle.addProperty("com.domain.Foo", "a", "java.util.List");
@@ -101,20 +86,19 @@ public class DtoConfigTest {
 
   @Test
   public void testManualProperties() {
-    // given no domain object set
-    final Map<String, Object> map = newHashMap();
-    // map.put("domain", "Foo");
-    // but manually speified properties
-    map.put("properties", "id Integer, name String");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
-    // then we have both
+    // given no domain object, but manually specified properties
+    addDto("FooDto", properties("id Integer, name String"));
+    // then we have both properties
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(2));
     assertThat(dc.getProperties().get(0).getName(), is("id"));
     assertThat(dc.getProperties().get(0).getDtoType(), is("java.lang.Integer"));
     assertThat(dc.getProperties().get(0).getDomainType(), is("java.lang.Integer"));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
     assertThat(dc.getProperties().get(1).getName(), is("name"));
     assertThat(dc.getProperties().get(1).getDtoType(), is("java.lang.String"));
+    assertThat(dc.getProperties().get(1).getDomainType(), is("java.lang.String"));
+    assertThat(dc.getProperties().get(1).isExtension(), is(true));
   }
 
   @Test
@@ -137,16 +121,183 @@ public class DtoConfigTest {
 
   @Test
   public void testExtensionPropertiesFromJavaUtil() {
-    // given a domain object Foo
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    // and an extension property of ArrayList
-    map.put("properties", "a ArrayList<String>");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    // given an extension property of ArrayList
+    addDto("FooDto", properties("a ArrayList<String>"));
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     // then we get the right type
-    assertThat(dc.getProperties().size(), is(1));
     assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<String>"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.ArrayList<String>"));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
+  }
+
+  @Test
+  public void testMappedOverridesFromJavaUtil() {
+    // given a domain object with some children
+    oracle.addProperty("com.domain.Foo", "children", "java.util.List<Child>");
+    // and an override property of ArrayList
+    addDto("FooDto", domain("Foo"), properties("children ArrayList<String>"));
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    // then we get the right type
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<String>"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.List<Child>"));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreValueTypes() {
+    // given a domain object with a value types
+    oracle.addProperty("com.domain.Foo", "a", "com.domain.ValueType");
+    valueTypes().put("com.domain.ValueType", "com.dto.ValueType");
+    addDto("FooDto", domain("Foo"));
+    // then we know the right dto type
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.ValueType"));
+  }
+
+  @Test
+  public void testMappedOverridesThatAreValueTypes() {
+    // given a domain object with a value types
+    oracle.addProperty("com.domain.Foo", "a", "com.domain.ValueType");
+    valueTypes().put("com.domain.ValueType", "com.dto.ValueType");
+    addDto("FooDto", domain("Foo"), properties("a"));
+    // then we know the right dto type
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.ValueType"));
+  }
+
+  @Test
+  public void testExtensionPropertiesThatAreValueTypes() {
+    // given an extension property that is a ValueType
+    addDto("FooDto", properties("value ValueType"));
+    valueTypes().put("com.domain.values.ValueType", "com.dto.values.ValueType");
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    // map it back, with the fully qualified types
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.values.ValueType"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.values.ValueType"));
+    assertThat(dc.getProperties().get(0).isValueType(), is(true));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreEnums() {
+    oracle.setEnumValues("com.domain.Type", newArrayList("ONE", "TWO"));
+    oracle.addProperty("com.domain.Foo", "type", "com.domain.Type");
+    // when enums are mapped automatically
+    addDto("FooDto", domain("Foo"));
+    // they have the client/server types
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.Type"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.Type"));
+  }
+
+  @Test
+  public void testExtensionPropertiesThatAreEnums() {
+    oracle.setEnumValues("com.domain.Type", newArrayList("ONE", "TWO"));
+    // when an extension property references an enum
+    addDto("FooDto", properties("type Type"));
+    // it's fully qualified
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.Type"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.Type"));
+  }
+
+  @Test
+  public void testExtensionPropertiesThatAreDtos() {
+    // when an extension property references another dto
+    addDto("FooDto", properties("bar BarDto"));
+    addDto("BarDto");
+    // it's fully qualified
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.BarDto"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("com.dto.BarDto"));
+  }
+
+  @Test
+  public void testMappedOverridesThatAreDtos() {
+    // when referencing BarDto
+    oracle.addProperty("com.domain.Foo", "bar", "com.domain.Bar");
+    addDto("FooDto", domain("Foo"), properties("bar BarDto"));
+    addDto("BarDto");
+    // it's fully qualified
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.BarDto"));
+    assertThat(dc.getProperties().get(0).isExtension(), is(false));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreReadOnly() {
+    // given Foo.a
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
+    // and mapped as read only
+    addDto("FooDto", domain("Foo"), properties("~a"));
+    // then we know it's read only
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).isReadOnly(), is(true));
+  }
+
+  @Test
+  public void testExtensionPropertiesThatAreReadOnly() {
+    // given an extension property that is read only
+    addDto("FooDto", properties("~a String"));
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    // then we know it's read only
+    assertThat(dc.getProperties().get(0).isReadOnly(), is(true));
+  }
+
+  @Test
+  public void testChildDomainObjectAreSkippedUnlessSpecified() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "name", "java.lang.String");
+    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
+    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
+    // and the child dto has an entry in the yaml file
+    addDto("ChildDto");
+    // and but the parent doesn't out in the children
+    addDto("ParentDto", domain("Parent"));
+    // then it only has the name property
+    final DtoConfig dc = rootConfig.getDto("ParentDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("name"));
+  }
+
+  @Test
+  public void testChildDomainObject() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
+    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
+    // and the child dto has an entry in the yaml file
+    addDto("ChildDto");
+    // and explicitly asking for children
+    addDto("ParentDto", domain("Parent"), properties("children"));
+    // then we map Child to the ChildDto
+    final DtoConfig dc = rootConfig.getDto("ParentDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("children"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.List<com.domain.Child>"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.ChildDto>"));
+  }
+
+  @Test
+  public void testFullyQualifyExtensionSimpleNamesInLists() {
+    // when referencing BarDtos
+    addDto("FooDto", domain("Foo"), properties("bars ArrayList<BarDto>"));
+    addDto("BarDto");
+    // it's fully qualified
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.BarDto>"));
+  }
+
+  @Test
+  public void testFullyQualifyNonExtensionSimpleNamesInLists() {
+    oracle.addProperty("com.domain.Foo", "bars", "java.util.List<Bar>");
+    // when referencing BarDtos
+    addDto("FooDto", domain("Foo"), properties("bars ArrayList<BarDto>"));
+    addDto("BarDto");
+    // it's fully qualified
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.BarDto>"));
   }
 
   @Test
@@ -186,69 +337,6 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(1).getName(), is("c"));
     assertThat(dc.getProperties().get(2).getName(), is("b"));
     assertThat(dc.getProperties().get(3).getName(), is("a"));
-  }
-
-  @Test
-  public void testReadOnly() {
-    // given Foo.a
-    oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
-    // and marked as read only
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    map.put("properties", "~a");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
-    // then know it's read only
-    assertThat(dc.getProperties().size(), is(1));
-    assertThat(dc.getProperties().get(0).isReadOnly(), is(true));
-  }
-
-  @Test
-  public void testValueTypes() {
-    // given a domain object with a user type
-    oracle.addProperty("com.domain.Foo", "a", "com.domain.ValueType");
-    // and the value type configured
-    valueTypes().put("com.domain.ValueType", "com.dto.ValueType");
-    // and no overrides
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
-    // then we know the right dto type
-    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
-  }
-
-  @Test
-  public void testChildDomainObjectAreSkippedUnlessSpecified() {
-    // given a parent and child
-    oracle.addProperty("com.domain.Parent", "name", "java.lang.String");
-    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
-    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
-    // and the child dto has an entry in the yaml file
-    addDto("ChildDto");
-    // and but the parent doesn't out in the children
-    addDto("ParentDto", domain("Parent"));
-    // then it only has the name property
-    final DtoConfig dc = rootConfig.getDto("ParentDto");
-    assertThat(dc.getProperties().size(), is(1));
-    assertThat(dc.getProperties().get(0).getName(), is("name"));
-  }
-
-  @Test
-  public void testChildDomainObject() {
-    // given a parent and child
-    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
-    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
-    // and the child dto has an entry in the yaml file
-    addDto("ChildDto");
-    // and explicitly asking for children
-    addDto("ParentDto", domain("Parent"), properties("children"));
-    // then we map Child to the ChildDto
-    final DtoConfig dc = rootConfig.getDto("ParentDto");
-    assertThat(dc.getProperties().size(), is(1));
-    assertThat(dc.getProperties().get(0).getName(), is("children"));
-    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.List<com.domain.Child>"));
-    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.ChildDto>"));
   }
 
   private void addDto(final String simpleName, final Entry... entries) {

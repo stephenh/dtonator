@@ -29,10 +29,8 @@ public class EmployeeExtensionDtoTest {
   @Test
   public void testFromDto() {
     final EmployeeExtensionDto dto = new EmployeeExtensionDto(1l, 2);
-
     final Employee e = new Employee();
     mapper.fromDto(e, dto);
-    assertThat(e.getId(), is(1l));
     assertThat(employeeExtMapper.extensionValues, contains(2));
   }
 }

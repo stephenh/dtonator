@@ -3,6 +3,8 @@ package com.bizo.dtonator.config;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang.StringUtils.defaultString;
+import static org.apache.commons.lang.StringUtils.substringAfterLast;
+import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import java.util.*;
 
@@ -11,6 +13,7 @@ import com.bizo.dtonator.properties.TypeOracle;
 
 public class DtoConfig {
 
+  private static final List<String> javaLangTypes = newArrayList("String", "Integer", "Boolean", "Long", "Double");
   private final TypeOracle oracle;
   private final RootConfig root;
   private final String simpleName;
@@ -29,66 +32,10 @@ public class DtoConfig {
       properties = newArrayList();
       final List<PropConfig> pcs = getPropertiesConfig();
       if (getDomainType() != null) {
-        final boolean includeUnmapped = pcs.size() == 0 || hasPropertiesInclude();
-        for (final Prop p : oracle.getProperties(getDomainType())) {
-          final PropConfig pc = findPropConfig(pcs, p.name);
-          // if we found a property in the oracle, we know this isn't an extension
-          if (pc != null) {
-            pc.markMapped();
-          }
-          final boolean doNotMap =
-            (pc != null && pc.isExclusion)
-              || (pc == null && !includeUnmapped)
-              || (pc == null && p.type.startsWith("java.util.List"));
-          if (doNotMap) {
-            continue;
-          }
-          if (pc != null) {
-            // allow user to override the type
-            properties.add(new DtoProperty(oracle, root, new Prop(
-              p.name,
-              pc.type != null ? pc.type : p.type,
-              pc.isReadOnly,
-              pc.type != null ? null : p.getterMethodName,
-              pc.type != null || pc.isReadOnly ? null : p.setterNameMethod)));
-          } else {
-            properties.add(new DtoProperty(oracle, root, p));
-          }
-        }
-        // now look for extension properties
-        for (final PropConfig pc : pcs) {
-          if (!pc.mapped) {
-            properties.add(new DtoProperty(oracle, root, new Prop(pc.name, pc.type, pc.isReadOnly, null, null)));
-          }
-        }
-      } else if (pcs.size() > 0) {
-        // this is a manual dto
-        for (final PropConfig pc : pcs) {
-          properties.add(new DtoProperty(oracle, root, new Prop(pc.name, pc.type, pc.isReadOnly, null, null)));
-        }
+        addPropertiesFromDomainObject(pcs);
       }
-      Collections.sort(properties, new Comparator<DtoProperty>() {
-        public int compare(final DtoProperty o1, final DtoProperty o2) {
-          final PropConfig pc1 = findPropConfig(pcs, o1.getName());
-          final PropConfig pc2 = findPropConfig(pcs, o2.getName());
-          if (pc1 != null && pc2 != null) {
-            return indexOfPropConfig(pcs, o1.getName()) - indexOfPropConfig(pcs, o2.getName());
-          } else if (pc1 != null && pc2 == null) {
-            return -1;
-          } else if (pc1 == null && pc2 != null) {
-            return 1;
-          } else {
-            if ("id".equals(o1.getName()) && "id".equals(o2.getName())) {
-              return 0;
-            } else if ("id".equals(o1.getName())) {
-              return -1;
-            } else if ("id".equals(o2.getName())) {
-              return 1;
-            }
-            return o1.getName().compareTo(o2.getName());
-          }
-        }
-      });
+      addLeftOverExtensionProperties(pcs);
+      sortProperties(pcs, properties);
     }
     return properties;
   }
@@ -127,6 +74,7 @@ public class DtoConfig {
     }
   }
 
+  /** @return properties to include for equality or {@code null} */
   public List<String> getEquality() {
     final Object value = map.get("equality");
     if (value == null) {
@@ -135,7 +83,7 @@ public class DtoConfig {
     if (!(value instanceof String)) {
       throw new IllegalArgumentException("Expected a string for equality key");
     } else {
-      return Arrays.asList(((String) value).split(" "));
+      return Arrays.asList(((String) value).split(",? "));
     }
   }
 
@@ -165,6 +113,128 @@ public class DtoConfig {
     return getSimpleName();
   }
 
+  private void addPropertiesFromDomainObject(final List<PropConfig> pcs) {
+    final boolean includeUnmapped = pcs.size() == 0 || hasPropertiesInclude();
+    for (final Prop p : oracle.getProperties(getDomainType())) {
+      final PropConfig pc = findPropConfig(pcs, p.name);
+      if (pc != null) {
+        // if we found a property in the oracle, we know this isn't an extension
+        pc.markNotExtensionProperty();
+      }
+
+      if (doNotMap(p, pc, includeUnmapped)) {
+        continue;
+      }
+
+      // domainType has to be p.type, it came from reflection (right?)
+      final String domainType = p.type;
+
+      boolean extension = false;
+
+      final String dtoType;
+      if (pc != null && pc.type != null) {
+        // the user provided a PropConfig with an explicit type
+        if (root.getDto(pc.type) != null) {
+          // the type was FooDto, we need to fully qualify it
+          dtoType = root.getDto(pc.type).getDtoType();
+        } else if (isListOfDtos(root, pc.type)) {
+          // the type was java.util.ArrayList<FooDto>, resolve the dto package
+          dtoType = "java.util.ArrayList<" + root.getDtoPackage() + "." + listType(pc.type) + ">";
+        } else if (pc.type.startsWith("ArrayList")) {
+          // this is not a DTO (that was previous clause), so is something like ArrayList<Integer>
+          // which for now the user needs to map.
+          dtoType = "java.util." + pc.type;
+          extension = true;
+        } else if (javaLangTypes.contains(pc.type)) {
+          // type was String/Long/etc., need to fully quality it
+          dtoType = "java.lang." + pc.type;
+        } else {
+          dtoType = pc.type;
+        }
+        // TODO pc.type might ValueType (client-side), need to fully quality it?
+      } else {
+        // no PropConfig with an explicit type, so we infer the dto type from the domain type
+        if (root.getValueTypeForDomainType(domainType) != null) {
+          dtoType = root.getValueTypeForDomainType(domainType).dtoType;
+        } else if (oracle.isEnum(domainType)) {
+          dtoType = root.getDtoPackage() + "." + simple(domainType);
+        } else if (isListOfEntities(root, domainType)) {
+          // have they mapped this entity to a dto?
+          final String guessedSimpleName = simple(listType(domainType)) + "Dto";
+          final DtoConfig childConfig = root.getDto(guessedSimpleName);
+          if (childConfig == null) {
+            throw new IllegalStateException("Could not find a default dto "
+              + guessedSimpleName
+              + " for "
+              + getDomainType());
+          }
+          dtoType = "java.util.ArrayList<" + childConfig.getDtoType() + ">";
+        } else {
+          dtoType = domainType;
+        }
+      }
+
+      // we should know both domainType and dtoType now
+
+      properties.add(new DtoProperty(//
+        oracle,
+        root,
+        p.name,
+        pc != null ? pc.isReadOnly : p.readOnly,
+        dtoType,
+        domainType,
+        extension ? null : p.getterMethodName,
+        extension ? null : p.setterNameMethod));
+    }
+  }
+
+  // now look for extension properties (did not exist in the domain object)
+  private void addLeftOverExtensionProperties(final List<PropConfig> pcs) {
+    for (final PropConfig pc : pcs) {
+      if (pc.mapped) {
+        continue;
+      }
+      if (pc.type == null) {
+        throw new IllegalStateException("type is required for extension properties");
+      }
+
+      final String dtoType;
+
+      // Nothing was found via reflection against the domain object (if it was available)
+      // This means the user must provide a mapper method, now it's just a mapper of what
+      // the signature of the mapper method will be.
+      final String domainType;
+
+      if (root.getDto(pc.type) != null) {
+        dtoType = root.getDto(pc.type).getDtoType();
+        // this is an extension method, so the user must do the mapping...
+        domainType = dtoType;
+      } else if (isListOfDtos(root, pc.type)) {
+        // the type was java.util.ArrayList<FooDto>, resolve the dto package
+        dtoType = "java.util.ArrayList<" + root.getDtoPackage() + "." + listType(pc.type) + ">";
+        // loosen the type to List, otherwise the user still has to provide the dtos themselves
+        domainType = "java.util.List<" + root.getDtoPackage() + "." + listType(pc.type) + ">";
+      } else if (pc.type.startsWith("ArrayList")) {
+        dtoType = "java.util." + pc.type;
+        domainType = dtoType;
+      } else if (javaLangTypes.contains(pc.type)) {
+        dtoType = "java.lang." + pc.type;
+        domainType = dtoType;
+      } else if (root.getValueTypeForDtoType(pc.type) != null) {
+        dtoType = root.getValueTypeForDtoType(pc.type).dtoType; // fully qualified
+        domainType = root.getValueTypeForDtoType(pc.type).domainType;
+      } else if (oracle.isEnum(root.getDomainPackage() + "." + pc.type)) {
+        dtoType = root.getDtoPackage() + "." + pc.type;
+        domainType = root.getDomainPackage() + "." + pc.type;
+      } else {
+        // assume pc.type is the dto type
+        dtoType = pc.type;
+        domainType = dtoType;
+      }
+      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, dtoType, domainType, null, null));
+    }
+  }
+
   /** @return the `properties: a, b` as parsed {@link PropConfig}, skipping the `*` character. */
   private List<PropConfig> getPropertiesConfig() {
     final List<PropConfig> args = newArrayList();
@@ -176,10 +246,12 @@ public class DtoConfig {
     return args;
   }
 
+  /** @return did the user include {@code properties: *}. */
   private boolean hasPropertiesInclude() {
     return getPropertiesConfigRaw().contains("*");
   }
 
+  /** @return the raw strings of parsing {@code properties} by {@code ,} or an empty list */
   private List<String> getPropertiesConfigRaw() {
     final Object rawValue = map.get("properties");
     if (rawValue == null) {
@@ -189,26 +261,6 @@ public class DtoConfig {
       throw new IllegalStateException("Expecting a string value for key properties: " + rawValue);
     }
     return newArrayList(((String) rawValue).split(", ?"));
-  }
-
-  private static String[] splitIntoNameAndType(final String value) {
-    final String[] parts = value.split(" ");
-    if (parts.length != 2) {
-      throw new IllegalArgumentException("Value '<name> <type>': " + value);
-    }
-    final String name = parts[0];
-    String type = parts[1];
-    // add java.lang prefix? what about domain types?
-    if (type.indexOf(".") == -1 && type.matches("^[A-Z].*")) {
-      // TODO need to recursively handle generics
-      // TODO consult the oracle to see if the type exists
-      if (type.startsWith("ArrayList")) {
-        type = "java.util." + type;
-      } else {
-        type = "java.lang." + type;
-      }
-    }
-    return new String[] { name, type };
   }
 
   /** Small abstraction around the property strings in the YAML file. */
@@ -242,7 +294,7 @@ public class DtoConfig {
       }
     }
 
-    private void markMapped() {
+    private void markNotExtensionProperty() {
       mapped = true;
     }
 
@@ -250,6 +302,46 @@ public class DtoConfig {
     public String toString() {
       return (isExclusion ? "-" : "") + name;
     }
+
+    private static String[] splitIntoNameAndType(final String value) {
+      final String[] parts = value.split(" ");
+      if (parts.length != 2) {
+        throw new IllegalArgumentException("Value '<name> <type>': " + value);
+      }
+      return new String[] { parts[0], parts[1] };
+    }
+  }
+
+  private static boolean doNotMap(final Prop p, final PropConfig pc, final boolean includeUnmapped) {
+    return (pc != null && pc.isExclusion) // user configured explicit exclusion
+      || (pc == null && !includeUnmapped) // user left it out and we're not including everything
+      || (pc == null && p.type.startsWith("java.util.List")); // skip lists until explicitly listed
+  }
+
+  /** Sorts the properties based on their order in the YAML file, whether they're {@code id}, or alphabetically. */
+  private static void sortProperties(final List<PropConfig> pcs, final List<DtoProperty> properties) {
+    Collections.sort(properties, new Comparator<DtoProperty>() {
+      public int compare(final DtoProperty o1, final DtoProperty o2) {
+        final PropConfig pc1 = findPropConfig(pcs, o1.getName());
+        final PropConfig pc2 = findPropConfig(pcs, o2.getName());
+        if (pc1 != null && pc2 != null) {
+          return indexOfPropConfig(pcs, o1.getName()) - indexOfPropConfig(pcs, o2.getName());
+        } else if (pc1 != null && pc2 == null) {
+          return -1;
+        } else if (pc1 == null && pc2 != null) {
+          return 1;
+        } else {
+          if ("id".equals(o1.getName()) && "id".equals(o2.getName())) {
+            return 0;
+          } else if ("id".equals(o1.getName())) {
+            return -1;
+          } else if ("id".equals(o2.getName())) {
+            return 1;
+          }
+          return o1.getName().compareTo(o2.getName());
+        }
+      }
+    });
   }
 
   private static PropConfig findPropConfig(final List<PropConfig> pcs, final String name) {
@@ -270,5 +362,24 @@ public class DtoConfig {
       i++;
     }
     return -1;
+  }
+
+  static boolean isListOfEntities(final RootConfig config, final String domainType) {
+    return domainType.startsWith("java.util.List<" + config.getDomainPackage());
+  }
+
+  static boolean isListOfDtos(final RootConfig config, final String pcType) {
+    if (pcType.contains("ArrayList<") && pcType.endsWith(">")) {
+      return config.getDto(listType(pcType)) != null;
+    }
+    return false;
+  }
+
+  static String listType(final String type) {
+    return substringBetween(type, "<", ">");
+  }
+
+  static String simple(final String type) {
+    return substringAfterLast(type, ".");
   }
 }
