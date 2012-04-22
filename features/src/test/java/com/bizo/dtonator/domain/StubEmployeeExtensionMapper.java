@@ -11,13 +11,13 @@ public class StubEmployeeExtensionMapper implements EmployeeExtensionDtoMapper {
   public List<Integer> extensionValues = newArrayList();
 
   @Override
-  public void extensionValueFromDto(final Employee domain, final Integer value) {
-    extensionValues.add(value);
+  public Integer getExtensionValue(final Employee domain) {
+    return 1;
   }
 
   @Override
-  public Integer extensionValueToDto(final Employee domain) {
-    return 1;
+  public void setExtensionValue(final Employee domain, final Integer value) {
+    extensionValues.add(value);
   }
 
 }

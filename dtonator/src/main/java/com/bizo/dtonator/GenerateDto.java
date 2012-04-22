@@ -2,8 +2,11 @@ package com.bizo.dtonator;
 
 import static com.bizo.dtonator.Names.mapperFieldName;
 import static com.bizo.dtonator.Names.mapperInterface;
+import static com.bizo.dtonator.Names.simple;
 import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
+import static org.apache.commons.lang.StringUtils.capitalize;
+import static org.apache.commons.lang.StringUtils.uncapitalize;
 
 import java.util.List;
 
@@ -111,11 +114,12 @@ public class GenerateDto {
       if (!p.isExtension()) {
         continue;
       }
-      // add {propertyName}ToDto
-      mb.getMethod(p.getName() + "ToDto", arg(dto.getDomainType(), "domain")).returnType(p.getDtoType());
+      final String niceName = uncapitalize(simple(dto.getDomainType()));
+      // add get{propertyName}
+      mb.getMethod(extensionGetter(p), arg(dto.getDomainType(), niceName)).returnType(p.getDtoType());
       if (!p.isReadOnly()) {
-        // add {propertyName}FromDto
-        mb.getMethod(p.getName() + "FromDto", arg(dto.getDomainType(), "domain"), arg(p.getDtoType(), "value"));
+        // add set{propertyName}
+        mb.getMethod(extensionSetter(p), arg(dto.getDomainType(), niceName), arg(p.getDtoType(), p.getName()));
       }
     }
   }
@@ -138,7 +142,7 @@ public class GenerateDto {
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isExtension()) {
         // delegate to the user's mapper method for this property
-        toDto.body.line("_ {}.{}ToDto(o),", mapperFieldName(dto), dp.getName());
+        toDto.body.line("_ {}.{}(o),", mapperFieldName(dto), extensionGetter(dp));
       } else if (dp.isValueType()) {
         // delegate to the user type mapper for this property
         toDto.body.line(
@@ -193,7 +197,7 @@ public class GenerateDto {
         continue;
       }
       if (dp.isExtension()) {
-        fromDto.body.line("{}.{}FromDto(o, dto.{});", mapperFieldName(dto), dp.getName(), dp.getName());
+        fromDto.body.line("{}.{}(o, dto.{});", mapperFieldName(dto), extensionSetter(dp), dp.getName());
       } else if (dp.isValueType()) {
         fromDto.body.line(
           "o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));",
@@ -247,6 +251,14 @@ public class GenerateDto {
     fromDto.body.line("}");
     fromDto.body.line("fromDto(o, dto);");
     fromDto.body.line("return o;");
+  }
+
+  private static String extensionGetter(final DtoProperty p) {
+    return "get" + capitalize(p.getName());
+  }
+
+  private static String extensionSetter(final DtoProperty p) {
+    return "set" + capitalize(p.getName());
   }
 
 }

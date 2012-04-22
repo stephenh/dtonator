@@ -1,10 +1,10 @@
 package com.bizo.dtonator.config;
 
+import static com.bizo.dtonator.Names.listType;
+import static com.bizo.dtonator.Names.simple;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang.StringUtils.defaultString;
-import static org.apache.commons.lang.StringUtils.substringAfterLast;
-import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import java.util.*;
 
@@ -383,13 +383,5 @@ public class DtoConfig {
       return config.getDto(listType(pcType)) != null;
     }
     return false;
-  }
-
-  static String listType(final String type) {
-    return substringBetween(type, "<", ">");
-  }
-
-  static String simple(final String type) {
-    return substringAfterLast(type, ".");
   }
 }

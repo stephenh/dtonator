@@ -3,6 +3,7 @@ package com.bizo.dtonator.config;
 import static org.apache.commons.lang.StringUtils.substringAfterLast;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
+import com.bizo.dtonator.Names;
 import com.bizo.dtonator.properties.TypeOracle;
 
 /** A property to map back/forth between DTO/domain object. */
@@ -61,7 +62,7 @@ public class DtoProperty {
 
   public String getSingleDomainType() {
     // assumes isListOfEntities
-    return DtoConfig.listType(domainType);
+    return Names.listType(domainType);
   }
 
   public boolean isValueType() {

@@ -5,12 +5,12 @@ import com.bizo.dtonator.domain.Employee;
 public class DefaultEmployeeExtensionDtoMapper implements EmployeeExtensionDtoMapper {
 
   @Override
-  public void extensionValueFromDto(final Employee domain, final Integer value) {
+  public Integer getExtensionValue(final Employee domain) {
+    return 1;
   }
 
   @Override
-  public Integer extensionValueToDto(final Employee domain) {
-    return 1;
+  public void setExtensionValue(final Employee domain, final Integer value) {
   }
 
 }
