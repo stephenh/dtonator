@@ -40,10 +40,10 @@ Besides simple mappings where the names and types match, dtonator supports a num
 
 * Mapping all basic (non-entity/non-list) properties is the default behavior:
 
-  ```yaml
-  FooDto:
-    domain: Foo
-  ```
+```yaml
+FooDto:
+  domain: Foo
+```
 
 * Map all properties except one (skip `a`, include the rest `*`):
 
