@@ -12,6 +12,7 @@ public class DtoProperty {
   private final RootConfig config;
   private final String name;
   private final boolean readOnly;
+  private final boolean isRecursive;
   /** could be String, Money (value type), Employer, List<Employer>. */
   private final String domainType;
   /** could be String, Money (value type), EmployerDto, ArrayList<EmployerDto> */
@@ -24,6 +25,7 @@ public class DtoProperty {
       final RootConfig config,
       final String name,
       final boolean readOnly,
+      final boolean isRecursive,
       final String dtoType,
       final String domainType,
       final String getterMethodName,
@@ -32,6 +34,7 @@ public class DtoProperty {
     this.config = config;
     this.name = name;
     this.readOnly = readOnly;
+    this.isRecursive = isRecursive;
     this.dtoType = dtoType;
     this.domainType = domainType;
     this.getterMethodName = getterMethodName;
@@ -101,6 +104,10 @@ public class DtoProperty {
 
   public boolean isReadOnly() {
     return readOnly;
+  }
+
+  public boolean isRecursive() {
+    return isRecursive;
   }
 
 }

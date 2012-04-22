@@ -28,6 +28,11 @@ EmployeeWithSimpleAccountsDto:
   domain: Employee
   properties: id, name, accounts ArrayList<EmployeeSimpleAccountDto>
 
+# testing a list of entities that we write back in to
+EmployeeWithWritableAccountsDto:
+  domain: Employee
+  properties: id, name, accounts!
+
 EmployeeSimpleAccountDto:
   domain: EmployeeAccount
   properties: id, name # skip dollars

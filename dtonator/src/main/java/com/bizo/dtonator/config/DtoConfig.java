@@ -181,6 +181,7 @@ public class DtoConfig {
         root,
         p.name,
         pc != null ? pc.isReadOnly : p.readOnly,
+        pc != null ? pc.isRecursive : false, // default to not writing back to child entities
         dtoType,
         domainType,
         extension ? null : p.getterMethodName,
@@ -195,7 +196,7 @@ public class DtoConfig {
         continue;
       }
       if (pc.type == null) {
-        throw new IllegalStateException("type is required for extension properties");
+        throw new IllegalStateException("type is required for extension properties: " + pc.name);
       }
 
       final String dtoType;
@@ -231,7 +232,7 @@ public class DtoConfig {
         dtoType = pc.type;
         domainType = dtoType;
       }
-      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, dtoType, domainType, null, null));
+      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, false, dtoType, domainType, null, null));
     }
   }
 
@@ -269,29 +270,38 @@ public class DtoConfig {
     private final String type;
     private final boolean isExclusion;
     private final boolean isReadOnly;
+    private final boolean isRecursive;
     private boolean mapped = false;
 
-    private PropConfig(String value) {
-      if (value.startsWith("~")) {
-        isReadOnly = true;
-        value = value.substring(1);
-      } else {
-        isReadOnly = false;
-      }
+    private PropConfig(final String value) {
+      String _name;
       if (value.contains(" ")) {
         final String[] parts = splitIntoNameAndType(value);
-        name = parts[0];
+        _name = parts[0];
         type = parts[1];
         isExclusion = false;
       } else if (value.startsWith("-")) {
-        name = value.substring(1);
+        _name = value.substring(1);
         type = null;
         isExclusion = true;
       } else {
-        name = value;
+        _name = value;
         type = null;
         isExclusion = false;
       }
+      if (_name.startsWith("~")) {
+        isReadOnly = true;
+        _name = _name.substring(1);
+      } else {
+        isReadOnly = false;
+      }
+      if (_name.endsWith("!")) {
+        isRecursive = true;
+        _name = _name.substring(0, _name.length() - 1);
+      } else {
+        isRecursive = false;
+      }
+      name = _name;
     }
 
     private void markNotExtensionProperty() {
@@ -300,7 +310,7 @@ public class DtoConfig {
 
     @Override
     public String toString() {
-      return (isExclusion ? "-" : "") + name;
+      return (isExclusion ? "-" : "") + name + (isRecursive ? "!" : "");
     }
 
     private static String[] splitIntoNameAndType(final String value) {
