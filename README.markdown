@@ -39,57 +39,72 @@ EmployeeDto dto = mapper.toDto(ee);
 Besides simple mappings where the names and types match, dtonator supports a number of cases that come up when mapping DTOs.
 
 * Mapping all basic (non-entity/non-list) properties is the default behavior:
-  
-      FooDto:
-        domain: Foo
+
+  ```yaml
+  FooDto:
+    domain: Foo
+  ```
 
 * Map all properties except one (skip `a`, include the rest `*`):
 
-      FooDto:
-        domain: Foo
-        properties: -a, *
+  ```yaml
+  FooDto:
+    domain: Foo
+    properties: -a, *
+  ```
 
 * Map only certain properties (`a` and `b`):
 
-      FooDto:
-        domain: Foo
-        properties: a, b
+  ```yaml
+  FooDto:
+    domain: Foo
+    properties: a, b
+  ```
 
 * Map extra properties that aren't on the domain object
 
-     FooDto:
-       domain: Foo
-       properties: a, newProperty String
+  ```yaml
+  FooDto:
+    domain: Foo
+    properties: a, newProperty String
+  ```
 
   For dtonator to get/set the value of this unknown `newProperty`, it generates an interface, `FooDtoMapper`, which you must implement to provide the `newProperty` semantics:
 
-      public interface FooDtoMapper {
-        String getNewProperty(Foo foo);
+  ```java
+  public interface FooDtoMapper {
+    String getNewProperty(Foo foo);
 
-        void setNewProperty(Foo foo, String newProperty);
-      }
+    void setNewProperty(Foo foo, String newProperty);
+  }
+  ```
 
 * Include a list of child objects:
 
-      EmployerDto:
-        domain: Employer
-        properties: employees
+  ```yaml
+  EmployerDto:
+    domain: Employer
+    properties: employees
 
-      EmployeeDto:
-        domain: Employee
+  EmployeeDto:
+    domain: Employee
+  ```
 
   The usage would look like:
 
-      EmployerDto erDto = new EmployerDto(
-        1l,
-        newArrayList(new EmployeeDto(1l))
+  ```java
+  EmployerDto erDto = new EmployerDto(
+    1l,
+    newArrayList(new EmployeeDto(1l))
+  ```
+
   By default dtonator will use the `DomainObjectLookup` to look up each `Employee` object and call `employer.setEmployees(theEmployees)`. 
 
 Todo
 ====
 
 * A list of objects, but as the id/name
-  * children: _.name
+  * children: `_.name`
   * See BizadsCampaignDto with images and partner domains
 * Use term "mirror" instead of "domain" (?)
 * Better syntax for read-only properties (`~id` is kind of dumb)
