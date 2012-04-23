@@ -2,6 +2,7 @@ package com.bizo.dtonator.domain;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -48,9 +49,11 @@ public class EmployeeWithAccountsTest {
   public void testFromDtoWithANewChild() {
     // incoming employee with a new account
     final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", newArrayList( //
-      new EmployeeAccountDto(null, null, "changed name")));
+      new EmployeeAccountDto(null, null, "name")));
     final Employee ee = mapper.fromDto(dto);
-    // since recursive writes are disabled, we just skipped it...this makes sense, right?
-    assertThat(ee.getAccounts().size(), is(0));
+    // since recursive writes are disabled, we created an instance
+    assertThat(ee.getAccounts().size(), is(1));
+    // but it's not populated
+    assertThat(ee.getAccounts().get(0).getName(), is(nullValue()));
   }
 }

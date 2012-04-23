@@ -17,7 +17,11 @@ final class StubDomainLookup implements DomainObjectLookup {
   @Override
   @SuppressWarnings("unchecked")
   public <T> T lookup(final Class<T> type, final Long id) {
-    return (T) objects.get(key(type, id));
+    final T instance = (T) objects.get(key(type, id));
+    if (instance == null) {
+      throw new IllegalStateException("Instance not found " + type + "#" + id);
+    }
+    return instance;
   }
 
   private static String key(final Class<?> type, final Long id) {

@@ -44,4 +44,16 @@ public class EmployeeWithWritableAccountsTest {
     assertThat(ea1.getName(), is("changed name"));
   }
 
+  @Test
+  public void testFromDtoWithANewChild() {
+    // incoming employee with a new account
+    final EmployeeWithWritableAccountsDto dto = new EmployeeWithWritableAccountsDto(null, "e1", newArrayList( //
+      new EmployeeAccountDto(null, null, "changed")));
+
+    final Employee ee = mapper.fromDto(dto);
+    assertThat(ee.getAccounts().size(), is(1));
+    // and we did recursively write back the name
+    assertThat(ee.getAccounts().get(0).getName(), is("changed"));
+  }
+
 }

@@ -153,6 +153,9 @@ public class GenerateDto {
       } else if (dp.isEnum()) {
         // delegate to the enum converter
         toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
+      } else if (dp.isEntity()) {
+        // delegate to the entity's toDto converter
+        toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
       } else if (dp.isListOfEntities()) {
         // make and delegate to a method to convert the entities to dtos
         toDto.body.line("_ {}For{}(o.{}()),", dp.getName(), dto.getSimpleName(), dp.getGetterMethodName());
@@ -207,6 +210,21 @@ public class GenerateDto {
           dp.getName());
       } else if (dp.isEnum()) {
         fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+      } else if (dp.isEntity()) {
+        if (dp.isRecursive()) {
+          fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+        } else {
+          // assume we should load the entity by its id
+          fromDto.body.line("if (dto.{}.id != null) {", dp.getName());
+          fromDto.body.line(
+            "_ o.{}(lookup.lookup({}.class, dto.{}.id));",
+            dp.getSetterMethodName(),
+            dp.getDomainType(),
+            dp.getName());
+          fromDto.body.line("} else {");
+          fromDto.body.line("_ o.{}(new {}());", dp.getSetterMethodName(), dp.getDomainType());
+          fromDto.body.line("}");
+        }
       } else if (dp.isListOfEntities()) {
         final String helperMethod = dp.getName() + "For" + dto.getSimpleName();
         fromDto.body.line("o.{}({}(dto.{}));", dp.getSetterMethodName(), helperMethod, dp.getName());
@@ -215,22 +233,17 @@ public class GenerateDto {
         // assumes List->ArrayList
         c.body.line("{} os = new {}();", dp.getDomainType(), dp.getDomainType().replace("List", "ArrayList"));
         c.body.line("for ({} dto : dtos) {", dp.getSingleDtoType());
-        c.body.line("_ {} o = null;", dp.getSingleDomainType());
+        c.body.line("_ final {} o;", dp.getSingleDomainType());
         // assumes dto.id is the key
         c.body.line("_ if (dto.id != null) {");
         c.body.line("_ _ o = lookup.lookup({}.class, dto.id);", dp.getSingleDomainType());
+        c.body.line("_ } else {");
+        c.body.line("_ _ o = new {}();", dp.getSingleDomainType());
         c.body.line("_ }");
         if (dp.isRecursive()) {
-          c.body.line("_ if (o == null) {");
-          c.body.line("_ _ o = new {}();", dp.getSingleDomainType());
-          c.body.line("_ }");
+          c.body.line("_ fromDto(o, dto);");
         }
-        c.body.line("_ if (o != null) {");
-        if (dp.isRecursive()) {
-          c.body.line("_ _ fromDto(o, dto);");
-        }
-        c.body.line("_ _ os.add(o);");
-        c.body.line("_ }");
+        c.body.line("_ os.add(o);");
         c.body.line("}");
         c.body.line("return os;");
       } else {

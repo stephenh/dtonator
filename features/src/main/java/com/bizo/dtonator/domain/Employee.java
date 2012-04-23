@@ -10,6 +10,7 @@ public class Employee {
   private EmployeeType type;
   private Dollars salary;
   private List<EmployeeAccount> accounts;
+  private Employer employer;
 
   public Employee() {
   }
@@ -61,6 +62,14 @@ public class Employee {
 
   public void setSalary(final Dollars salary) {
     this.salary = salary;
+  }
+
+  public Employer getEmployer() {
+    return employer;
+  }
+
+  public void setEmployer(final Employer employer) {
+    this.employer = employer;
   }
 
   public List<EmployeeAccount> getAccounts() {

@@ -214,10 +214,34 @@ public class DtoConfigTest {
   }
 
   @Test
+  public void testMappedPropertiesThatAreEntities() {
+    // when Foo references a parent Bar
+    oracle.addProperty("com.domain.Foo", "bar", "com.domain.Bar");
+    // and it's not explicitly included in properties
+    addDto("FooDto", domain("Foo"));
+    addDto("BarDto");
+    // then we skip it
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().size(), is(0));
+  }
+
+  @Test
+  public void testMappedOverridesThatAreEntities() {
+    // when referencing BarDto
+    oracle.addProperty("com.domain.Foo", "bar", "com.domain.Bar");
+    addDto("FooDto", domain("Foo"), properties("bar")); // leave off BarDto
+    addDto("BarDto");
+    // it's fully qualified
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.BarDto"));
+    assertThat(dc.getProperties().get(0).isExtension(), is(false));
+  }
+
+  @Test
   public void testMappedOverridesThatAreDtos() {
     // when referencing BarDto
     oracle.addProperty("com.domain.Foo", "bar", "com.domain.Bar");
-    addDto("FooDto", domain("Foo"), properties("bar BarDto"));
+    addDto("FooDto", domain("Foo"), properties("bar BarDto")); // now include BarDto
     addDto("BarDto");
     // it's fully qualified
     final DtoConfig dc = rootConfig.getDto("FooDto");
@@ -247,14 +271,14 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testChildDomainObjectAreSkippedUnlessSpecified() {
+  public void testMappedPropertiesThatAreListsOfEntities() {
     // given a parent and child
     oracle.addProperty("com.domain.Parent", "name", "java.lang.String");
     oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
     oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
     // and the child dto has an entry in the yaml file
     addDto("ChildDto");
-    // and but the parent doesn't out in the children
+    // and but the parent doesn't opt in the children
     addDto("ParentDto", domain("Parent"));
     // then it only has the name property
     final DtoConfig dc = rootConfig.getDto("ParentDto");
@@ -263,14 +287,14 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testChildDomainObject() {
+  public void testMappedOverridesThatAreListsOfEntities() {
     // given a parent and child
     oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
     oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
     // and the child dto has an entry in the yaml file
     addDto("ChildDto");
     // and explicitly asking for children
-    addDto("ParentDto", domain("Parent"), properties("children"));
+    addDto("ParentDto", domain("Parent"), properties("children")); // leave off List<ChildDto>
     // then we map Child to the ChildDto
     final DtoConfig dc = rootConfig.getDto("ParentDto");
     assertThat(dc.getProperties().size(), is(1));
@@ -280,18 +304,24 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testFullyQualifyExtensionSimpleNamesInLists() {
-    // when referencing BarDtos
-    addDto("FooDto", domain("Foo"), properties("bars ArrayList<BarDto>"));
-    addDto("BarDto");
-    // it's fully qualified
-    final DtoConfig dc = rootConfig.getDto("FooDto");
-    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.BarDto>"));
+  public void testMappedOverridesThatAreListsOfDtos() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
+    oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
+    // and the child dto has an entry in the yaml file
+    addDto("ChildDto");
+    // and explicitly asking for children
+    addDto("ParentDto", domain("Parent"), properties("children List<ChildDto>")); // include List<ChildDto>
+    // then we map Child to the ChildDto
+    final DtoConfig dc = rootConfig.getDto("ParentDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("children"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.List<com.domain.Child>"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<com.dto.ChildDto>"));
   }
 
   @Test
-  public void testFullyQualifyNonExtensionSimpleNamesInLists() {
-    oracle.addProperty("com.domain.Foo", "bars", "java.util.List<Bar>");
+  public void testExtensionPropertiesThatAreListsOfDtos() {
     // when referencing BarDtos
     addDto("FooDto", domain("Foo"), properties("bars ArrayList<BarDto>"));
     addDto("BarDto");

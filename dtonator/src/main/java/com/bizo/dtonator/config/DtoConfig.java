@@ -159,22 +159,27 @@ public class DtoConfig {
         } else if (oracle.isEnum(domainType)) {
           dtoType = root.getDtoPackage() + "." + simple(domainType);
         } else if (isListOfEntities(root, domainType)) {
-          // have they mapped this entity to a dto?
-          final String guessedSimpleName = simple(listType(domainType)) + "Dto";
-          final DtoConfig childConfig = root.getDto(guessedSimpleName);
-          if (childConfig == null) {
-            throw new IllegalStateException("Could not find a default dto "
-              + guessedSimpleName
-              + " for "
-              + getDomainType());
+          // only map lists of entities if it was included in properties
+          if (pc != null) {
+            dtoType = "java.util.ArrayList<" + guessDtoTypeForDomainType(root, listType(domainType)).getDtoType() + ">";
+          } else {
+            dtoType = null;
           }
-          dtoType = "java.util.ArrayList<" + childConfig.getDtoType() + ">";
+        } else if (domainType.startsWith(root.getDomainPackage())) {
+          // only map entities if it was included in properties
+          if (pc != null) {
+            dtoType = guessDtoTypeForDomainType(root, domainType).getDtoType();
+          } else {
+            dtoType = null;
+          }
         } else {
           dtoType = domainType;
         }
       }
 
-      // we should know both domainType and dtoType now
+      if (dtoType == null) {
+        continue;
+      }
 
       properties.add(new DtoProperty(//
         oracle,
@@ -310,7 +315,7 @@ public class DtoConfig {
 
     @Override
     public String toString() {
-      return (isExclusion ? "-" : "") + name + (isRecursive ? "!" : "");
+      return (isExclusion ? "-" : "") + name + (isRecursive ? "!" : "") + (type == null ? "" : " " + type);
     }
 
     private static String[] splitIntoNameAndType(final String value) {
@@ -324,8 +329,7 @@ public class DtoConfig {
 
   private static boolean doNotMap(final Prop p, final PropConfig pc, final boolean includeUnmapped) {
     return (pc != null && pc.isExclusion) // user configured explicit exclusion
-      || (pc == null && !includeUnmapped) // user left it out and we're not including everything
-      || (pc == null && p.type.startsWith("java.util.List")); // skip lists until explicitly listed
+      || (pc == null && !includeUnmapped); // user left it out and we're not including everything
   }
 
   /** Sorts the properties based on their order in the YAML file, whether they're {@code id}, or alphabetically. */
@@ -374,12 +378,26 @@ public class DtoConfig {
     return -1;
   }
 
+  private static DtoConfig guessDtoTypeForDomainType(final RootConfig root, final String domainType) {
+    final String guessedSimpleName = simple(domainType) + "Dto";
+    final DtoConfig childConfig = root.getDto(guessedSimpleName);
+    if (childConfig == null) {
+      throw new IllegalStateException("Could not find a default dto " + guessedSimpleName + " for " + domainType);
+    }
+    return childConfig;
+  }
+
   static boolean isListOfEntities(final RootConfig config, final String domainType) {
     return domainType.startsWith("java.util.List<" + config.getDomainPackage());
   }
 
+  static boolean isEntity(final RootConfig config, final String domainType) {
+    return domainType.startsWith(config.getDomainPackage());
+  }
+
   static boolean isListOfDtos(final RootConfig config, final String pcType) {
-    if (pcType.contains("ArrayList<") && pcType.endsWith(">")) {
+    // assume the user wanted List to be ArrayList
+    if ((pcType.startsWith("ArrayList<") || pcType.startsWith("List<")) && pcType.endsWith(">")) {
       return config.getDto(listType(pcType)) != null;
     }
     return false;

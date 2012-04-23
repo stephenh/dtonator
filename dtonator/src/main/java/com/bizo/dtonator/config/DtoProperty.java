@@ -46,6 +46,10 @@ public class DtoProperty {
     return dtoType;
   }
 
+  public boolean isEntity() {
+    return DtoConfig.isEntity(config, domainType);
+  }
+
   public boolean isListOfEntities() {
     return DtoConfig.isListOfEntities(config, domainType);
   }

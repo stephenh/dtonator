@@ -5,6 +5,9 @@ config:
   valueTypes:
     com.bizo.dtonator.domain.Dollars: com.bizo.dtonator.dtos.Dollars
 
+EmployerDto:
+  domain: Employer
+
 EmployeeDto:
   domain: Employee
 
@@ -36,6 +39,15 @@ EmployeeWithWritableAccountsDto:
 EmployeeSimpleAccountDto:
   domain: EmployeeAccount
   properties: id, name # skip dollars
+
+# testing an entity
+EmployeeWithEmployerDto:
+  domain: Employee
+  properties: id, name, employer
+
+EmployeeWithWritableEmployerDto:
+  domain: Employee
+  properties: id, name, employer!
 
 # enums
 EmployeeType:
