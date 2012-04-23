@@ -1,7 +1,7 @@
 
-dtonator is a code generator that will generate DTOs and mapping code for sending your domain objects over the wire.
+dtonator is a code generator that generates DTOs and mapping code for sending your domain objects over the wire.
 
-dtonator was built for sending DTOs to GWT clients via GWT-RPC, but it's (...eventually) not coupled to GWT.
+It was built for using with GWT-RPC, but it's (...basically/eventually) not coupled to GWT itself.
 
 Configuration
 =============
