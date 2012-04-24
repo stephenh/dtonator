@@ -7,13 +7,13 @@
   </info>
 
   <configurations>
-    <conf name="default" description="core dependencies needed at compile-time and runtime"/>
-    <conf name="test" visibility="private" description="additional dependencies needed only for testing"/>
-    <conf name="sources" description="source artifacts"/>
+    <conf name="default" extends="compile"/>
+    <conf name="compile"/>
+    <conf name="test" visibility="private"/>
+    <conf name="sources"/>
   </configurations>
 
-  <dependencies defaultconfmapping="sources->sources();%->default" defaultconf="default;sources">
-    <!-- default (compile, test, runtime) dependencies -->
+  <dependencies defaultconfmapping="sources->sources();%->default" defaultconf="compile;sources">
     <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
     <dependency org="commons-beanutils" name="commons-beanutils" rev="1.8.2"/>
     <dependency org="org.yaml" name="snakeyaml" rev="1.8"/>

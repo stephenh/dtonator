@@ -12,7 +12,7 @@ define 'dtonator' do
   project.group = 'com.bizo'
   project.version = THIS_VERSION
   package_with_sources
-  ivy.compile_conf(['default']).test_conf('test')
+  ivy.compile_conf('compile').test_conf('test')
   package(:jar).pom.tap do |pom|
     pom.enhance [task('ivy:makepom')]
     pom.from 'target/pom.xml'
