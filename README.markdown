@@ -108,6 +108,23 @@ FooDto:
     properties: shortName(longNameOnDomainObject)
   ```
 
+Other Configuration Options
+===========================
+
+* Output directory (defaults to `target/gen-java-src`)
+
+  ```yaml
+  config:
+    outputDirectory: target/java
+  ```
+
+* Indentation of the generated code (defaults to four space)
+
+  ```yaml
+  config:
+    indent: two-space | tab | four-space
+  ```
+
 Todo
 ====
 

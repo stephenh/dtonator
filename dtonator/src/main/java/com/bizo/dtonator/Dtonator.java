@@ -37,8 +37,7 @@ public class Dtonator {
   public Dtonator(final RootConfig root) {
     config = root;
     out = new GDirectory(root.getOutputDirectory());
-    // move to config file
-    GSettings.setDefaultIndentation("  ");
+    GSettings.setDefaultIndentation(root.getIndent());
   }
 
   public void run() {
