@@ -28,12 +28,7 @@ public class GenerateDto {
   private final DtoConfig dto;
   private final GClass gc;
 
-  public GenerateDto(
-      final RootConfig config,
-      final GDirectory out,
-      final GClass mapper,
-      final List<String> takenToDtoOverloads,
-      final DtoConfig dto) {
+  public GenerateDto(final RootConfig config, final GDirectory out, final GClass mapper, final List<String> takenToDtoOverloads, final DtoConfig dto) {
     this.config = config;
     this.out = out;
     this.mapper = mapper;
@@ -62,8 +57,9 @@ public class GenerateDto {
   }
 
   private void addInterfaces() {
-    // hardcoding GWT dependency for now
-    gc.implementsInterface("com.google.gwt.user.client.rpc.IsSerializable");
+    for (final String i : dto.getInterfaces()) {
+      gc.implementsInterface(i);
+    }
   }
 
   private void addDtoFields() {
@@ -216,11 +212,7 @@ public class GenerateDto {
         } else {
           // assume we should load the entity by its id
           fromDto.body.line("if (dto.{}.id != null) {", dp.getName());
-          fromDto.body.line(
-            "_ o.{}(lookup.lookup({}.class, dto.{}.id));",
-            dp.getSetterMethodName(),
-            dp.getDomainType(),
-            dp.getName());
+          fromDto.body.line("_ o.{}(lookup.lookup({}.class, dto.{}.id));", dp.getSetterMethodName(), dp.getDomainType(), dp.getName());
           fromDto.body.line("} else {");
           fromDto.body.line("_ o.{}(new {}());", dp.getSetterMethodName(), dp.getDomainType());
           fromDto.body.line("}");

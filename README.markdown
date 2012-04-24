@@ -1,7 +1,7 @@
 
 dtonator is a code generator that generates DTOs and mapping code for sending your domain objects over the wire.
 
-It was built for using with GWT-RPC, but it's (...basically/eventually) not coupled to GWT itself.
+It was built for using with GWT-RPC, but it's not coupled to GWT itself.
 
 Configuration
 =============
@@ -123,6 +123,13 @@ Other Configuration Options
   ```yaml
   config:
     indent: two-space | tab | four-space
+  ```
+
+* Interfaces to be added to all DTOs/enums:
+
+  ```yaml
+  config:
+    commonInterface: java.io.Serializable
   ```
 
 Todo

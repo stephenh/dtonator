@@ -33,8 +33,9 @@ public class GenerateEnum {
   }
 
   private void addInterfaces() {
-    // hardcoding GWT dependency for now
-    gc.implementsInterface("com.google.gwt.user.client.rpc.IsSerializable");
+    for (final String i : dto.getInterfaces()) {
+      gc.implementsInterface(i);
+    }
   }
 
   private void addEnumValues() {

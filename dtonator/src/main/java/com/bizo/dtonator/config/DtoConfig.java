@@ -8,7 +8,11 @@ import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import com.bizo.dtonator.properties.Prop;
 import com.bizo.dtonator.properties.TypeOracle;
@@ -56,12 +60,21 @@ public class DtoConfig {
 
   public List<String> getAnnotations() {
     final List<String> annotations = newArrayList();
-    if (map.get("annotations") != null) {
-      for (final String annotation : defaultString((String) map.get("annotations")).split(", ?")) {
+    if (map.containsKey("annotations")) {
+      for (final String annotation : ((String) map.get("annotations")).split(", ?")) {
         annotations.add("@" + annotation);
       }
     }
     return annotations;
+  }
+
+  public List<String> getInterfaces() {
+    final List<String> interfaces = newArrayList();
+    if (map.containsKey("interfaces")) {
+      interfaces.addAll(newArrayList(((String) map.get("interfaces")).split(", ?")));
+    }
+    interfaces.addAll(root.getCommonInterfaces());
+    return interfaces;
   }
 
   public String getDomainType() {

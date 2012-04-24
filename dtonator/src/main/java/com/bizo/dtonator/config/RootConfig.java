@@ -48,6 +48,13 @@ public class RootConfig {
     }
   }
 
+  public List<String> getCommonInterfaces() {
+    if (getConfig().containsKey("commonInterfaces")) {
+      return newArrayList(getConfig().get("commonInterfaces").split(", ?"));
+    }
+    return newArrayList();
+  }
+
   public Collection<DtoConfig> getDtos() {
     if (dtos == null) {
       dtos = newArrayList();
