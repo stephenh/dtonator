@@ -31,11 +31,12 @@ public class Dtonator {
   }
 
   private final RootConfig config;
-  private final GDirectory out = new GDirectory("target/gen-java-src");
+  private final GDirectory out;
   private final List<String> takenToDtoOverloads = newArrayList();
 
   public Dtonator(final RootConfig root) {
     config = root;
+    out = new GDirectory(root.getOutputDirectory());
     // move to config file
     GSettings.setDefaultIndentation("  ");
   }

@@ -1,6 +1,7 @@
 package com.bizo.dtonator.config;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.apache.commons.lang.StringUtils.defaultString;
 
 import java.util.Collection;
 import java.util.List;
@@ -30,6 +31,10 @@ public class RootConfig {
 
   public String getMapperPackage() {
     return getConfig().get("mapperPackage");
+  }
+
+  public String getOutputDirectory() {
+    return defaultString(getConfig().get("outputDirectory"), "target/gen-java-src");
   }
 
   public Collection<DtoConfig> getDtos() {
