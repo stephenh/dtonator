@@ -3,8 +3,8 @@ package com.bizo.dtonator;
 import static com.bizo.dtonator.Names.mapperFieldName;
 import static com.bizo.dtonator.Names.mapperInterface;
 import static com.bizo.dtonator.Names.simple;
-import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
+import static joist.util.Copy.list;
 import static org.apache.commons.lang.StringUtils.capitalize;
 import static org.apache.commons.lang.StringUtils.uncapitalize;
 
@@ -83,7 +83,7 @@ public class GenerateDto {
   }
 
   private void addFullConstructor() {
-    final List<Argument> typeAndNames = newArrayList();
+    final List<Argument> typeAndNames = list();
     for (final DtoProperty dp : dto.getProperties()) {
       typeAndNames.add(arg(dp.getDtoType(), dp.getName()));
     }

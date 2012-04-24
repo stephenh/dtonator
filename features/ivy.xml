@@ -16,7 +16,6 @@
     <!-- default (compile, test, runtime) dependencies -->
     <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
     <dependency org="com.bizo" name="dtonator" rev="${dtonator.version}"/>
-    <dependency org="org.slf4j" name="slf4j-jdk14" rev="1.6.4"/>
 
     <!-- test time only dependencies -->
     <dependency org="junit" name="junit-dep" rev="4.10" conf="test"/>

@@ -1,6 +1,6 @@
 package com.bizo.dtonator.domain;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static joist.util.Copy.list;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,7 +20,7 @@ public class EmployeeWithAccountsTest {
   @Test
   public void testToDto() {
     final Employee e1 = new Employee(1l, "e1");
-    e1.setAccounts(newArrayList(new EmployeeAccount(2l, "ea1")));
+    e1.setAccounts(list(new EmployeeAccount(2l, "ea1")));
     final EmployeeWithAccountsDto dto = mapper.toEmployeeWithAccountsDto(e1);
     assertThat(dto.accounts.size(), is(1));
     assertThat(dto.accounts.get(0).id, is(2l));
@@ -34,7 +34,7 @@ public class EmployeeWithAccountsTest {
     lookup.store(2l, ea1);
 
     // incoming employee with an account
-    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", newArrayList( //
+    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", list( //
       new EmployeeAccountDto(2l, null, "changed name")));
 
     final Employee ee = mapper.fromDto(dto);
@@ -48,7 +48,7 @@ public class EmployeeWithAccountsTest {
   @Test
   public void testFromDtoWithANewChild() {
     // incoming employee with a new account
-    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", newArrayList( //
+    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", list( //
       new EmployeeAccountDto(null, null, "name")));
     final Employee ee = mapper.fromDto(dto);
     // since recursive writes are disabled, we created an instance

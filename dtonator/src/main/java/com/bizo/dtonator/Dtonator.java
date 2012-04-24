@@ -1,8 +1,8 @@
 package com.bizo.dtonator;
 
 import static com.bizo.dtonator.Names.mapperInterface;
-import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
+import static joist.util.Copy.list;
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class Dtonator {
 
   private final RootConfig config;
   private final GDirectory out;
-  private final List<String> takenToDtoOverloads = newArrayList();
+  private final List<String> takenToDtoOverloads = list();
 
   public Dtonator(final RootConfig root) {
     config = root;

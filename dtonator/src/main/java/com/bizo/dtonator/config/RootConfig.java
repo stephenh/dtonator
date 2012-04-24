@@ -1,6 +1,6 @@
 package com.bizo.dtonator.config;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static joist.util.Copy.list;
 import static org.apache.commons.lang.StringUtils.defaultString;
 
 import java.util.Collection;
@@ -50,14 +50,14 @@ public class RootConfig {
 
   public List<String> getCommonInterfaces() {
     if (getConfig().containsKey("commonInterfaces")) {
-      return newArrayList(getConfig().get("commonInterfaces").split(", ?"));
+      return list(getConfig().get("commonInterfaces").split(", ?"));
     }
-    return newArrayList();
+    return list();
   }
 
   public Collection<DtoConfig> getDtos() {
     if (dtos == null) {
-      dtos = newArrayList();
+      dtos = list();
       for (final String simpleName : root.keySet()) {
         if (simpleName.equals(configKey)) {
           continue;
@@ -98,9 +98,9 @@ public class RootConfig {
   public List<ValueTypeConfig> getValueTypes() {
     final Object value = getConfig().get("valueTypes");
     if (value == null) {
-      return newArrayList();
+      return list();
     }
-    final List<ValueTypeConfig> valueTypes = newArrayList();
+    final List<ValueTypeConfig> valueTypes = list();
     for (final Map.Entry<Object, Object> e : YamlUtils.ensureMap(value).entrySet()) {
       valueTypes.add(new ValueTypeConfig(e));
     }

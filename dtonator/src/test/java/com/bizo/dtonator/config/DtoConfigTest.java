@@ -1,10 +1,10 @@
 package com.bizo.dtonator.config;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
+import static joist.util.Copy.list;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
@@ -15,9 +15,9 @@ import com.bizo.dtonator.properties.StubTypeOracle;
 public class DtoConfigTest {
 
   private final StubTypeOracle oracle = new StubTypeOracle();
-  private final Map<String, Object> root = newHashMap();
+  private final Map<String, Object> root = new HashMap<String, Object>();
   private final RootConfig rootConfig = new RootConfig(oracle, root);
-  private final Map<String, Object> config = newHashMap();
+  private final Map<String, Object> config = new HashMap<String, Object>();
 
   @Before
   public void setupRootConfig() {
@@ -44,12 +44,9 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     // and an override to skip b
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    map.put("properties", "-b, *");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    addDto("FooDto", domain("Foo"), properties("-b, *"));
     // then we have only 1
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(1));
   }
 
@@ -59,7 +56,7 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     // and an override to skip b
-    final Map<String, Object> map = newHashMap();
+    final Map<String, Object> map = new HashMap<String, Object>();
     map.put("domain", "Foo");
     map.put("properties", "a");
     // when asked
@@ -74,11 +71,9 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "a", "java.util.List");
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     // and an override for a and * to include b
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    map.put("properties", "a ArrayList<Integer>, *");
+    addDto("FooDto", domain("Foo"), properties("a ArrayList<Integer>, *"));
     // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(2));
     assertThat(dc.getProperties().get(0).getName(), is("a"));
     assertThat(dc.getProperties().get(1).getName(), is("b"));
@@ -104,14 +99,11 @@ public class DtoConfigTest {
   @Test
   public void testExtensionProperties() {
     // given a domain object with Foo.a
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     // but we specify both a and b
-    map.put("properties", "a, b String");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    addDto("FooDto", domain("Foo"), properties("a, b String"));
     // then we have both
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(2));
     assertThat(dc.getProperties().get(0).getName(), is("a"));
     assertThat(dc.getProperties().get(0).getDtoType(), is("java.lang.String"));
@@ -181,7 +173,7 @@ public class DtoConfigTest {
 
   @Test
   public void testMappedPropertiesThatAreEnums() {
-    oracle.setEnumValues("com.domain.Type", newArrayList("ONE", "TWO"));
+    oracle.setEnumValues("com.domain.Type", list("ONE", "TWO"));
     oracle.addProperty("com.domain.Foo", "type", "com.domain.Type");
     // when enums are mapped automatically
     addDto("FooDto", domain("Foo"));
@@ -193,7 +185,7 @@ public class DtoConfigTest {
 
   @Test
   public void testExtensionPropertiesThatAreEnums() {
-    oracle.setEnumValues("com.domain.Type", newArrayList("ONE", "TWO"));
+    oracle.setEnumValues("com.domain.Type", list("ONE", "TWO"));
     // when an extension property references an enum
     addDto("FooDto", properties("type Type"));
     // it's fully qualified
@@ -343,16 +335,13 @@ public class DtoConfigTest {
 
   @Test
   public void testSortedAlphabetically() {
-    // given two properties
+    // given three properties
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "id", "java.lang.Integer");
-    // and no overrides
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    addDto("FooDto", domain("Foo"));
     // then we've sorted them
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(3));
     assertThat(dc.getProperties().get(0).getName(), is("id"));
     assertThat(dc.getProperties().get(1).getName(), is("a"));
@@ -367,12 +356,9 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     // and overrides putting d, c first
-    final Map<String, Object> map = newHashMap();
-    map.put("domain", "Foo");
-    map.put("properties", "d, c String, b, a");
-    // when asked
-    final DtoConfig dc = new DtoConfig(oracle, rootConfig, "FooDto", map);
+    addDto("FooDto", domain("Foo"), properties("d, c String, b, a"));
     // then we've sorted them
+    final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(4));
     assertThat(dc.getProperties().get(0).getName(), is("d"));
     assertThat(dc.getProperties().get(1).getName(), is("c"));
@@ -381,7 +367,7 @@ public class DtoConfigTest {
   }
 
   private void addDto(final String simpleName, final Entry... entries) {
-    final Map<String, Object> map = newHashMap();
+    final Map<String, Object> map = new HashMap<String, Object>();
     for (final Entry entry : entries) {
       map.put(entry.name, entry.value);
     }
@@ -392,7 +378,7 @@ public class DtoConfigTest {
   private Map<String, String> valueTypes() {
     Object value = config.get("valueTypes");
     if (value == null) {
-      value = newHashMap();
+      value = new HashMap<String, String>();
       config.put("valueTypes", value);
     }
     return (Map<String, String>) value;

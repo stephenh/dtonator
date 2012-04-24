@@ -2,8 +2,8 @@ package com.bizo.dtonator.config;
 
 import static com.bizo.dtonator.Names.listType;
 import static com.bizo.dtonator.Names.simple;
-import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.TRUE;
+import static joist.util.Copy.list;
 import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
@@ -19,7 +19,7 @@ import com.bizo.dtonator.properties.TypeOracle;
 
 public class DtoConfig {
 
-  private static final List<String> javaLangTypes = newArrayList("String", "Integer", "Boolean", "Long", "Double");
+  private static final List<String> javaLangTypes = list("String", "Integer", "Boolean", "Long", "Double");
   private final TypeOracle oracle;
   private final RootConfig root;
   private final String simpleName;
@@ -35,7 +35,7 @@ public class DtoConfig {
 
   public List<DtoProperty> getProperties() {
     if (properties == null) {
-      properties = newArrayList();
+      properties = list();
       final List<PropConfig> pcs = getPropertiesConfig();
       if (getDomainType() != null) {
         addPropertiesFromDomainObject(pcs);
@@ -59,7 +59,7 @@ public class DtoConfig {
   }
 
   public List<String> getAnnotations() {
-    final List<String> annotations = newArrayList();
+    final List<String> annotations = list();
     if (map.containsKey("annotations")) {
       for (final String annotation : ((String) map.get("annotations")).split(", ?")) {
         annotations.add("@" + annotation);
@@ -69,9 +69,9 @@ public class DtoConfig {
   }
 
   public List<String> getInterfaces() {
-    final List<String> interfaces = newArrayList();
+    final List<String> interfaces = list();
     if (map.containsKey("interfaces")) {
-      interfaces.addAll(newArrayList(((String) map.get("interfaces")).split(", ?")));
+      interfaces.addAll(list(((String) map.get("interfaces")).split(", ?")));
     }
     interfaces.addAll(root.getCommonInterfaces());
     return interfaces;
@@ -258,7 +258,7 @@ public class DtoConfig {
 
   /** @return the `properties: a, b` as parsed {@link PropConfig}, skipping the `*` character. */
   private List<PropConfig> getPropertiesConfig() {
-    final List<PropConfig> args = newArrayList();
+    final List<PropConfig> args = list();
     for (final String eachValue : getPropertiesConfigRaw()) {
       if (!"*".equals(eachValue)) {
         args.add(new PropConfig(eachValue));
@@ -276,12 +276,12 @@ public class DtoConfig {
   private List<String> getPropertiesConfigRaw() {
     final Object rawValue = map.get("properties");
     if (rawValue == null) {
-      return newArrayList();
+      return list();
     }
     if (!(rawValue instanceof String)) {
       throw new IllegalStateException("Expecting a string value for key properties: " + rawValue);
     }
-    return newArrayList(((String) rawValue).split(", ?"));
+    return list(((String) rawValue).split(", ?"));
   }
 
   /** Small abstraction around the property strings in the YAML file. */

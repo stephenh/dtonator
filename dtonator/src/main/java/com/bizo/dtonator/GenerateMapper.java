@@ -2,8 +2,8 @@ package com.bizo.dtonator;
 
 import static com.bizo.dtonator.Names.mapperFieldName;
 import static com.bizo.dtonator.Names.mapperInterface;
-import static com.google.common.collect.Lists.newArrayList;
 import static joist.sourcegen.Argument.arg;
+import static joist.util.Copy.list;
 
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class GenerateMapper {
 
   private void addConstructorAndFields() {
     // create the mapper cstr
-    final List<Argument> args = newArrayList();
+    final List<Argument> args = list();
     // we always need a DomainObjectLookup
     args.add(arg(DomainObjectLookup.class.getName(), "lookup"));
     // add arguments for extension mappers, if any

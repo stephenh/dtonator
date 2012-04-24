@@ -1,6 +1,6 @@
 package com.bizo.dtonator.domain;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static joist.util.Copy.list;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,7 +20,7 @@ public class EmployeeWithSimpleAccountsTest {
   @Test
   public void testToDto() {
     final Employee e1 = new Employee(1l, "e1");
-    e1.setAccounts(newArrayList(new EmployeeAccount(2l, "ea1")));
+    e1.setAccounts(list(new EmployeeAccount(2l, "ea1")));
     final EmployeeWithSimpleAccountsDto dto = mapper.toEmployeeWithSimpleAccountsDto(e1);
     assertThat(dto.accounts.size(), is(1));
     assertThat(dto.accounts.get(0), is(instanceOf(EmployeeSimpleAccountDto.class)));
@@ -33,7 +33,7 @@ public class EmployeeWithSimpleAccountsTest {
     lookup.store(2l, ea1);
 
     // incoming employee with an account
-    final EmployeeWithSimpleAccountsDto dto = new EmployeeWithSimpleAccountsDto(null, "e1", newArrayList( //
+    final EmployeeWithSimpleAccountsDto dto = new EmployeeWithSimpleAccountsDto(null, "e1", list( //
       new EmployeeSimpleAccountDto(2l, "changed name")));
 
     final Employee ee = mapper.fromDto(dto);
