@@ -1,0 +1,21 @@
+
+# just for buildr to get trax, then everything else is ivy
+repositories.remote << 'http://repo1.maven.org/maven2/'
+repositories.release_to = 'sftp://joist.ws/var/joist.repo'
+repositories.release_to[:permissions] = 0644
+
+require 'buildr/ivy_extension'
+
+THIS_VERSION = ENV['version'] || 'SNAPSHOT'
+
+define 'dtonator' do
+  project.group = 'com.bizo'
+  project.version = THIS_VERSION
+  package_with_sources
+  ivy.compile_conf(['default']).test_conf('test')
+  package(:jar).pom.tap do |pom|
+    pom.enhance [task('ivy:makepom')]
+    pom.from 'target/pom.xml'
+  end
+end
+
