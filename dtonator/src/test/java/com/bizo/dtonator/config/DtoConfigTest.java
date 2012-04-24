@@ -331,6 +331,17 @@ public class DtoConfigTest {
   }
 
   @Test
+  public void testMappedAliasedProperties() {
+    // given a domain object with longPropertyName
+    oracle.addProperty("com.domain.Foo", "longPropertyName", "java.lang.String");
+    // and aliased to name
+    addDto("FooDto", domain("Foo"), properties("name(longPropertyName)"));
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().get(0).getName(), is("name"));
+    assertThat(dc.getProperties().get(0).getGetterMethodName(), is("getLongPropertyName"));
+  }
+
+  @Test
   public void testSortedAlphabetically() {
     // given two properties
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");

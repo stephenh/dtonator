@@ -100,6 +100,14 @@ FooDto:
 
   By default dtonator will use the `DomainObjectLookup` to look up each `Employee` object and call `employer.setEmployees(theEmployees)`. 
 
+* Aliases properties to different names
+
+  ```yaml
+  EmployeeDto:
+    domain: Employee
+    properties: shortName(longNameOnDomainObject)
+  ```
+
 Todo
 ====
 
@@ -108,7 +116,6 @@ Todo
   * See BizadsCampaignDto with images and partner domains
 * Use term "mirror" instead of "domain" (?)
 * Better syntax for read-only properties (`~id` is kind of dumb)
-* Support renaming `properties: clientName->domainName`
 * Read vs. read/write children, e.g.:
   * Save `parent.children` and write back the properties for each `child`
   * Save `parent` but use the children just for the list (current behavior)

@@ -5,6 +5,8 @@ import static com.bizo.dtonator.Names.simple;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang.StringUtils.defaultString;
+import static org.apache.commons.lang.StringUtils.substringBefore;
+import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import java.util.*;
 
@@ -184,7 +186,7 @@ public class DtoConfig {
       properties.add(new DtoProperty(//
         oracle,
         root,
-        p.name,
+        pc != null ? pc.name : p.name, // use the potentially aliased if we have one
         pc != null ? pc.isReadOnly : p.readOnly,
         pc != null ? pc.isRecursive : false, // default to not writing back to child entities
         dtoType,
@@ -272,6 +274,7 @@ public class DtoConfig {
   /** Small abstraction around the property strings in the YAML file. */
   private static class PropConfig {
     private final String name;
+    private final String domainName;
     private final String type;
     private final boolean isExclusion;
     private final boolean isReadOnly;
@@ -279,7 +282,15 @@ public class DtoConfig {
     private boolean mapped = false;
 
     private PropConfig(final String value) {
+      // examples:
+      // foo
+      // foo Bar
+      // ~foo
+      // foo!
+      // foo! Bar
+      // foo!(zaz) Bar
       String _name;
+      String _domainName = null;
       if (value.contains(" ")) {
         final String[] parts = splitIntoNameAndType(value);
         _name = parts[0];
@@ -300,6 +311,10 @@ public class DtoConfig {
       } else {
         isReadOnly = false;
       }
+      if (_name.endsWith(")")) {
+        _domainName = substringBetween(_name, "(", ")");
+        _name = substringBefore(_name, "(");
+      }
       if (_name.endsWith("!")) {
         isRecursive = true;
         _name = _name.substring(0, _name.length() - 1);
@@ -307,6 +322,7 @@ public class DtoConfig {
         isRecursive = false;
       }
       name = _name;
+      domainName = defaultString(_domainName, _name);
     }
 
     private void markNotExtensionProperty() {
@@ -360,7 +376,7 @@ public class DtoConfig {
 
   private static PropConfig findPropConfig(final List<PropConfig> pcs, final String name) {
     for (final PropConfig pc : pcs) {
-      if (pc.name.equals(name)) {
+      if (pc.domainName.equals(name)) {
         return pc;
       }
     }
