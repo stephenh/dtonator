@@ -136,13 +136,8 @@ Todo
 ====
 
 * A list of objects, but as the id/name
-  * children: `_.name`
-  * See BizadsCampaignDto with images and partner domains
-* Use term "mirror" instead of "domain" (?)
+  * children: `_.name` for an `ArrayList<String>`
 * Better syntax for read-only properties (`~id` is kind of dumb)
-* Read vs. read/write children, e.g.:
-  * Save `parent.children` and write back the properties for each `child`
-  * Save `parent` but use the children just for the list (current behavior)
 * datamapper-style chaining
   * `properties: parentId -> parent.id`, read/write for `id`, otherwise read, e.g. `parentName`
   * `properties: parentIds`, use `lookup` to manage
