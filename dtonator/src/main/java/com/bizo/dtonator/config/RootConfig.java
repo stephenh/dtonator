@@ -48,6 +48,19 @@ public class RootConfig {
     }
   }
 
+  public Prune getPrune() {
+    final String prune = defaultString(getConfig().get("pruneOldFiles"), "usedPackages");
+    if ("usedPackages".equals(prune)) {
+      return Prune.USED_PACKAGES;
+    } else if ("allPackages".equals(prune)) {
+      return Prune.ALL_PACKAGES;
+    } else if ("disabled".equals(prune)) {
+      return Prune.DISABLED;
+    } else {
+      throw new IllegalStateException("Unknown pruneOldFiles setting: " + prune);
+    }
+  }
+
   public List<String> getCommonInterfaces() {
     if (getConfig().containsKey("commonInterfaces")) {
       return list(getConfig().get("commonInterfaces").split(", ?"));

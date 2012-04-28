@@ -13,6 +13,7 @@ import joist.sourcegen.GSettings;
 import org.yaml.snakeyaml.Yaml;
 
 import com.bizo.dtonator.config.DtoConfig;
+import com.bizo.dtonator.config.Prune;
 import com.bizo.dtonator.config.RootConfig;
 import com.bizo.dtonator.config.ValueTypeConfig;
 import com.bizo.dtonator.properties.ReflectionTypeOracle;
@@ -61,5 +62,11 @@ public class Dtonator {
     }
 
     out.output();
+
+    if (config.getPrune() == Prune.ALL_PACKAGES) {
+      out.pruneIfNotTouched();
+    } else if (config.getPrune() == Prune.USED_PACKAGES) {
+      out.pruneIfNotTouchedWithinUsedPackages();
+    }
   }
 }
