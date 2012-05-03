@@ -142,3 +142,4 @@ Todo
   * `properties: parentId -> parent.id`, read/write for `id`, otherwise read, e.g. `parentName`
   * `properties: parentIds`, use `lookup` to manage
 * Move `DomainObjectLookup` to a separate `dtonator-runtime` jar
+
