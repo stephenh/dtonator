@@ -47,11 +47,11 @@ FooDto:
 
 * Map all properties except one (skip `a`, include the rest `*`):
 
-  ```yaml
-  FooDto:
-    domain: Foo
-    properties: -a, *
-  ```
+    ```yaml
+    FooDto:
+      domain: Foo
+      properties: -a, *
+    ```
 
 * Map only certain properties (`a` and `b`):
 
