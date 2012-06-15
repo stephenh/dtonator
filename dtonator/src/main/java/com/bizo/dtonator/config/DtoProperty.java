@@ -22,15 +22,15 @@ public class DtoProperty {
   private final String setterNameMethod;
 
   public DtoProperty(
-      final TypeOracle oracle,
-      final RootConfig config,
-      final String name,
-      final boolean readOnly,
-      final boolean isRecursive,
-      final String dtoType,
-      final String domainType,
-      final String getterMethodName,
-      final String setterNameMethod) {
+    final TypeOracle oracle,
+    final RootConfig config,
+    final String name,
+    final boolean readOnly,
+    final boolean isRecursive,
+    final String dtoType,
+    final String domainType,
+    final String getterMethodName,
+    final String setterNameMethod) {
     this.oracle = oracle;
     this.config = config;
     this.name = name;
@@ -48,6 +48,10 @@ public class DtoProperty {
 
   public boolean isEntity() {
     return DtoConfig.isEntity(config, domainType);
+  }
+
+  public boolean isList() {
+    return dtoType.startsWith("java.util.ArrayList");
   }
 
   public boolean isListOfEntities() {

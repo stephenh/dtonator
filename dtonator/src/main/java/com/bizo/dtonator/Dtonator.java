@@ -52,6 +52,9 @@ public class Dtonator {
       } else {
         new GenerateDto(config, out, mapper, takenToDtoOverloads, dto).generate();
       }
+      if (dto.includeTessellModel()) {
+        new GenerateTessellModel(out, config, dto).generate();
+      }
     }
 
     // create interfaces (currently abstract classes) for the value types

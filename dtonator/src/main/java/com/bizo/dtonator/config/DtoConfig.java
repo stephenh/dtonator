@@ -8,11 +8,7 @@ import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.bizo.dtonator.properties.Prop;
 import com.bizo.dtonator.properties.TypeOracle;
@@ -54,10 +50,12 @@ public class DtoConfig {
     return root.getDtoPackage() + "." + getSimpleName();
   }
 
+  /** @return whether the user wants a public no-arg constructor, defaults to {@code false}. */
   public boolean shouldAddPublicConstructor() {
     return TRUE.equals(map.get("publicConstructor"));
   }
 
+  /** @return the specific annotations this DTO should implement. */
   public List<String> getAnnotations() {
     final List<String> annotations = list();
     if (map.containsKey("annotations")) {
@@ -68,6 +66,7 @@ public class DtoConfig {
     return annotations;
   }
 
+  /** @return the specific + common interfaces this DTO should implement. */
   public List<String> getInterfaces() {
     final List<String> interfaces = list();
     if (map.containsKey("interfaces")) {
@@ -77,6 +76,7 @@ public class DtoConfig {
     return interfaces;
   }
 
+  /** @return the domain type backing this DTO, or {@code null} if it's standalone. */
   public String getDomainType() {
     final String rawValue = (String) map.get("domain");
     if (rawValue == null) {
@@ -100,6 +100,11 @@ public class DtoConfig {
     } else {
       return Arrays.asList(((String) value).split(",? "));
     }
+  }
+
+  /** @return whether the dto wants a tessell model */
+  public boolean includeTessellModel() {
+    return TRUE.equals(map.get("tessellModel"));
   }
 
   public boolean isEnum() {

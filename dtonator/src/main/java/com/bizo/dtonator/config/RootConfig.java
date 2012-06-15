@@ -33,6 +33,16 @@ public class RootConfig {
     return getConfig().get("mapperPackage");
   }
 
+  /** @return the model package, if generating Tessell models */
+  public String getModelPackage() {
+    return getConfig().get("modelPackage");
+  }
+
+  /** @return the model base class, if generating Tessell models, or {@code null} */
+  public String getModelBaseClass() {
+    return getConfig().get("modelBaseClass");
+  }
+
   public String getOutputDirectory() {
     return defaultString(getConfig().get("outputDirectory"), "target/gen-java-src");
   }
@@ -118,6 +128,14 @@ public class RootConfig {
       valueTypes.add(new ValueTypeConfig(e));
     }
     return valueTypes;
+  }
+
+  public String getModelPropertyType(final String dtoType) {
+    final Object map = getConfig().get("modelTypes");
+    if (map == null) {
+      return null;
+    }
+    return (String) YamlUtils.ensureMap(map).get(dtoType);
   }
 
   private Map<String, String> getConfig() {
