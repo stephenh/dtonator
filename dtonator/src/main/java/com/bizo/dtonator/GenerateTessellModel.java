@@ -46,15 +46,10 @@ public class GenerateTessellModel {
     final String rootName = dto.getSimpleName().replaceAll("Dto$", "") + "Model";
     baseClass = out.getClass(config.getModelPackage() + "." + rootName + "Codegen").setAbstract().setPackagePrivate();
     baseClass.addImports("org.tessell.model.properties.NewProperty");
-
-    if (config.getModelBaseClass() != null) {
-      baseClass.baseClassName(config.getModelBaseClass() + "<" + dto.getDtoType() + ">");
-    }
+    baseClass.baseClassName(config.getModelBaseClass() + "<" + dto.getDtoType() + ">");
   }
 
   public void generate() {
-    baseClass.implementsInterface("org.tessell.model.Model<{}>", dto.getDtoType());
-
     // field to hold the dto
     baseClass.getField("dto").type(dto.getDtoType());
 

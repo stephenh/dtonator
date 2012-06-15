@@ -40,7 +40,7 @@ public class RootConfig {
 
   /** @return the model base class, if generating Tessell models, or {@code null} */
   public String getModelBaseClass() {
-    return getConfig().get("modelBaseClass");
+    return defaultString(getConfig().get("modelBaseClass"), "org.tessell.model.AbstractModel");
   }
 
   public String getOutputDirectory() {
