@@ -63,17 +63,17 @@ public class GenerateTessellModel {
       // would be nice it we could avoid this indirection and just use reflection
       // maybe AutoBean.get("foo")/AutoBean.set("foo", bar) will happen someday.
       final GClass innerValue = baseClass.getInnerClass(innerClassName).setPrivate().notStatic();
-      innerValue.implementsInterface("org.tessell.model.values.Value<" + p.getDtoType() + ">");
+      innerValue.implementsInterface("org.tessell.model.values.Value<" + p.getDtoTypeBoxed() + ">");
       innerValue //
         .getMethod("getName")
         .returnType("String")
         .addAnnotation("@Override").body.line("return \"{}\";", p.getName());
       innerValue //
-        .getMethod("set", arg(p.getDtoType(), "v"))
+        .getMethod("set", arg(p.getDtoTypeBoxed(), "v"))
         .addAnnotation("@Override").body.line("dto.{} = v;", p.getName());
       innerValue //
         .getMethod("get")
-        .returnType(p.getDtoType())
+        .returnType(p.getDtoTypeBoxed())
         .addAnnotation("@Override").body.line("return dto == null ? null : dto.{};", p.getName());
       innerValue //
         .getMethod("isReadOnly")
@@ -102,7 +102,7 @@ public class GenerateTessellModel {
   }
 
   private String getPropertyType(final DtoProperty p) {
-    final String type = propertyTypes.get(p.getDtoType());
+    final String type = propertyTypes.get(p.getDtoTypeBoxed());
     if (type != null) {
       return type;
     } else if (p.isEnum()) {
@@ -114,13 +114,13 @@ public class GenerateTessellModel {
       if (customType != null) {
         return customType;
       } else {
-        return propertyPackage + ".BasicProperty<" + p.getDtoType() + ">";
+        return propertyPackage + ".BasicProperty<" + p.getDtoTypeBoxed() + ">";
       }
     }
   }
 
   private String getInitializerPrefix(final DtoProperty p) {
-    final String type = propertyInitializers.get(p.getDtoType());
+    final String type = propertyInitializers.get(p.getDtoTypeBoxed());
     if (type != null) {
       return type;
     } else if (p.isEnum()) {

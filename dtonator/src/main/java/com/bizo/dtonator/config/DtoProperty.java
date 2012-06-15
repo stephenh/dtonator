@@ -46,6 +46,10 @@ public class DtoProperty {
     return dtoType;
   }
 
+  public String getDtoTypeBoxed() {
+    return Primitives.boxIfNecessary(dtoType);
+  }
+
   public boolean isEntity() {
     return DtoConfig.isEntity(config, domainType);
   }
