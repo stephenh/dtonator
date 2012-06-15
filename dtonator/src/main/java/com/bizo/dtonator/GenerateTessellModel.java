@@ -33,20 +33,27 @@ public class GenerateTessellModel {
     propertyInitializers.put("java.lang.Integer", "NewProperty.integerProperty");
   }
 
-  private final GDirectory out;
   private final RootConfig config;
   private final DtoConfig dto;
   private final GClass baseClass;
 
-  public GenerateTessellModel(final GDirectory out, final RootConfig config, final DtoConfig dto) {
+  public GenerateTessellModel(final GDirectory source, final GDirectory out, final RootConfig config, final DtoConfig dto) {
     this.config = config;
-    this.out = out;
     this.dto = dto;
 
-    final String rootName = dto.getSimpleName().replaceAll("Dto$", "") + "Model";
-    baseClass = out.getClass(config.getModelPackage() + "." + rootName + "Codegen").setAbstract().setPackagePrivate();
+    final String simpleName = dto.getSimpleName().replaceAll("Dto$", "") + "Model";
+    baseClass = out.getClass(config.getModelPackage() + "." + simpleName + "Codegen").setAbstract().setPackagePrivate();
     baseClass.addImports("org.tessell.model.properties.NewProperty");
     baseClass.baseClassName(config.getModelBaseClass() + "<" + dto.getDtoType() + ">");
+
+    if (!source.exists(config.getModelPackage() + "." + simpleName)) {
+      final GClass subclass = source.getClass(config.getModelPackage() + "." + simpleName);
+      subclass.baseClassName(simpleName + "Codegen");
+
+      subclass.getConstructor(arg(dto.getDtoType(), "dto")).body.line("super(dto);");
+
+      subclass.getMethod("addRules").addAnnotation("@Override").setProtected();
+    }
   }
 
   public void generate() {

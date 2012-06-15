@@ -32,11 +32,13 @@ public class Dtonator {
   }
 
   private final RootConfig config;
+  private final GDirectory source;
   private final GDirectory out;
   private final List<String> takenToDtoOverloads = list();
 
   public Dtonator(final RootConfig root) {
     config = root;
+    source = new GDirectory(root.getSourceDirectory());
     out = new GDirectory(root.getOutputDirectory());
     GSettings.setDefaultIndentation(root.getIndent());
   }
@@ -53,7 +55,7 @@ public class Dtonator {
         new GenerateDto(config, out, mapper, takenToDtoOverloads, dto).generate();
       }
       if (dto.includeTessellModel()) {
-        new GenerateTessellModel(out, config, dto).generate();
+        new GenerateTessellModel(source, out, config, dto).generate();
       }
     }
 
@@ -65,6 +67,7 @@ public class Dtonator {
     }
 
     out.output();
+    source.output();
 
     if (config.getPrune() == Prune.ALL_PACKAGES) {
       out.pruneIfNotTouched();

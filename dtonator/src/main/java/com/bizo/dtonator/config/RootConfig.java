@@ -47,6 +47,10 @@ public class RootConfig {
     return defaultString(getConfig().get("outputDirectory"), "target/gen-java-src");
   }
 
+  public String getSourceDirectory() {
+    return defaultString(getConfig().get("sourceDirectory"), "src/main/java");
+  }
+
   public String getIndent() {
     final String indent = defaultString(getConfig().get("indent"), "four-space");
     if ("two-space".equals(indent)) {
