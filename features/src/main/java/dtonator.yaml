@@ -2,6 +2,7 @@ config:
   dtoPackage: com.bizo.dtonator.dtos
   domainPackage: com.bizo.dtonator.domain
   mapperPackage: com.bizo.dtonator.mapper
+  modelPackage: com.bizo.dtonator.client.model
   valueTypes:
     com.bizo.dtonator.domain.Dollars: com.bizo.dtonator.dtos.Dollars
 
@@ -60,3 +61,9 @@ EmployeeExtensionDto:
 ClientOnlyDto:
   properties: id Long, name String
   equality: id
+
+# tessell integration
+EmployeeTslDto:
+  domain: Employee
+  tessellModel: true
+

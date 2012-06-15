@@ -17,6 +17,8 @@
     <!-- default (compile, test, runtime) dependencies -->
     <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
     <dependency org="com.bizo" name="dtonator" rev="${dtonator.version}"/>
+    <dependency org="org.tessell" name="tessell-user" rev="2.3.7"/>
+    <dependency org="org.slf4j" name="slf4j-simple" rev="1.6.6"/>
 
     <!-- test time only dependencies -->
     <dependency org="junit" name="junit-dep" rev="4.10" conf="test"/>
