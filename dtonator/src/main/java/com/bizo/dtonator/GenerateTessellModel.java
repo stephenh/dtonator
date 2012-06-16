@@ -86,6 +86,10 @@ public class GenerateTessellModel {
         .getMethod("isReadOnly")
         .returnType("boolean")
         .addAnnotation("@Override").body.line("return {};", p.isReadOnly());
+      innerValue //
+        .getMethod("toString")
+        .returnType("String")
+        .addAnnotation("@Override").body.line("return getName() + \" (\" + get() + \")\";");
     }
 
     // merge
