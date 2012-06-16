@@ -48,7 +48,7 @@ public class GenerateTessellModel {
       // Add just enough methods for it to compile and let the user go from there
       final GClass subClass = source.getClass(subClassName).baseClassName(simpleName + "Codegen");
       subClass.getConstructor(arg(dto.getDtoType(), "dto")).body.line("super(dto);");
-      subClass.getMethod("addRules").addAnnotation("@Override").setProtected();
+      subClass.getMethod("addRules").addOverride().setProtected();
     }
   }
 
@@ -68,28 +68,33 @@ public class GenerateTessellModel {
       final GClass innerValue = baseClass.getInnerClass(innerClassName).setPrivate().notStatic();
       innerValue.implementsInterface("org.tessell.model.values.Value<" + p.getDtoTypeBoxed() + ">");
       // getName()
-      innerValue.getMethod("getName").returnType("String").addAnnotation("@Override").body.line("return \"{}\";", p.getName());
+      innerValue.getMethod("getName").returnType("String").addOverride().body.line(//
+        "return \"{}\";",
+        p.getName());
       // set(value)
-      innerValue.getMethod("set", arg(p.getDtoTypeBoxed(), "v")).addAnnotation("@Override").body.line("dto.{} = v;", p.getName());
+      innerValue.getMethod("set", arg(p.getDtoTypeBoxed(), "v")).addOverride().body.line(//
+        "dto.{} = v;",
+        p.getName());
       // get(), avoiding NPEs on read
-      innerValue.getMethod("get").returnType(p.getDtoTypeBoxed()).addAnnotation("@Override").body.line(
+      innerValue.getMethod("get").returnType(p.getDtoTypeBoxed()).addOverride().body.line(//
         "return dto == null ? null : dto.{};",
         p.getName());
       // isReadOnly()
-      innerValue.getMethod("isReadOnly").returnType("boolean").addAnnotation("@Override").body.line("return {};", p.isReadOnly());
+      innerValue.getMethod("isReadOnly").returnType("boolean").addOverride().body.line(//
+        "return {};",
+        p.isReadOnly());
       // toString()
-      innerValue.getMethod("toString").returnType("String").addAnnotation("@Override").body.line("return getName() + \" (\" + get() + \")\";");
+      innerValue.getMethod("toString").returnType("String").addOverride().body.line(//
+        "return getName() + \" (\" + get() + \")\";");
     }
 
     // merge
-    final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto"));
-    merge.addAnnotation("@Override");
+    final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto")).addOverride();
     merge.body.line("this.dto = dto;");
     merge.body.line("all.reassessAll();");
 
     // getDto
-    final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType());
-    getDto.addAnnotation("@Override");
+    final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType()).addOverride();
     getDto.body.line("return dto;");
 
     // cstr
