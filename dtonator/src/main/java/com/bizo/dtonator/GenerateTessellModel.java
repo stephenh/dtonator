@@ -1,7 +1,6 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
-import static org.apache.commons.lang.StringUtils.substringAfterLast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,17 +19,12 @@ import com.bizo.dtonator.config.RootConfig;
 public class GenerateTessellModel {
 
   private static Map<String, String> propertyTypes = new HashMap<String, String>();
-  private static Map<String, String> propertyInitializers = new HashMap<String, String>();
   private static final String propertyPackage = "org.tessell.model.properties";
 
   static {
     propertyTypes.put("java.lang.String", propertyPackage + ".StringProperty");
     propertyTypes.put("java.lang.Long", propertyPackage + ".LongProperty");
     propertyTypes.put("java.lang.Integer", propertyPackage + ".IntegerProperty");
-
-    propertyInitializers.put("java.lang.String", "NewProperty.stringProperty");
-    propertyInitializers.put("java.lang.Long", "NewProperty.longProperty");
-    propertyInitializers.put("java.lang.Integer", "NewProperty.integerProperty");
   }
 
   private final RootConfig config;
@@ -43,7 +37,6 @@ public class GenerateTessellModel {
 
     final String simpleName = dto.getSimpleName().replaceAll("Dto$", "") + "Model";
     baseClass = out.getClass(config.getModelPackage() + "." + simpleName + "Codegen").setAbstract().setPackagePrivate();
-    baseClass.addImports("org.tessell.model.properties.NewProperty");
     baseClass.baseClassName(config.getModelBaseClass() + "<" + dto.getDtoType() + ">");
 
     if (!source.exists(config.getModelPackage() + "." + simpleName)) {
@@ -64,8 +57,9 @@ public class GenerateTessellModel {
       final String innerClassName = StringUtils.capitalize(p.getName()) + "Value";
 
       final GField f = baseClass.getField(p.getName()).setFinal().setPublic();
-      f.type(getPropertyType(p));
-      f.initialValue("add({}(new {}()))", getInitializerPrefix(p), innerClassName);
+      final String propertyType = baseClass.stripAndImportPackageIfPossible(getPropertyType(p));
+      f.type(propertyType);
+      f.initialValue("add(new {}(new {}()))", propertyType, innerClassName);
 
       // would be nice it we could avoid this indirection and just use reflection
       // maybe AutoBean.get("foo")/AutoBean.set("foo", bar) will happen someday.
@@ -126,24 +120,6 @@ public class GenerateTessellModel {
         return customType;
       } else {
         return propertyPackage + ".BasicProperty<" + p.getDtoTypeBoxed() + ">";
-      }
-    }
-  }
-
-  private String getInitializerPrefix(final DtoProperty p) {
-    final String type = propertyInitializers.get(p.getDtoTypeBoxed());
-    if (type != null) {
-      return type;
-    } else if (p.isEnum()) {
-      return "NewProperty.enumProperty";
-    } else if (p.isList()) {
-      return "NewProperty.listProperty";
-    } else {
-      final String customType = config.getModelPropertyType(p.getDtoType());
-      if (customType != null) {
-        return "new " + substringAfterLast(customType, ".");
-      } else {
-        return "NewProperty.basicProperty";
       }
     }
   }
