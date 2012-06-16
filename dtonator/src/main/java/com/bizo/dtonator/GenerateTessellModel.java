@@ -26,6 +26,7 @@ public class GenerateTessellModel {
     propertyTypes.put("java.lang.String", propertyPackage + ".StringProperty");
     propertyTypes.put("java.lang.Long", propertyPackage + ".LongProperty");
     propertyTypes.put("java.lang.Integer", propertyPackage + ".IntegerProperty");
+    propertyTypes.put("java.lang.Boolean", propertyPackage + ".BooleanProperty");
   }
 
   private final RootConfig config;
