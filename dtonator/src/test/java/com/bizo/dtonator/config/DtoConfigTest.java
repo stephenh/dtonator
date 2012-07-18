@@ -79,6 +79,13 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(1).getName(), is("b"));
   }
 
+  // Terminology:
+  // "mapped" == exists on the domain object, extension=false
+  // "mapped overrides" == from domain object, but still needs converted, extension=true
+  // "currently called extension" == not on the domain object, extension=true
+  //
+  // "extension" can apply to both mapped or "extra" (new term) properties
+
   @Test
   public void testManualProperties() {
     // given no domain object, but manually specified properties
@@ -305,6 +312,37 @@ public class DtoConfigTest {
     final DtoConfig dc = rootConfig.getDto("ParentDto");
     assertThat(dc.getProperties().size(), is(1));
     assertThat(dc.getProperties().get(0).getName(), is("name"));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreAnIdOfAnEntity() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "id", "java.lang.Integer");
+    oracle.addProperty("com.domain.Child", "parent", "com.domain.Parent");
+    addDto("ParentDto", domain("Parent"));
+    addDto("ChildDto", domain("Child"), properties("parentId"));
+    // then it only has the name property
+    final DtoConfig dc = rootConfig.getDto("ChildDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("parentId"));
+    assertThat(dc.getProperties().get(0).isChainedId(), is(true));
+    assertThat(dc.getProperties().get(0).getGetterMethodName(), is("getParent"));
+    assertThat(dc.getProperties().get(0).getSetterMethodName(), is("setParent"));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreAnIdOfAnEntityWithADifferentType() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "id", "java.lang.Integer");
+    oracle.addProperty("com.domain.Child", "parent", "com.domain.Parent");
+    addDto("ParentDto", domain("Parent"));
+    addDto("ChildDto", domain("Child"), properties("parentId java.lang.Long"));
+    // then it only has the name property
+    final DtoConfig dc = rootConfig.getDto("ChildDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("parentId"));
+    assertThat(dc.getProperties().get(0).isChainedId(), is(false));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
   }
 
   @Test

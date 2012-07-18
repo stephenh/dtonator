@@ -14,6 +14,7 @@ public class DtoProperty {
   private final String name;
   private final boolean readOnly;
   private final boolean isRecursive;
+  private final boolean isChainedId;
   /** could be String, Money (value type), Employer, List<Employer>. */
   private final String domainType;
   /** could be String, Money (value type), EmployerDto, ArrayList<EmployerDto> */
@@ -27,6 +28,7 @@ public class DtoProperty {
     final String name,
     final boolean readOnly,
     final boolean isRecursive,
+    final boolean isChainedId,
     final String dtoType,
     final String domainType,
     final String getterMethodName,
@@ -36,6 +38,7 @@ public class DtoProperty {
     this.name = name;
     this.readOnly = readOnly;
     this.isRecursive = isRecursive;
+    this.isChainedId = isChainedId;
     this.dtoType = dtoType;
     this.domainType = domainType;
     this.getterMethodName = getterMethodName;
@@ -91,7 +94,7 @@ public class DtoProperty {
 
   /** only meaningful for non-manual dtos, otherwise everything is manual... */
   public boolean isExtension() {
-    return getterMethodName == null && setterNameMethod == null;
+    return getterMethodName == null && setterNameMethod == null && !isChainedId();
   }
 
   @Override
@@ -121,6 +124,10 @@ public class DtoProperty {
 
   public boolean isRecursive() {
     return isRecursive;
+  }
+
+  public boolean isChainedId() {
+    return isChainedId;
   }
 
 }

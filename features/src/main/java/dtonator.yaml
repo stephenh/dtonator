@@ -50,6 +50,11 @@ EmployeeWithWritableEmployerDto:
   domain: Employee
   properties: id, name, employer!
 
+# testing a child with it's parent id
+EmployeeWithEmployerIdDto:
+  domain: Employee
+  properties: id, employerId
+
 # enums
 EmployeeType:
   domain: EmployeeType

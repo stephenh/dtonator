@@ -38,6 +38,7 @@ public class DtoConfig {
       final List<PropConfig> pcs = getPropertiesConfig();
       if (getDomainType() != null) {
         addPropertiesFromDomainObject(pcs);
+        addChainedPropertiesFromDomainObject(pcs);
       }
       addLeftOverExtensionProperties(pcs);
       sortProperties(pcs, properties);
@@ -136,6 +137,26 @@ public class DtoConfig {
     return getSimpleName();
   }
 
+  private void addChainedPropertiesFromDomainObject(final List<PropConfig> pcs) {
+    for (final Prop p : oracle.getProperties(getDomainType())) {
+      final PropConfig pc = findChainedPropConfig(pcs, p.name);
+      if (pc != null && p.getterMethodName != null && p.setterNameMethod != null && (pc.type == null || pc.type.equals(p.type))) {
+        pc.markNotExtensionProperty();
+        properties.add(new DtoProperty(//
+          oracle,
+          root,
+          pc != null ? pc.name : p.name, // use the potentially aliased if we have one
+          pc != null ? pc.isReadOnly : p.readOnly,
+          false,
+          true,
+          "java.lang.Long",
+          p.type,
+          p.getterMethodName,
+          p.setterNameMethod));
+      }
+    }
+  }
+
   private void addPropertiesFromDomainObject(final List<PropConfig> pcs) {
     final boolean includeUnmapped = pcs.size() == 0 || hasPropertiesInclude();
     for (final Prop p : oracle.getProperties(getDomainType())) {
@@ -203,6 +224,7 @@ public class DtoConfig {
         pc != null ? pc.name : p.name, // use the potentially aliased if we have one
         pc != null ? pc.isReadOnly : p.readOnly,
         pc != null ? pc.isRecursive : false, // default to not writing back to child entities
+        false,
         dtoType,
         domainType,
         extension ? null : p.getterMethodName,
@@ -247,7 +269,7 @@ public class DtoConfig {
         dtoType = pc.type;
         domainType = dtoType;
       }
-      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, false, dtoType, domainType, null, null));
+      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, false, false, dtoType, domainType, null, null));
     }
   }
 
@@ -407,6 +429,15 @@ public class DtoConfig {
   private static PropConfig findPropConfig(final List<PropConfig> pcs, final String name) {
     for (final PropConfig pc : pcs) {
       if (pc.domainName.equals(name)) {
+        return pc;
+      }
+    }
+    return null;
+  }
+
+  private static PropConfig findChainedPropConfig(final List<PropConfig> pcs, final String name) {
+    for (final PropConfig pc : pcs) {
+      if (pc.domainName.equals(name + "Id")) { // hardcoded to id for now
         return pc;
       }
     }

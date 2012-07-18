@@ -149,6 +149,8 @@ public class GenerateDto {
       } else if (dp.isEnum()) {
         // delegate to the enum converter
         toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
+      } else if (dp.isChainedId()) {
+        toDto.body.line("_ o.{}() == null ? null : o.{}().getId(),", dp.getGetterMethodName(), dp.getGetterMethodName()); // assume getId
       } else if (dp.isEntity()) {
         // delegate to the entity's toDto converter
         toDto.body.line("_ toDto(o.{}()),", dp.getGetterMethodName());
@@ -206,6 +208,12 @@ public class GenerateDto {
           dp.getName());
       } else if (dp.isEnum()) {
         fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+      } else if (dp.isChainedId()) {
+        fromDto.body.line("if (dto.{} != null) {", dp.getName());
+        fromDto.body.line("_ o.{}(lookup.lookup({}.class, dto.{}));", dp.getSetterMethodName(), dp.getDomainType(), dp.getName());
+        fromDto.body.line("} else {");
+        fromDto.body.line("_ o.{}(null);", dp.getSetterMethodName());
+        fromDto.body.line("}");
       } else if (dp.isEntity()) {
         if (dp.isRecursive()) {
           fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
