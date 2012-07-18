@@ -8,6 +8,9 @@ require 'buildr/ivy_extension'
 
 THIS_VERSION = ENV['version'] || 'SNAPSHOT'
 
+# to resolve the ${dtonator.version} in the ivy.xml
+Java.java.lang.System.setProperty("dtonator.version", THIS_VERSION)
+
 define 'dtonator' do
   project.group = 'com.bizo'
   project.version = THIS_VERSION
