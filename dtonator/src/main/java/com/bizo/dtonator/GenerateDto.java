@@ -127,7 +127,9 @@ public class GenerateDto {
     addToDtoMethodToMapper();
     addToDtoOverloadToMapperIfAble();
     addFromDtoMethodToMapper();
-    addFromOnlyDtoMethodToMapper();
+    if (dto.hasIdProperty()) {
+      addFromOnlyDtoMethodToMapper();
+    }
   }
 
   /** Adds {@code mapper.toXxxDto(Domain)}. */

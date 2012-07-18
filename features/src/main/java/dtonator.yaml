@@ -55,6 +55,11 @@ EmployeeWithEmployerIdDto:
   domain: Employee
   properties: id, employerId
 
+# testing not having an id
+EmployeeWithOnlyNameDto:
+  domain: Employee
+  properties: name
+
 # enums
 EmployeeType:
   domain: EmployeeType

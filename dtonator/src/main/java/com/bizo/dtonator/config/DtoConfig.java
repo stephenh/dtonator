@@ -123,6 +123,15 @@ public class DtoConfig {
     return getDomainType() == null;
   }
 
+  public boolean hasIdProperty() {
+    for (final DtoProperty p : getProperties()) {
+      if (p.getName().equals("id")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   public boolean hasExtensionProperties() {
     for (final DtoProperty p : getProperties()) {
       if (p.isExtension()) {
