@@ -9,6 +9,8 @@ import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.bizo.dtonator.properties.Prop;
 import com.bizo.dtonator.properties.TypeOracle;
@@ -16,6 +18,7 @@ import com.bizo.dtonator.properties.TypeOracle;
 public class DtoConfig {
 
   private static final List<String> javaLangTypes = list("String", "Integer", "Boolean", "Long", "Double");
+  private static final List<String> javaUtilTypes = list("ArrayList", "HashMap", "List", "Map");
   private final TypeOracle oracle;
   private final RootConfig root;
   private final String simpleName;
@@ -160,16 +163,9 @@ public class DtoConfig {
         } else if (isListOfDtos(root, pc.type)) {
           // the type was java.util.ArrayList<FooDto>, resolve the dto package
           dtoType = "java.util.ArrayList<" + root.getDtoPackage() + "." + listType(pc.type) + ">";
-        } else if (pc.type.startsWith("ArrayList")) {
-          // this is not a DTO (that was previous clause), so is something like ArrayList<Integer>
-          // which for now the user needs to map.
-          dtoType = "java.util." + pc.type;
-          extension = true;
-        } else if (javaLangTypes.contains(pc.type)) {
-          // type was String/Long/etc., need to fully quality it
-          dtoType = "java.lang." + pc.type;
         } else {
           dtoType = pc.type;
+          extension = !dtoType.equals(domainType);
         }
         // TODO pc.type might ValueType (client-side), need to fully quality it?
       } else {
@@ -240,12 +236,6 @@ public class DtoConfig {
         dtoType = "java.util.ArrayList<" + root.getDtoPackage() + "." + listType(pc.type) + ">";
         // loosen the type to List, otherwise the user still has to provide the dtos themselves
         domainType = "java.util.List<" + root.getDtoPackage() + "." + listType(pc.type) + ">";
-      } else if (pc.type.startsWith("ArrayList")) {
-        dtoType = "java.util." + pc.type;
-        domainType = dtoType;
-      } else if (javaLangTypes.contains(pc.type)) {
-        dtoType = "java.lang." + pc.type;
-        domainType = dtoType;
       } else if (root.getValueTypeForDtoType(pc.type) != null) {
         dtoType = root.getValueTypeForDtoType(pc.type).dtoType; // fully qualified
         domainType = root.getValueTypeForDtoType(pc.type).domainType;
@@ -290,16 +280,16 @@ public class DtoConfig {
   }
 
   /** Small abstraction around the property strings in the YAML file. */
-  private static class PropConfig {
-    private final String name;
-    private final String domainName;
-    private final String type;
-    private final boolean isExclusion;
-    private final boolean isReadOnly;
-    private final boolean isRecursive;
-    private boolean mapped = false;
+  static class PropConfig {
+    final String name;
+    final String domainName;
+    final String type;
+    final boolean isExclusion;
+    final boolean isReadOnly;
+    final boolean isRecursive;
+    boolean mapped = false;
 
-    private PropConfig(final String value) {
+    PropConfig(final String value) {
       // examples:
       // foo
       // foo Bar
@@ -312,7 +302,7 @@ public class DtoConfig {
       if (value.contains(" ")) {
         final String[] parts = splitIntoNameAndType(value);
         _name = parts[0];
-        type = parts[1];
+        type = javaLangOrUtilPrefixIfNecessary(parts[1]);
         isExclusion = false;
       } else if (value.startsWith("-")) {
         _name = value.substring(1);
@@ -359,6 +349,28 @@ public class DtoConfig {
       }
       return new String[] { parts[0], parts[1] };
     }
+  }
+
+  private static final Pattern types = Pattern.compile("[A-Za-z0-9\\.]+");
+
+  // Resolves String -> java.lang.String, ArrayList<Integer> -> java.util.ArrayList<java.lang.Integer>
+  private static String javaLangOrUtilPrefixIfNecessary(final String type) {
+    final Matcher m = types.matcher(type);
+    final StringBuffer sb = new StringBuffer();
+    while (m.find()) {
+      final String part = m.group(0);
+      final String replace;
+      if (javaLangTypes.contains(part)) {
+        replace = "java.lang." + part;
+      } else if (javaUtilTypes.contains(part)) {
+        replace = "java.util." + part;
+      } else {
+        replace = part;
+      }
+      m.appendReplacement(sb, replace);
+    }
+    m.appendTail(sb);
+    return sb.toString();
   }
 
   private static boolean doNotMap(final Prop p, final PropConfig pc, final boolean includeUnmapped) {
@@ -431,7 +443,7 @@ public class DtoConfig {
 
   static boolean isListOfDtos(final RootConfig config, final String pcType) {
     // assume the user wanted List to be ArrayList
-    if ((pcType.startsWith("ArrayList<") || pcType.startsWith("List<")) && pcType.endsWith(">")) {
+    if ((pcType.startsWith("java.util.ArrayList<") || pcType.startsWith("java.util.List<")) && pcType.endsWith(">")) {
       return config.getDto(listType(pcType)) != null;
     }
     return false;

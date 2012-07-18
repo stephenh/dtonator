@@ -117,8 +117,8 @@ public class DtoConfigTest {
     addDto("FooDto", properties("a ArrayList<String>"));
     final DtoConfig dc = rootConfig.getDto("FooDto");
     // then we get the right type
-    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<String>"));
-    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.ArrayList<String>"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<java.lang.String>"));
+    assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.ArrayList<java.lang.String>"));
     assertThat(dc.getProperties().get(0).isExtension(), is(true));
   }
 
@@ -130,7 +130,7 @@ public class DtoConfigTest {
     addDto("FooDto", domain("Foo"), properties("children ArrayList<String>"));
     final DtoConfig dc = rootConfig.getDto("FooDto");
     // then we get the right type
-    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<String>"));
+    assertThat(dc.getProperties().get(0).getDtoType(), is("java.util.ArrayList<java.lang.String>"));
     assertThat(dc.getProperties().get(0).getDomainType(), is("java.util.List<Child>"));
     assertThat(dc.getProperties().get(0).isExtension(), is(true));
   }
@@ -145,6 +145,8 @@ public class DtoConfigTest {
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
     assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.ValueType"));
+    assertThat(dc.getProperties().get(0).isValueType(), is(true));
+    assertThat(dc.getProperties().get(0).isExtension(), is(false));
   }
 
   @Test
@@ -157,6 +159,8 @@ public class DtoConfigTest {
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
     assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.ValueType"));
+    assertThat(dc.getProperties().get(0).isValueType(), is(true));
+    assertThat(dc.getProperties().get(0).isExtension(), is(false));
   }
 
   @Test
@@ -169,6 +173,7 @@ public class DtoConfigTest {
     assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.values.ValueType"));
     assertThat(dc.getProperties().get(0).getDomainType(), is("com.domain.values.ValueType"));
     assertThat(dc.getProperties().get(0).isValueType(), is(true));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
   }
 
   @Test
@@ -251,6 +256,30 @@ public class DtoConfigTest {
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(1));
     assertThat(dc.getProperties().get(0).isReadOnly(), is(true));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreTheSameType() {
+    // given Foo.a
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.Integer");
+    // and also mapped as an integer
+    addDto("FooDto", domain("Foo"), properties("a Integer"));
+    // then it's not an extension property
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).isExtension(), is(false));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreADifferentType() {
+    // given Foo.a
+    oracle.addProperty("com.domain.Foo", "a", "java.lang.Integer");
+    // and mapped as long
+    addDto("FooDto", domain("Foo"), properties("a Long"));
+    // then we know it's an extension property
+    final DtoConfig dc = rootConfig.getDto("FooDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
   }
 
   @Test
