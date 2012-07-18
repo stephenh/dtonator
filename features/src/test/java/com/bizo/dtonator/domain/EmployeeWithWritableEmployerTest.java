@@ -37,8 +37,7 @@ public class EmployeeWithWritableEmployerTest {
     lookup.store(1l, er1);
 
     // incoming employee with the er set
-    final EmployeeWithWritableEmployerDto dto =
-      new EmployeeWithWritableEmployerDto(null, "e", new EmployerDto(1l, "changed"));
+    final EmployeeWithWritableEmployerDto dto = new EmployeeWithWritableEmployerDto(null, "e", new EmployerDto(1l, "changed"));
 
     final Employee e = mapper.fromDto(dto);
     assertThat(e.getName(), is("e"));
@@ -50,8 +49,7 @@ public class EmployeeWithWritableEmployerTest {
   @Test
   public void testFromDtoWithANewEmployer() {
     // incoming employee with the er id null
-    final EmployeeWithWritableEmployerDto dto =
-      new EmployeeWithWritableEmployerDto(null, "e", new EmployerDto(null, "er"));
+    final EmployeeWithWritableEmployerDto dto = new EmployeeWithWritableEmployerDto(null, "e", new EmployerDto(null, "er"));
 
     final Employee e = mapper.fromDto(dto);
     assertThat(e.getName(), is("e"));
@@ -59,5 +57,15 @@ public class EmployeeWithWritableEmployerTest {
     assertThat(e.getEmployer(), is(not(nullValue())));
     // ...and also write back the employer's attributes
     assertThat(e.getEmployer().getName(), is("er"));
+  }
+
+  @Test
+  public void testFromDtoWithANullEmployer() {
+    // incoming employee with the er id null
+    final EmployeeWithWritableEmployerDto dto = new EmployeeWithWritableEmployerDto(null, "e", null);
+
+    final Employee e = mapper.fromDto(dto);
+    assertThat(e.getName(), is("e"));
+    assertThat(e.getEmployer(), is(nullValue()));
   }
 }

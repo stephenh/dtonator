@@ -221,7 +221,9 @@ public class GenerateDto {
           fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
         } else {
           // assume we should load the entity by its id
-          fromDto.body.line("if (dto.{}.id != null) {", dp.getName());
+          fromDto.body.line("if (dto.{} == null) {", dp.getName());
+          fromDto.body.line("_ o.{}(null);", dp.getSetterMethodName());
+          fromDto.body.line("} else if (dto.{}.id != null) {", dp.getName());
           fromDto.body.line("_ o.{}(lookup.lookup({}.class, dto.{}.id));", dp.getSetterMethodName(), dp.getDomainType(), dp.getName());
           fromDto.body.line("} else {");
           fromDto.body.line("_ o.{}(new {}());", dp.getSetterMethodName(), dp.getDomainType());
@@ -258,6 +260,9 @@ public class GenerateDto {
   private void addFromOnlyDtoMethodToMapper() {
     final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getDtoType(), "dto"));
     fromDto.returnType(dto.getDomainType());
+    fromDto.body.line("if (dto == null) {");
+    fromDto.body.line("_ return null;");
+    fromDto.body.line("}");
     fromDto.body.line("final {} o;", dto.getDomainType());
     fromDto.body.line("if (dto.id != null) {");
     fromDto.body.line("_ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());

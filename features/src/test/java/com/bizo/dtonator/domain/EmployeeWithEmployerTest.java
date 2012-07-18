@@ -58,4 +58,14 @@ public class EmployeeWithEmployerTest {
     // ...but don't write over the employer's attributes
     assertThat(e.getEmployer().getName(), is(nullValue()));
   }
+
+  @Test
+  public void testFromDtoWithANullEmployer() {
+    // incoming employee with null er
+    final EmployeeWithEmployerDto dto = new EmployeeWithEmployerDto(null, "e", null);
+
+    final Employee e = mapper.fromDto(dto);
+    assertThat(e.getName(), is("e"));
+    assertThat(e.getEmployer(), is(nullValue()));
+  }
 }
