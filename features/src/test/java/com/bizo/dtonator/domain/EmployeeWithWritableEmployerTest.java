@@ -31,6 +31,15 @@ public class EmployeeWithWritableEmployerTest {
   }
 
   @Test
+  public void testToDtoWithNullEmployer() {
+    final Employee e = new Employee(1l, "e");
+
+    final EmployeeWithWritableEmployerDto dto = mapper.toEmployeeWithWritableEmployerDto(e);
+    assertThat(dto.id, is(1l));
+    assertThat(dto.employer, is(nullValue()));
+  }
+
+  @Test
   public void testFromDto() {
     // store a reference to er1 for the incoming dto to refer to
     final Employer er1 = new Employer(1l, "er");

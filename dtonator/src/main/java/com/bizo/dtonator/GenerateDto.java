@@ -136,6 +136,9 @@ public class GenerateDto {
   private void addToDtoMethodToMapper() {
     final GMethod toDto = mapper.getMethod("to" + dto.getSimpleName(), arg(dto.getDomainType(), "o"));
     toDto.returnType(dto.getDtoType());
+    toDto.body.line("if (o == null) {");
+    toDto.body.line("_ return null;");
+    toDto.body.line("}");
     toDto.body.line("return new {}(", dto.getDtoType());
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isExtension()) {

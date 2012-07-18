@@ -31,6 +31,16 @@ public class EmployeeWithEmployerTest {
   }
 
   @Test
+  public void testToDtoWithNullEmployer() {
+    final Employee e = new Employee(1l, "e");
+
+    final EmployeeWithEmployerDto dto = mapper.toEmployeeWithEmployerDto(e);
+    assertThat(dto.id, is(1l));
+    assertThat(dto.name, is("e"));
+    assertThat(dto.employer, is(nullValue()));
+  }
+
+  @Test
   public void testFromDto() {
     // store a reference to er1 for the incoming dto to refer to
     final Employer er1 = new Employer(1l, "er");
