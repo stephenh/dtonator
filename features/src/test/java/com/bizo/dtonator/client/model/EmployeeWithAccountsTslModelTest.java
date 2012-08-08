@@ -1,5 +1,6 @@
 package com.bizo.dtonator.client.model;
 
+import static joist.util.Copy.list;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -38,5 +39,14 @@ public class EmployeeWithAccountsTslModelTest {
     assertThat(e.accountModels.get().get(0).all().isTouched(), is(true));
     assertThat(e.all().isTouched(), is(true));
     assertThat(e.all().get(), is(false));
+  }
+
+  @Test
+  public void findsExistingChildrenInDto() {
+    final EmployeeAccountTslDto c1 = new EmployeeAccountTslDto(1l, new Dollars(0), null);
+    final EmployeeWithAccountsTslModel e = new EmployeeWithAccountsTslModel(//
+      new EmployeeWithAccountsTslDto("e", list(c1)));
+    assertThat(e.accounts.get().size(), is(1));
+    assertThat(e.accountModels.get().size(), is(1));
   }
 }
