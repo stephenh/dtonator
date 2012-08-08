@@ -112,10 +112,10 @@ public class GenerateDto {
       }
       final String niceName = uncapitalize(simple(dto.getDomainType()));
       // add get{propertyName}
-      mb.getMethod(extensionGetter(p), arg(dto.getDomainType(), niceName)).returnType(p.getDtoType());
+      mb.getMethod(extensionGetter(p), arg("Mapper", "m"), arg(dto.getDomainType(), niceName)).returnType(p.getDtoType());
       if (!p.isReadOnly()) {
         // add set{propertyName}
-        mb.getMethod(extensionSetter(p), arg(dto.getDomainType(), niceName), arg(p.getDtoType(), p.getName()));
+        mb.getMethod(extensionSetter(p), arg("Mapper", "m"), arg(dto.getDomainType(), niceName), arg(p.getDtoType(), p.getName()));
       }
     }
   }
@@ -143,7 +143,7 @@ public class GenerateDto {
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isExtension()) {
         // delegate to the user's mapper method for this property
-        toDto.body.line("_ {}.{}(o),", mapperFieldName(dto), extensionGetter(dp));
+        toDto.body.line("_ {}.{}(this, o),", mapperFieldName(dto), extensionGetter(dp));
       } else if (dp.isValueType()) {
         // delegate to the user type mapper for this property
         toDto.body.line(
@@ -203,7 +203,7 @@ public class GenerateDto {
         continue;
       }
       if (dp.isExtension()) {
-        fromDto.body.line("{}.{}(o, dto.{});", mapperFieldName(dto), extensionSetter(dp), dp.getName());
+        fromDto.body.line("{}.{}(this, o, dto.{});", mapperFieldName(dto), extensionSetter(dp), dp.getName());
       } else if (dp.isValueType()) {
         fromDto.body.line(
           "o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));",
