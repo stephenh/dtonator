@@ -52,8 +52,8 @@ public class EmployeeWithEmployerTest {
     final Employee e = mapper.fromDto(dto);
     assertThat(e.getName(), is("e"));
     assertThat(e.getEmployer(), is(sameInstance(er1)));
-    // by default don't write over the employer's attributes
-    assertThat(e.getEmployer().getName(), is("er"));
+    // since this is recursive, write back to the employer
+    assertThat(e.getEmployer().getName(), is("er changed"));
   }
 
   @Test
@@ -65,8 +65,8 @@ public class EmployeeWithEmployerTest {
     assertThat(e.getName(), is("e"));
     // we go ahead and instantiate a new employer...
     assertThat(e.getEmployer(), is(not(nullValue())));
-    // ...but don't write over the employer's attributes
-    assertThat(e.getEmployer().getName(), is(nullValue()));
+    // ...and also write back the employer's attributes
+    assertThat(e.getEmployer().getName(), is("er"));
   }
 
   @Test

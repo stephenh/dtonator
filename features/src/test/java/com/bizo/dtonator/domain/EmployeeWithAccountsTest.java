@@ -2,7 +2,6 @@ package com.bizo.dtonator.domain;
 
 import static joist.util.Copy.list;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -41,8 +40,8 @@ public class EmployeeWithAccountsTest {
     assertThat(ee.getAccounts().size(), is(1));
     // the same ea1 instance from lookup was used
     assertThat(ee.getAccounts(), contains(ea1));
-    // and we didn't override the name (for now/in this configuration)
-    assertThat(ea1.getName(), is("ea1"));
+    // and we did recursively write back the name
+    assertThat(ea1.getName(), is("changed name"));
   }
 
   @Test
@@ -51,9 +50,9 @@ public class EmployeeWithAccountsTest {
     final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", list( //
       new EmployeeAccountDto(null, null, "name")));
     final Employee ee = mapper.fromDto(dto);
-    // since recursive writes are disabled, we created an instance
+    // since writes are recursive, we created an instance
     assertThat(ee.getAccounts().size(), is(1));
-    // but it's not populated
-    assertThat(ee.getAccounts().get(0).getName(), is(nullValue()));
+    // and we did recursively write back the name
+    assertThat(ee.getAccounts().get(0).getName(), is("name"));
   }
 }

@@ -220,18 +220,7 @@ public class GenerateDto {
         fromDto.body.line("_ o.{}(null);", dp.getSetterMethodName());
         fromDto.body.line("}");
       } else if (dp.isEntity()) {
-        if (dp.isRecursive()) {
-          fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
-        } else {
-          // assume we should load the entity by its id
-          fromDto.body.line("if (dto.{} == null) {", dp.getName());
-          fromDto.body.line("_ o.{}(null);", dp.getSetterMethodName());
-          fromDto.body.line("} else if (dto.{}.id != null) {", dp.getName());
-          fromDto.body.line("_ o.{}(lookup.lookup({}.class, dto.{}.id));", dp.getSetterMethodName(), dp.getDomainType(), dp.getName());
-          fromDto.body.line("} else {");
-          fromDto.body.line("_ o.{}(new {}());", dp.getSetterMethodName(), dp.getDomainType());
-          fromDto.body.line("}");
-        }
+        fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
       } else if (dp.isListOfEntities()) {
         final String helperMethod = dp.getName() + "For" + dto.getSimpleName();
         fromDto.body.line("o.{}({}(dto.{}));", dp.getSetterMethodName(), helperMethod, dp.getName());
@@ -247,9 +236,7 @@ public class GenerateDto {
         c.body.line("_ } else {");
         c.body.line("_ _ o = new {}();", dp.getSingleDomainType());
         c.body.line("_ }");
-        if (dp.isRecursive()) {
-          c.body.line("_ fromDto(o, dto);");
-        }
+        c.body.line("_ fromDto(o, dto);");
         c.body.line("_ os.add(o);");
         c.body.line("}");
         c.body.line("return os;");

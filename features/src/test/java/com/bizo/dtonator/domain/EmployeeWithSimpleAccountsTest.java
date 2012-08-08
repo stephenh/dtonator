@@ -40,8 +40,8 @@ public class EmployeeWithSimpleAccountsTest {
     assertThat(ee.getAccounts().size(), is(1));
     // the same ea1 instance from lookup was used
     assertThat(ee.getAccounts(), contains(ea1));
-    // and we didn't override the name (for now/in this configuration)
-    assertThat(ea1.getName(), is("ea1"));
+    // and we wrote back the new name
+    assertThat(ea1.getName(), is("changed name"));
   }
 
 }

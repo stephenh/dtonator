@@ -13,7 +13,6 @@ public class DtoProperty {
   private final RootConfig config;
   private final String name;
   private final boolean readOnly;
-  private final boolean isRecursive;
   private final boolean isChainedId;
   /** could be String, Money (value type), Employer, List<Employer>. */
   private final String domainType;
@@ -27,7 +26,6 @@ public class DtoProperty {
     final RootConfig config,
     final String name,
     final boolean readOnly,
-    final boolean isRecursive,
     final boolean isChainedId,
     final String dtoType,
     final String domainType,
@@ -37,7 +35,6 @@ public class DtoProperty {
     this.config = config;
     this.name = name;
     this.readOnly = readOnly;
-    this.isRecursive = isRecursive;
     this.isChainedId = isChainedId;
     this.dtoType = dtoType;
     this.domainType = domainType;
@@ -120,10 +117,6 @@ public class DtoProperty {
 
   public boolean isReadOnly() {
     return readOnly;
-  }
-
-  public boolean isRecursive() {
-    return isRecursive;
   }
 
   public boolean isChainedId() {

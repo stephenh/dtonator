@@ -8,7 +8,11 @@ import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,7 +160,6 @@ public class DtoConfig {
           root,
           pc != null ? pc.name : p.name, // use the potentially aliased if we have one
           pc != null ? pc.isReadOnly : p.readOnly,
-          false,
           true,
           "java.lang.Long",
           p.type,
@@ -232,7 +235,6 @@ public class DtoConfig {
         root,
         pc != null ? pc.name : p.name, // use the potentially aliased if we have one
         pc != null ? pc.isReadOnly : p.readOnly,
-        pc != null ? pc.isRecursive : false, // default to not writing back to child entities
         false,
         dtoType,
         domainType,
@@ -278,7 +280,7 @@ public class DtoConfig {
         dtoType = pc.type;
         domainType = dtoType;
       }
-      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, false, false, dtoType, domainType, null, null));
+      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, false, dtoType, domainType, null, null));
     }
   }
 
@@ -317,7 +319,6 @@ public class DtoConfig {
     final String type;
     final boolean isExclusion;
     final boolean isReadOnly;
-    final boolean isRecursive;
     boolean mapped = false;
 
     PropConfig(final String value) {
@@ -325,9 +326,7 @@ public class DtoConfig {
       // foo
       // foo Bar
       // ~foo
-      // foo!
-      // foo! Bar
-      // foo!(zaz) Bar
+      // foo(zaz) Bar
       String _name;
       String _domainName = null;
       if (value.contains(" ")) {
@@ -354,12 +353,6 @@ public class DtoConfig {
         _domainName = substringBetween(_name, "(", ")");
         _name = substringBefore(_name, "(");
       }
-      if (_name.endsWith("!")) {
-        isRecursive = true;
-        _name = _name.substring(0, _name.length() - 1);
-      } else {
-        isRecursive = false;
-      }
       name = _name;
       domainName = defaultString(_domainName, _name);
     }
@@ -370,7 +363,7 @@ public class DtoConfig {
 
     @Override
     public String toString() {
-      return (isExclusion ? "-" : "") + name + (isRecursive ? "!" : "") + (type == null ? "" : " " + type);
+      return (isExclusion ? "-" : "") + name + (type == null ? "" : " " + type);
     }
 
     private static String[] splitIntoNameAndType(final String value) {
