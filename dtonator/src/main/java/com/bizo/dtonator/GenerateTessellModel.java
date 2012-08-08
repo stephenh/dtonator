@@ -1,6 +1,7 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
+import static org.apache.commons.lang.StringUtils.substringAfterLast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,11 @@ public class GenerateTessellModel {
     // field to hold the dto
     baseClass.getField("dto").type(dto.getDtoType());
 
+    // cstr
+    final GMethod cstr = baseClass.getConstructor(arg(dto.getDtoType(), "dto")).setProtected();
+    cstr.body.line("merge(dto);"); // use setDto instead?
+    cstr.body.line("addRules();");
+
     for (final DtoProperty p : dto.getProperties()) {
       // the public final field for this XxxProperty
       final GField f = baseClass.getField(p.getName()).setFinal().setPublic().type(getPropertyType(p));
@@ -86,6 +92,46 @@ public class GenerateTessellModel {
       // toString()
       innerValue.getMethod("toString").returnType("String").addOverride().body.line(//
         "return getName() + \" (\" + get() + \")\";");
+
+      if (p.isListOfEntities()) {
+        final DtoConfig other = config.getDto(substringAfterLast(p.getSingleDtoType(), "."));
+        if (other != null && other.includeTessellModel()) {
+          final String modelFieldName = StringUtils.removeEnd(p.getName(), "s") + "Models";
+          final String dtoType = p.getSingleDtoType();
+          final String modelType = other.getSimpleName().replaceAll("Dto$", "") + "Model";
+
+          // setup the xxxModels field
+          final GField m = baseClass.getField(modelFieldName).type("ListProperty<{}>", modelType).setPublic().setFinal();
+          m.initialValue("{}.as(new {}Converter())", p.getName(), modelType);
+
+          // add a converter back/forth
+          final GClass converter = baseClass.getInnerClass(modelType + "Converter").setPrivate();
+          converter.implementsInterface("org.tessell.model.properties.ListProperty.ElementConverter<{}, {}>", dtoType, modelType);
+
+          // dto -> model
+          final GMethod to = converter.getMethod("to", arg(dtoType, "dto")).returnType(modelType).addAnnotation("@Override");
+          to.body.line("return new {}(dto);", modelType);
+
+          // model -> dto
+          final GMethod from = converter.getMethod("from", arg(modelType, "model")).returnType(dtoType).addAnnotation("@Override");
+          from.body.line("return model.getDto();");
+
+          cstr.body.line("{}.addValueAddedHandler(new ValueAddedHandler<{}>() {", modelFieldName, modelType);
+          cstr.body.line("_ public void onValueAdded(ValueAddedEvent<{}> e) {", modelType);
+          cstr.body.line("_ _ all.add(e.getValue().all());");
+          cstr.body.line("_ }");
+          cstr.body.line("});");
+          cstr.body.line("{}.addValueRemovedHandler(new ValueRemovedHandler<{}>() {", modelFieldName, modelType);
+          cstr.body.line("_ public void onValueRemoved(ValueRemovedEvent<{}> e) {", modelType);
+          cstr.body.line("_ _ all.remove(e.getValue().all());");
+          cstr.body.line("_ }");
+          cstr.body.line("});");
+          baseClass.addImports("org.tessell.model.events.ValueAddedEvent");
+          baseClass.addImports("org.tessell.model.events.ValueAddedHandler");
+          baseClass.addImports("org.tessell.model.events.ValueRemovedEvent");
+          baseClass.addImports("org.tessell.model.events.ValueRemovedHandler");
+        }
+      }
     }
 
     // merge
@@ -96,11 +142,6 @@ public class GenerateTessellModel {
     // getDto
     final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType()).addOverride();
     getDto.body.line("return dto;");
-
-    // cstr
-    final GMethod cstr = baseClass.getConstructor(arg(dto.getDtoType(), "dto")).setProtected();
-    cstr.body.line("merge(dto);"); // use setDto instead?
-    cstr.body.line("addRules();");
 
     // addRules
     baseClass.getMethod("addRules").setProtected().setAbstract();
