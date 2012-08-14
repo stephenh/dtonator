@@ -62,6 +62,10 @@ public class DtoProperty {
     return DtoConfig.isListOfEntities(config, domainType);
   }
 
+  public boolean isListOfDtos() {
+    return DtoConfig.isListOfDtos(config, dtoType);
+  }
+
   public String getSingleDtoType() {
     // assumes isListOfEntities
     return substringBetween(getDtoType(), "<", ">");
@@ -70,6 +74,11 @@ public class DtoProperty {
   public String getSimpleSingleDtoType() {
     // assumes isListOfEntities
     return substringAfterLast(getSingleDtoType(), ".");
+  }
+
+  public DtoConfig getSingleDto() {
+    // assumes isListOfEntities (or manual isListOfDtos)
+    return config.getDto(getSimpleSingleDtoType());
   }
 
   public String getSingleDomainType() {

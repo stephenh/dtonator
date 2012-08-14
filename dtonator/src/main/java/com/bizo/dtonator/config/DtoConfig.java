@@ -8,11 +8,7 @@ import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -477,7 +473,7 @@ public class DtoConfig {
   static boolean isListOfDtos(final RootConfig config, final String pcType) {
     // assume the user wanted List to be ArrayList
     if ((pcType.startsWith("java.util.ArrayList<") || pcType.startsWith("java.util.List<")) && pcType.endsWith(">")) {
-      return config.getDto(listType(pcType)) != null;
+      return config.getDto(simple(listType(pcType))) != null;
     }
     return false;
   }

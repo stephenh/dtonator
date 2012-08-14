@@ -1,7 +1,6 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
-import static org.apache.commons.lang.StringUtils.substringAfterLast;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -93,8 +92,8 @@ public class GenerateTessellModel {
       innerValue.getMethod("toString").returnType("String").addOverride().body.line(//
         "return getName() + \" (\" + get() + \")\";");
 
-      if (p.isListOfEntities()) {
-        final DtoConfig other = config.getDto(substringAfterLast(p.getSingleDtoType(), "."));
+      if (p.isListOfDtos()) {
+        final DtoConfig other = p.getSingleDto();
         if (other != null && other.includeTessellModel()) {
           final String modelFieldName = StringUtils.removeEnd(p.getName(), "s") + "Models";
           final String dtoType = p.getSingleDtoType();

@@ -32,7 +32,7 @@ public class Names {
   }
 
   public static String simple(final String type) {
-    return substringAfterLast(type, ".");
+    return type.contains(".") ? substringAfterLast(type, ".") : type;
   }
 
 }
