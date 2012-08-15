@@ -15,7 +15,7 @@ import com.bizo.dtonator.mapper.Mapper;
 public class EmployeeTest {
 
   private final StubDomainLookup lookup = new StubDomainLookup();
-  private final Mapper mapper = new Mapper(lookup, null, null, new DefaultDollarsMapper());
+  private final Mapper mapper = new Mapper(lookup, null, null, null, new DefaultDollarsMapper());
 
   @Test
   public void testToDto() {
@@ -65,8 +65,7 @@ public class EmployeeTest {
   @Test
   public void testFromDtoWithLookupButNewInstance() {
     // when a dto comes in with id == null
-    final EmployeeDto dto =
-      new EmployeeDto(null, "e", new Dollars(100), com.bizo.dtonator.dtos.EmployeeType.LARGE, true);
+    final EmployeeDto dto = new EmployeeDto(null, "e", new Dollars(100), com.bizo.dtonator.dtos.EmployeeType.LARGE, true);
     // then we get a new instance
     final Employee e = mapper.fromDto(dto);
     // and it got mapped

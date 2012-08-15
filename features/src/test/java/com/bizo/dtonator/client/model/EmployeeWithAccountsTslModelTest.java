@@ -14,12 +14,15 @@ import com.bizo.dtonator.dtos.EmployeeWithAccountsTslDto;
 
 public class EmployeeWithAccountsTslModelTest {
 
-  final EmployeeWithAccountsTslModel e = new EmployeeWithAccountsTslModel(//
-    new EmployeeWithAccountsTslDto("e", new ArrayList<EmployeeAccountTslDto>()));
+  final EmployeeWithAccountsTslModel e = new EmployeeWithAccountsTslModel(new EmployeeWithAccountsTslDto(//
+    "e",
+    new ArrayList<EmployeeAccountTslDto>(),
+    new ArrayList<EmployeeAccountTslDto>()));
 
   @Test
   public void hasAccountModels() {
     assertThat(e.accountModels.get().size(), is(0));
+    assertThat(e.otherAccountModels.get().size(), is(0));
   }
 
   @Test
@@ -45,8 +48,10 @@ public class EmployeeWithAccountsTslModelTest {
   public void findsExistingChildrenInDto() {
     final EmployeeAccountTslDto c1 = new EmployeeAccountTslDto(1l, new Dollars(0), null);
     final EmployeeWithAccountsTslModel e = new EmployeeWithAccountsTslModel(//
-      new EmployeeWithAccountsTslDto("e", list(c1)));
+      new EmployeeWithAccountsTslDto("e", list(c1), list(c1)));
     assertThat(e.accounts.get().size(), is(1));
     assertThat(e.accountModels.get().size(), is(1));
+    assertThat(e.otherAccounts.get().size(), is(1));
+    assertThat(e.otherAccountModels.get().size(), is(1));
   }
 }

@@ -1,6 +1,8 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
+import static org.apache.commons.lang.StringUtils.capitalize;
+import static org.apache.commons.lang.StringUtils.removeEnd;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -95,16 +97,17 @@ public class GenerateTessellModel {
       if (p.isListOfDtos()) {
         final DtoConfig other = p.getSingleDto();
         if (other != null && other.includeTessellModel()) {
-          final String modelFieldName = StringUtils.removeEnd(p.getName(), "s") + "Models";
+          final String modelFieldName = removeEnd(p.getName(), "s") + "Models";
           final String dtoType = p.getSingleDtoType();
           final String modelType = other.getSimpleName().replaceAll("Dto$", "") + "Model";
+          final String converterName = capitalize(p.getName()) + "Converter";
 
           // setup the xxxModels field
           final GField m = baseClass.getField(modelFieldName).type("ListProperty<{}>", modelType).setPublic().setFinal();
-          m.initialValue("{}.as(new {}Converter())", p.getName(), modelType);
+          m.initialValue("{}.as(new {}())", p.getName(), converterName);
 
           // add a converter back/forth
-          final GClass converter = baseClass.getInnerClass(modelType + "Converter").setPrivate();
+          final GClass converter = baseClass.getInnerClass(converterName).setPrivate();
           converter.implementsInterface("org.tessell.model.properties.ListProperty.ElementConverter<{}, {}>", dtoType, modelType);
 
           // dto -> model

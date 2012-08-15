@@ -68,9 +68,10 @@ EmployeeTslDto:
   domain: Employee
   tessellModel: true
 
+# tessell list of models generation
 EmployeeWithAccountsTslDto:
   domain: Employee
-  properties: name, accounts ArrayList<EmployeeAccountTslDto>
+  properties: name, accounts ArrayList<EmployeeAccountTslDto>, otherAccounts ArrayList<EmployeeAccountTslDto>
   tessellModel: true
 
 EmployeeAccountTslDto:

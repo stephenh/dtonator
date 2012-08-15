@@ -12,7 +12,7 @@ import com.bizo.dtonator.mapper.Mapper;
 public class EmployeeWithOnlyNameTest {
 
   private final StubDomainLookup lookup = new StubDomainLookup();
-  private final Mapper mapper = new Mapper(lookup, null, null, new DefaultDollarsMapper());
+  private final Mapper mapper = new Mapper(lookup, null, null, null, new DefaultDollarsMapper());
 
   @Test
   public void testToDto() {
