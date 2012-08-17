@@ -17,7 +17,7 @@ Screencast
 Here is a brief screencast of dtonator's workflow:
 
 <p>
-  <a href="http://www.tessell.org/casts/first.flv" style="display:block;width:520px;height:330px;margin-left:1em;" id="player"> </a>
+  <a href="http://www.tessell.org/casts/dtonator2.flv" style="display:block;width:520px;height:330px;margin-left:1em;" id="player"> </a>
   <script type="text/javascript"><!-- 
     flowplayer("player", "casts/flowplayer-3.2.7.swf", { clip: { autoPlay: false } });
   --></script>
