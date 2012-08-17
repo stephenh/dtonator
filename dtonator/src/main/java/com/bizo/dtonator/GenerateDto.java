@@ -165,6 +165,9 @@ public class GenerateDto {
         final GMethod c = mapper.getMethod(dp.getName() + "For" + dto.getSimpleName(), arg(dp.getDomainType(), "os"));
         c.returnType(dp.getDtoType()).setPrivate();
         // assumes dto type can be instantiated
+        c.body.line("if (os == null) {");
+        c.body.line("_ return null;");
+        c.body.line("}");
         c.body.line("{} dtos = new {}();", dp.getDtoType(), dp.getDtoType());
         c.body.line("for ({} o : os) {", dp.getSingleDomainType());
         c.body.line("_ dtos.add(to{}(o));", dp.getSimpleSingleDtoType());
@@ -227,6 +230,9 @@ public class GenerateDto {
         final GMethod c = mapper.getMethod(helperMethod, arg(dp.getDtoType(), "dtos"));
         c.returnType(dp.getDomainType()).setPrivate();
         // assumes List->ArrayList
+        c.body.line("if (dtos == null) {");
+        c.body.line("_ return null;");
+        c.body.line("}");
         c.body.line("{} os = new {}();", dp.getDomainType(), dp.getDomainType().replace("List", "ArrayList"));
         c.body.line("for ({} dto : dtos) {", dp.getSingleDtoType());
         c.body.line("_ final {} o;", dp.getSingleDomainType());

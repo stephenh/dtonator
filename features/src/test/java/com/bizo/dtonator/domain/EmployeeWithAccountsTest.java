@@ -2,6 +2,7 @@ package com.bizo.dtonator.domain;
 
 import static joist.util.Copy.list;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -54,5 +55,21 @@ public class EmployeeWithAccountsTest {
     assertThat(ee.getAccounts().size(), is(1));
     // and we did recursively write back the name
     assertThat(ee.getAccounts().get(0).getName(), is("name"));
+  }
+
+  @Test
+  public void testToDtoWithNullAccounts() {
+    final Employee e1 = new Employee(1l, "e1");
+    e1.setAccounts(null);
+    final EmployeeWithAccountsDto dto = mapper.toEmployeeWithAccountsDto(e1);
+    assertThat(dto.accounts, is(nullValue()));
+  }
+
+  @Test
+  public void testFromDtoWithNullAccounts() {
+    // incoming employee with a new account
+    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", null);
+    final Employee ee = mapper.fromDto(dto);
+    assertThat(ee.getAccounts(), is(nullValue()));
   }
 }
