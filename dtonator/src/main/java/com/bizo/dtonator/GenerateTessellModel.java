@@ -118,20 +118,8 @@ public class GenerateTessellModel {
           final GMethod from = converter.getMethod("from", arg(modelType, "model")).returnType(dtoType).addAnnotation("@Override");
           from.body.line("return model.getDto();");
 
-          cstr.body.line("{}.addValueAddedHandler(new ValueAddedHandler<{}>() {", modelFieldName, modelType);
-          cstr.body.line("_ public void onValueAdded(ValueAddedEvent<{}> e) {", modelType);
-          cstr.body.line("_ _ all.add(e.getValue().all());");
-          cstr.body.line("_ }");
-          cstr.body.line("});");
-          cstr.body.line("{}.addValueRemovedHandler(new ValueRemovedHandler<{}>() {", modelFieldName, modelType);
-          cstr.body.line("_ public void onValueRemoved(ValueRemovedEvent<{}> e) {", modelType);
-          cstr.body.line("_ _ all.remove(e.getValue().all());");
-          cstr.body.line("_ }");
-          cstr.body.line("});");
-          baseClass.addImports("org.tessell.model.events.ValueAddedEvent");
-          baseClass.addImports("org.tessell.model.events.ValueAddedHandler");
-          baseClass.addImports("org.tessell.model.events.ValueRemovedEvent");
-          baseClass.addImports("org.tessell.model.events.ValueRemovedHandler");
+          cstr.body.line("PropertyUtils.syncModelsToGroup(all, {});", modelFieldName);
+          baseClass.addImports("org.tessell.util.PropertyUtils");
         }
       }
     }
