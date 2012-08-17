@@ -124,6 +124,24 @@ Other Features
 
   (Note that eventually dtonator might support generic chaining of any property name, e.g. `parentName` is `getParent().getName()` and `getParent().setName(...)`, as inspired by [automapper](http://automapper.org/), but right now that is not implementated, only `xxxId` works.)
 
+* Common interfaces
+
+  If you need an interface, like `Serializable` or GWT's `IsSerializable` added to all of the generated DTOs, you can add a config property:
+
+      config:
+        commonInterface: java.io.Serializable
+
+  And dtonator will add it to each DTO.
+
+* Enum mapping
+
+  Sometimes even enums need to be mapped into a client-side package (e.g. for GWT, which uses different packages for server-side vs. client-side code). These can be extra tedious to map. However, dtonator recognizes enums, so if you map:
+
+      SomeEnumType:
+        domain: SomeEnumType
+
+  dtonator will create an enum `SomeEnumType` in the client package, with values for each value in the domain `SomeEnumType`, and handle mapping the values back/forth automatically.
+
 * [Tessell](http://www.tessell.org) integration
 
   Although not required, since I use dtonator with Tessell, it has some extra functionality for generating client-side models. See [tessell integration](tessell-integration.html) for more information.
