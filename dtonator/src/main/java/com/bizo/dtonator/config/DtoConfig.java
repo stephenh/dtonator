@@ -8,7 +8,12 @@ import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +34,7 @@ public class DtoConfig {
     this.oracle = oracle;
     this.root = root;
     this.simpleName = simpleName;
-    this.map = YamlUtils.ensureMap(map);
+    this.map = (map == null) ? new HashMap<String, Object>() : YamlUtils.<String, Object> ensureMap(map);
   }
 
   public List<DtoProperty> getProperties() {
