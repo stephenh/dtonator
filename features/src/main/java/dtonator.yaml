@@ -3,6 +3,7 @@ config:
   domainPackage: com.bizo.dtonator.domain
   mapperPackage: com.bizo.dtonator.mapper
   modelPackage: com.bizo.dtonator.client.model
+  indent: two-space
   valueTypes:
     com.bizo.dtonator.domain.Dollars: com.bizo.dtonator.dtos.Dollars
 
