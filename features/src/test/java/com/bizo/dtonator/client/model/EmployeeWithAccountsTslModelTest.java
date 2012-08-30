@@ -38,10 +38,10 @@ public class EmployeeWithAccountsTslModelTest {
     final EmployeeAccountTslDto c1 = new EmployeeAccountTslDto(1l, new Dollars(0), null);
     e.accounts.add(c1);
     e.accountModels.get().get(0).name.setTouched(true);
-    assertThat(e.accountModels.get().get(0).all().get(), is(false));
-    assertThat(e.accountModels.get().get(0).all().isTouched(), is(true));
-    assertThat(e.all().isTouched(), is(true));
-    assertThat(e.all().get(), is(false));
+    assertThat(e.accountModels.get().get(0).allValid().get(), is(false));
+    assertThat(e.accountModels.get().get(0).allValid().isTouched(), is(true));
+    assertThat(e.allValid().isTouched(), is(true));
+    assertThat(e.allValid().get(), is(false));
   }
 
   @Test
