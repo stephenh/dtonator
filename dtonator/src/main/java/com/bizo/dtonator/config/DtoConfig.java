@@ -160,9 +160,10 @@ public class DtoConfig {
         continue;
       }
       final boolean hasGetterSetter = p.getterMethodName != null && p.setterNameMethod != null;
-      final boolean typesMatch = pc.type == null || pc.type.equals(p.type); // we currently only support ids (longs)
+      final boolean isDomainObject = isDomainObject(oracle, p.type);
+      final boolean dtoTypesMatch = pc.type == null || pc.type.equals("java.lang.Long"); // we currently only support ids (longs)
       final boolean alreadyMapped = pc.mapped; // found a fooId prop config, but it mapped to an existing getFooId/setFooId domain property
-      if (hasGetterSetter && typesMatch && !alreadyMapped) {
+      if (hasGetterSetter && isDomainObject && dtoTypesMatch && !alreadyMapped) {
         pc.markNotExtensionProperty();
         properties.add(new DtoProperty(//
           oracle,
@@ -487,6 +488,15 @@ public class DtoConfig {
     // assume the user wanted List to be ArrayList
     if ((pcType.startsWith("java.util.ArrayList<") || pcType.startsWith("java.util.List<")) && pcType.endsWith(">")) {
       return config.getDto(simple(listType(pcType))) != null;
+    }
+    return false;
+  }
+
+  static boolean isDomainObject(final TypeOracle oracle, final String type) {
+    for (final Prop p : oracle.getProperties(type)) {
+      if (p.name.equals("id") && p.type.equals("java.lang.Long")) {
+        return true;
+      }
     }
     return false;
   }

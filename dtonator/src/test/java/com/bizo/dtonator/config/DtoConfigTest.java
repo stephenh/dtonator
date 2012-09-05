@@ -317,7 +317,7 @@ public class DtoConfigTest {
   @Test
   public void testMappedPropertiesThatAreAnIdOfAnEntity() {
     // given a parent and child
-    oracle.addProperty("com.domain.Parent", "id", "java.lang.Integer");
+    oracle.addProperty("com.domain.Parent", "id", "java.lang.Long");
     oracle.addProperty("com.domain.Child", "parent", "com.domain.Parent");
     addDto("ParentDto", domain("Parent"));
     addDto("ChildDto", domain("Child"), properties("parentId"));
@@ -331,12 +331,27 @@ public class DtoConfigTest {
   }
 
   @Test
-  public void testMappedPropertiesThatAreAnIdOfAnEntityWithADifferentType() {
-    // given a parent and child
+  public void testMappedPropertiesThatAreAnIdOfNotAnEntity() {
+    // given a parent and child, but the Parent.id isn't a Long
     oracle.addProperty("com.domain.Parent", "id", "java.lang.Integer");
     oracle.addProperty("com.domain.Child", "parent", "com.domain.Parent");
     addDto("ParentDto", domain("Parent"));
-    addDto("ChildDto", domain("Child"), properties("parentId java.lang.Long"));
+    addDto("ChildDto", domain("Child"), properties("parentId Long"));
+    // then it only has the name property
+    final DtoConfig dc = rootConfig.getDto("ChildDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("parentId"));
+    assertThat(dc.getProperties().get(0).isChainedId(), is(false));
+    assertThat(dc.getProperties().get(0).isExtension(), is(true));
+  }
+
+  @Test
+  public void testMappedPropertiesThatAreAnIdOfAnEntityWithADifferentType() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "id", "java.lang.Long");
+    oracle.addProperty("com.domain.Child", "parent", "com.domain.Parent");
+    addDto("ParentDto", domain("Parent"));
+    addDto("ChildDto", domain("Child"), properties("parentId Integer"));
     // then it only has the name property
     final DtoConfig dc = rootConfig.getDto("ChildDto");
     assertThat(dc.getProperties().size(), is(1));
