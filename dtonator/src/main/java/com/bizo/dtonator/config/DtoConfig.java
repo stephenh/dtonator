@@ -153,8 +153,16 @@ public class DtoConfig {
 
   private void addChainedPropertiesFromDomainObject(final List<PropConfig> pcs) {
     for (final Prop p : oracle.getProperties(getDomainType())) {
+      // if we found "getFoo()/setFoo()" via reflection, look for a "fooId" prop config,
+      // that would tell us the user wants to get/set Foo as its id
       final PropConfig pc = findChainedPropConfig(pcs, p.name);
-      if (pc != null && p.getterMethodName != null && p.setterNameMethod != null && (pc.type == null || pc.type.equals(p.type))) {
+      if (pc == null) {
+        continue;
+      }
+      final boolean hasGetterSetter = p.getterMethodName != null && p.setterNameMethod != null;
+      final boolean typesMatch = pc.type == null || pc.type.equals(p.type); // we currently only support ids (longs)
+      final boolean alreadyMapped = pc.mapped; // found a fooId prop config, but it mapped to an existing getFooId/setFooId domain property
+      if (hasGetterSetter && typesMatch && !alreadyMapped) {
         pc.markNotExtensionProperty();
         properties.add(new DtoProperty(//
           oracle,

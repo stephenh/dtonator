@@ -346,6 +346,23 @@ public class DtoConfigTest {
   }
 
   @Test
+  public void testMappedPropertiesThatLookLikeAnIdByAreASeparateProperty() {
+    // given a parent and child
+    oracle.addProperty("com.domain.Parent", "id", "java.lang.Long");
+    oracle.addProperty("com.domain.Child", "parent", "com.domain.Parent");
+    // but the child has an actual "parentId" property
+    oracle.addProperty("com.domain.Child", "parentId", "java.lang.String");
+    addDto("ParentDto", domain("Parent"));
+    addDto("ChildDto", domain("Child"), properties("parentId"));
+    // then parentId gets mapped just once
+    final DtoConfig dc = rootConfig.getDto("ChildDto");
+    assertThat(dc.getProperties().size(), is(1));
+    assertThat(dc.getProperties().get(0).getName(), is("parentId"));
+    assertThat(dc.getProperties().get(0).isChainedId(), is(false));
+    assertThat(dc.getProperties().get(0).isExtension(), is(false));
+  }
+
+  @Test
   public void testMappedOverridesThatAreListsOfEntities() {
     // given a parent and child
     oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");

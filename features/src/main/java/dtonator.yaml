@@ -47,6 +47,11 @@ EmployeeWithEmployerIdDto:
   domain: Employee
   properties: id, employerId
 
+# testing a child with it's parent id
+EmployeeWithWithFooIdDto:
+  domain: EmployeeWithFooId
+  properties: id, foo, fooId
+
 # testing not having an id
 EmployeeWithOnlyNameDto:
   domain: Employee
