@@ -49,8 +49,11 @@ public class GenerateTessellModel {
     if (!source.exists(subClassName)) {
       // Add just enough methods for it to compile and let the user go from there
       final GClass subClass = source.getClass(subClassName).baseClassName(simpleName + "Codegen");
-      subClass.getConstructor(arg(dto.getDtoType(), "dto")).body.line("super(dto);");
-      subClass.getMethod("addRules").addOverride().setProtected();
+      final GMethod cstr = subClass.getConstructor(arg(dto.getDtoType(), "dto"));
+      cstr.body.line("addRules();");
+      cstr.body.line("merge(dto);");
+      // addRules
+      subClass.getMethod("addRules").setPrivate();
     }
   }
 
@@ -59,9 +62,7 @@ public class GenerateTessellModel {
     baseClass.getField("dto").type(dto.getDtoType());
 
     // cstr
-    final GMethod cstr = baseClass.getConstructor(arg(dto.getDtoType(), "dto")).setProtected();
-    cstr.body.line("merge(dto);"); // use setDto instead?
-    cstr.body.line("addRules();");
+    final GMethod cstr = baseClass.getConstructor().setProtected();
 
     for (final DtoProperty p : dto.getProperties()) {
       // the public final field for this XxxProperty
@@ -132,9 +133,6 @@ public class GenerateTessellModel {
     // getDto
     final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType()).addOverride();
     getDto.body.line("return dto;");
-
-    // addRules
-    baseClass.getMethod("addRules").setProtected().setAbstract();
   }
 
   private String getPropertyType(final DtoProperty p) {

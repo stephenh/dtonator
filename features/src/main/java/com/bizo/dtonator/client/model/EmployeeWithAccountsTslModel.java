@@ -4,12 +4,12 @@ import com.bizo.dtonator.dtos.EmployeeWithAccountsTslDto;
 
 public class EmployeeWithAccountsTslModel extends EmployeeWithAccountsTslModelCodegen {
 
-  public EmployeeWithAccountsTslModel(final EmployeeWithAccountsTslDto dto) {
-    super(dto);
+  public EmployeeWithAccountsTslModel(EmployeeWithAccountsTslDto dto) {
+    addRules();
+    merge(dto);
   }
 
-  @Override
-  protected void addRules() {
+  private void addRules() {
   }
 
 }
