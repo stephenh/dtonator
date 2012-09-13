@@ -30,4 +30,24 @@ public class EqualsTest {
     assertThat(e1.hashCode() == e2.hashCode(), is(true));
   }
 
+  @Test
+  public void testToStringWithEqualitySet() {
+    // equality only had equals, so we use it for toString as well
+    final ClientOnlyDto d1 = new ClientOnlyDto(1l, "asdf1");
+    assertThat(d1.toString(), is("ClientOnlyDto[1]"));
+  }
+
+  @Test
+  public void testToStringWithEqualitySetToStar() {
+    // equality had *, so do everything
+    final EmployeeDto e1 = new EmployeeDto(1l, "e1", new Dollars(1), EmployeeType.LARGE, true);
+    assertThat(e1.toString(), is("EmployeeDto[1, e1, 1, LARGE, true]"));
+  }
+
+  @Test
+  public void testToStringWithNoEqualitySet() {
+    final EmployerDto er = new EmployerDto(1l, "er");
+    assertThat(er.toString(), is("EmployerDto[1, er]"));
+  }
+
 }

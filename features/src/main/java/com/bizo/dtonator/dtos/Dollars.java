@@ -22,4 +22,9 @@ public class Dollars {
     return cents; // yeah this is dumb
   }
 
+  @Override
+  public String toString() {
+    return Integer.toString(cents);
+  }
+
 }

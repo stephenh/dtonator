@@ -45,6 +45,7 @@ public class GenerateDto {
     addDefaultConstructor();
     addFullConstructor();
     addEqualityIfNeeded();
+    addToString();
     addToFromMethodsToMapperIfNeeded();
     createMapperTypeIfNeeded();
   }
@@ -98,6 +99,15 @@ public class GenerateDto {
     final List<String> eq = dto.getEquality();
     if (eq != null) {
       gc.addEquals(eq).addHashCode(eq);
+    }
+  }
+
+  private void addToString() {
+    final List<String> eq = dto.getEquality();
+    if (eq != null) {
+      gc.addToString(eq);
+    } else {
+      gc.addToString();
     }
   }
 
