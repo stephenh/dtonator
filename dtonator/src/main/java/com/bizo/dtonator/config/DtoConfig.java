@@ -106,6 +106,12 @@ public class DtoConfig {
     }
     if (!(value instanceof String)) {
       throw new IllegalArgumentException("Expected a string for equality key");
+    } else if ("*".equals(value)) {
+      final List<String> names = list();
+      for (final DtoProperty p : getProperties()) {
+        names.add(p.getName());
+      }
+      return names;
     } else {
       return Arrays.asList(((String) value).split(",? "));
     }

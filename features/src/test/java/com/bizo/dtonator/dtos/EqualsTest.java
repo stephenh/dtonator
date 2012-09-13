@@ -22,4 +22,12 @@ public class EqualsTest {
     assertThat(d1.hashCode() == d2.hashCode(), is(true));
   }
 
+  @Test
+  public void testEqualsWithStar() {
+    final EmployeeDto e1 = new EmployeeDto(1l, "e1", new Dollars(1), EmployeeType.LARGE, true);
+    final EmployeeDto e2 = new EmployeeDto(1l, "e1", new Dollars(1), EmployeeType.LARGE, true);
+    assertThat(e1.equals(e2), is(true));
+    assertThat(e1.hashCode() == e2.hashCode(), is(true));
+  }
+
 }

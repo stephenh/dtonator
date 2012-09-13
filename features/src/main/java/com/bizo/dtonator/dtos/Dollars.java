@@ -12,4 +12,14 @@ public class Dollars {
     return cents;
   }
 
+  @Override
+  public boolean equals(final Object other) {
+    return other instanceof Dollars && ((Dollars) other).cents == cents;
+  }
+
+  @Override
+  public int hashCode() {
+    return cents; // yeah this is dumb
+  }
+
 }

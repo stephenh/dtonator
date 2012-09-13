@@ -12,6 +12,7 @@ EmployerDto:
 
 EmployeeDto:
   domain: Employee
+  equality: '*'
 
 # testing a list of ids
 EmployeeWithAccountIdsDto:
