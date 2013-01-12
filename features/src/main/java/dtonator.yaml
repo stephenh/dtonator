@@ -84,3 +84,9 @@ EmployeeWithAccountsTslDto:
 EmployeeAccountTslDto:
   domain: EmployeeAccount
   tessellModel: true
+
+EmployeeAccountHasName:
+  properties: name String
+  interfaces: com.bizo.dtonator.dtos.HasName
+  beanMethods: true
+

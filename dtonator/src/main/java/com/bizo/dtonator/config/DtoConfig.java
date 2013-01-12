@@ -85,6 +85,10 @@ public class DtoConfig {
     return interfaces;
   }
 
+  public boolean includeBeanMethods() {
+    return TRUE.equals(map.get("beanMethods")) || root.includeBeanMethods();
+  }
+
   /** @return the domain type backing this DTO, or {@code null} if it's standalone. */
   public String getDomainType() {
     final String rawValue = (String) map.get("domain");

@@ -66,6 +66,9 @@ public class GenerateDto {
   private void addDtoFields() {
     for (final DtoProperty dp : dto.getProperties()) {
       gc.getField(dp.getName()).setPublic().type(dp.getDtoType());
+      if (dto.includeBeanMethods()) {
+        gc.addGetterSetter(dp.getDtoType(), dp.getName());
+      }
     }
   }
 

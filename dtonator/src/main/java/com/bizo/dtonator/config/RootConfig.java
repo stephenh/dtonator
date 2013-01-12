@@ -1,5 +1,6 @@
 package com.bizo.dtonator.config;
 
+import static java.lang.Boolean.TRUE;
 import static joist.util.Copy.list;
 import static org.apache.commons.lang.StringUtils.defaultString;
 
@@ -80,6 +81,10 @@ public class RootConfig {
       return list(getConfig().get("commonInterfaces").split(", ?"));
     }
     return list();
+  }
+
+  public boolean includeBeanMethods() {
+    return TRUE.equals(getConfig().get("beanMethods"));
   }
 
   public Collection<DtoConfig> getDtos() {
