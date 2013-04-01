@@ -132,6 +132,24 @@ Other Configuration Options
       commonInterface: java.io.Serializable
     ```
 
+Building
+========
+
+For Eclipse:
+
+* Install [IvyDE](http://ant.apache.org/ivy/ivyde/)
+* Ensure Preferences / Ivy / Classpath Container / Resolve dependencies in workspace is checked
+* Import the `dtonator/.project` and `features/.project`
+* Run `dtonator-features.launch` to update the output for the `dtonator-features` project for testing
+
+For command line:
+
+* Install [buildr](http://buildr.apache.org/a)
+* Install [ivy4r](https://github.com/klaas1979/ivy4r)
+* To package:
+  * `cd dtonator`
+  * `version=x.y buildr package`
+
 Todo
 ====
 
