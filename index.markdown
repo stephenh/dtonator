@@ -124,7 +124,7 @@ Other Features
 
   (Note that eventually dtonator might support generic chaining of any property name, e.g. `parentName` is `getParent().getName()` and `getParent().setName(...)`, as inspired by [automapper](http://automapper.org/), but right now that is not implementated, only `xxxId` works.)
 
-* Common interfaces
+* Common marker interfaces
 
   If you need an interface, like `Serializable` or GWT's `IsSerializable` added to all of the generated DTOs, you can add a config property:
 
@@ -141,6 +141,29 @@ Other Features
         domain: SomeEnumType
 
   dtonator will create an enum `SomeEnumType` in the client package, with values for each value in the domain `SomeEnumType`, and handle mapping the values back/forth automatically.
+
+* Optionally generate getter/setter methods:
+
+      EmployeeDto:
+        properties: id Long, name String
+        beanMethods: true
+
+  The generated `EmployeeDto` will have `getName` and `setName` methods.
+
+  Bean methods can also be configured globally for all DTOs.
+
+* Along with getters/setters, DTOs can also implement interfaces, e.g.:
+
+      interface HasName {
+        String getName();
+      }
+
+      EmployeeDto:
+        properties: id Long, name String
+        interfaces: com.foo.HasName
+        beanMethods: true
+
+   The generated `EmployeeDto` will implement `HasName`.
 
 * [Tessell](http://www.tessell.org) integration
 
