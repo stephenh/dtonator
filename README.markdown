@@ -108,6 +108,35 @@ Besides simple mappings where the names and types match, dtonator supports a num
       properties: shortName(longNameOnDomainObject)
     ```
 
+* Generate getters/setters methods:
+
+    ```yaml
+    EmployeeDto:
+      properties: id Long, name String
+      beanMethods: true
+    ```
+
+  The generated `EmployeeDto` will have `getName` and `setName` methods.
+
+  Bean methods can also be configured globally for all DTOs.
+
+* With getters/setters, DTOs can also implement interfaces, e.g.:
+
+    ```java
+    interface HasName {
+      String getName();
+    }
+    ```
+
+    ```yaml
+    EmployeeDto:
+      properties: id Long, name String
+      interfaces: com.foo.HasName
+      beanMethods: true
+    ```
+
+   The generated `EmployeeDto` will implement `HasName`.
+
 Other Configuration Options
 ===========================
 
