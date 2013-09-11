@@ -100,9 +100,9 @@ public class RootConfig {
     return dtos;
   }
 
-  public DtoConfig getDto(final String simpleName) {
+  public DtoConfig getDto(final String simpleOrFullName) {
     for (final DtoConfig dto : getDtos()) {
-      if (dto.getSimpleName().equals(simpleName)) {
+      if (dto.getSimpleName().equals(simpleOrFullName) || dto.getDtoType().equals(simpleOrFullName)) {
         return dto;
       }
     }
