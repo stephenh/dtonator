@@ -91,6 +91,9 @@ public class DtoProperty {
   }
 
   public boolean isEnum() {
+    if (config.getDto(getDtoType()) != null) {
+      return config.getDto(getDtoType()).isEnum();
+    }
     return oracle.isEnum(getDomainType());
   }
 

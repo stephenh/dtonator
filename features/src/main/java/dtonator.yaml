@@ -90,3 +90,8 @@ EmployeeAccountHasName:
   interfaces: com.bizo.dtonator.dtos.HasName
   beanMethods: true
 
+# have isEnum pick up that EmployeeType is an enum
+EmployeeWithTypeDto:
+  properties: name String, type EmployeeType
+  tessellModel: true
+
