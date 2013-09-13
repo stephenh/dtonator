@@ -16,6 +16,7 @@ define 'dtonator' do
   project.group = 'com.bizo'
   project.version = THIS_VERSION
   package_with_sources
+  compile.options.source = compile.options.target = '1.6'
   ivy.compile_conf('compile').test_conf('test')
 
   file 'target/pom.xml' => task('ivy:makepom')
