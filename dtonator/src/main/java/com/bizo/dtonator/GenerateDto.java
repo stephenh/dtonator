@@ -14,6 +14,7 @@ import joist.sourcegen.Argument;
 import joist.sourcegen.GClass;
 import joist.sourcegen.GDirectory;
 import joist.sourcegen.GMethod;
+import joist.util.Join;
 
 import com.bizo.dtonator.config.DtoConfig;
 import com.bizo.dtonator.config.DtoProperty;
@@ -39,6 +40,7 @@ public class GenerateDto {
 
   public void generate() {
     System.out.println("Generating " + dto.getSimpleName());
+    addBaseClassIfNeeded();
     addAnnotations();
     addInterfaces();
     addDtoFields();
@@ -48,6 +50,12 @@ public class GenerateDto {
     addToString();
     addToFromMethodsToMapperIfNeeded();
     createMapperTypeIfNeeded();
+  }
+
+  private void addBaseClassIfNeeded() {
+    if (dto.getBaseDtoSimpleName() != null) {
+      gc.baseClassName(dto.getBaseDtoSimpleName());
+    }
   }
 
   private void addAnnotations() {
@@ -88,10 +96,15 @@ public class GenerateDto {
 
   private void addFullConstructor() {
     final List<Argument> typeAndNames = list();
-    for (final DtoProperty dp : dto.getProperties()) {
+    for (final DtoProperty dp : dto.getAllProperties()) {
       typeAndNames.add(arg(dp.getDtoType(), dp.getName()));
     }
     final GMethod cstr = gc.getConstructor(typeAndNames);
+    final List<String> superParams = list();
+    for (DtoProperty dp : dto.getInheritedProperties()) {
+      superParams.add(dp.getName());
+    }
+    cstr.body.line("super({});", Join.commaSpace(superParams));
     for (final DtoProperty dp : dto.getProperties()) {
       cstr.body.line("this.{} = {};", dp.getName(), dp.getName());
     }
@@ -106,12 +119,15 @@ public class GenerateDto {
   }
 
   private void addToString() {
-    final List<String> eq = dto.getEquality();
-    if (eq != null) {
-      gc.addToString(eq);
+    final List<String> fieldNames = list();
+    if (dto.getEquality() != null) {
+      fieldNames.addAll(dto.getEquality());
     } else {
-      gc.addToString();
+      for (DtoProperty dp : dto.getAllProperties()) {
+        fieldNames.add(dp.getName());
+      }
     }
+    gc.addToString(fieldNames);
   }
 
   private void createMapperTypeIfNeeded() {
@@ -152,8 +168,13 @@ public class GenerateDto {
     toDto.body.line("if (o == null) {");
     toDto.body.line("_ return null;");
     toDto.body.line("}");
+    for (DtoConfig subClass : dto.getSubClassDtos()) {
+      toDto.body.line("if (o instanceof {}) {", subClass.getDomainType());
+      toDto.body.line("_ return to{}(({}) o);", subClass.getSimpleName(), subClass.getDomainType());
+      toDto.body.line("}");
+    }
     toDto.body.line("return new {}(", dto.getDtoType());
-    for (final DtoProperty dp : dto.getProperties()) {
+    for (final DtoProperty dp : dto.getAllProperties()) {
       if (dp.isExtension()) {
         // delegate to the user's mapper method for this property
         toDto.body.line("_ {}.{}(this, o),", mapperFieldName(dto), extensionGetter(dp));
@@ -248,15 +269,7 @@ public class GenerateDto {
         c.body.line("}");
         c.body.line("{} os = new {}();", dp.getDomainType(), dp.getDomainType().replace("List", "ArrayList"));
         c.body.line("for ({} dto : dtos) {", dp.getSingleDtoType());
-        c.body.line("_ final {} o;", dp.getSingleDomainType());
-        // assumes dto.id is the key
-        c.body.line("_ if (dto.id != null) {");
-        c.body.line("_ _ o = lookup.lookup({}.class, dto.id);", dp.getSingleDomainType());
-        c.body.line("_ } else {");
-        c.body.line("_ _ o = new {}();", dp.getSingleDomainType());
-        c.body.line("_ }");
-        c.body.line("_ fromDto(o, dto);");
-        c.body.line("_ os.add(o);");
+        c.body.line("_ os.add(fromDto(dto));");
         c.body.line("}");
         c.body.line("return os;");
       } else {
@@ -272,6 +285,11 @@ public class GenerateDto {
     fromDto.body.line("if (dto == null) {");
     fromDto.body.line("_ return null;");
     fromDto.body.line("}");
+    for (DtoConfig subClass : dto.getSubClassDtos()) {
+      fromDto.body.line("if (dto instanceof {}) {", subClass.getDtoType());
+      fromDto.body.line("_ return fromDto(({}) dto);", subClass.getDtoType());
+      fromDto.body.line("}");
+    }
     fromDto.body.line("final {} o;", dto.getDomainType());
     fromDto.body.line("if (dto.id != null) {");
     fromDto.body.line("_ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());

@@ -58,6 +58,25 @@ EmployeeWithOnlyNameDto:
   domain: Employee
   properties: name
 
+# testing inheritance
+EmployeeWithTypedAccountsDto:
+  domain: EmployeeWithTypedAccounts
+  properties: id, name, accounts
+
+AccountDto:
+  domain: Account
+  properties: id
+
+RedAccountDto:
+  extends: AccountDto
+  domain: RedAccount
+  properties: foo
+
+BlueAccountDto:
+  extends: AccountDto
+  domain: BlueAccount
+  properties: bar
+
 # enums
 EmployeeType:
   domain: EmployeeType

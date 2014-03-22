@@ -47,6 +47,21 @@ public class DtoConfig {
     return properties;
   }
 
+  public List<DtoProperty> getInheritedProperties() {
+    List<DtoProperty> p = list();
+    if (getBaseDtoSimpleName() != null) {
+      // TODO support deeper inheritance levels
+      for (DtoProperty dp : getBaseDto().getProperties()) {
+        p.add(dp);
+      }
+    }
+    return p;
+  }
+
+  public List<DtoProperty> getAllProperties() {
+    return list(getInheritedProperties()).with(getProperties());
+  }
+
   public String getSimpleName() {
     return simpleName;
   }
@@ -79,6 +94,30 @@ public class DtoConfig {
     }
     interfaces.addAll(root.getCommonInterfaces());
     return interfaces;
+  }
+
+  /** @return this DTOs base class simple name, or {@code null} */
+  public String getBaseDtoSimpleName() {
+    return (String) map.get("extends");
+  }
+
+  /** @return this DTOs base class, or {@code null} */
+  public DtoConfig getBaseDto() {
+    if (getBaseDtoSimpleName() != null) {
+      return root.getDto(getBaseDtoSimpleName());
+    }
+    return null;
+  }
+
+  public List<DtoConfig> getSubClassDtos() {
+    List<DtoConfig> subClasses = list();
+    for (DtoConfig other : root.getDtos()) {
+      // TODO Support more than 1 level of inheritance
+      if (getSimpleName().equals(other.getBaseDtoSimpleName())) {
+        subClasses.add(other);
+      }
+    }
+    return subClasses;
   }
 
   public boolean includeBeanMethods() {
@@ -135,7 +174,7 @@ public class DtoConfig {
   }
 
   public boolean hasIdProperty() {
-    for (final DtoProperty p : getProperties()) {
+    for (final DtoProperty p : getAllProperties()) {
       if (p.getName().equals("id")) {
         return true;
       }
@@ -390,7 +429,6 @@ public class DtoConfig {
       return new String[] { parts[0], parts[1] };
     }
   }
-
 
   private static boolean doNotMap(final Prop p, final PropConfig pc, final boolean includeUnmapped) {
     return (pc != null && pc.isExclusion) // user configured explicit exclusion
