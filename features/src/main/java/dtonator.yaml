@@ -65,7 +65,7 @@ EmployeeWithTypedAccountsDto:
 
 AccountDto:
   domain: Account
-  properties: id
+  properties: id, name
 
 RedAccountDto:
   extends: AccountDto

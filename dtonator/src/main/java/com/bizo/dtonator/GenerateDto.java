@@ -276,6 +276,9 @@ public class GenerateDto {
         fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
       }
     }
+    if (dto.getBaseDto() != null) {
+      fromDto.body.line("fromDto(o, ({}) dto);", dto.getBaseDto().getDtoType());
+    }
   }
 
   /** Adds {@code mapper.fromDto(dto)}, using the {@code id} and {@link DomainObjectLookup}. */

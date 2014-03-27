@@ -7,8 +7,8 @@ public class BlueAccount extends Account {
   public BlueAccount() {
   }
 
-  public BlueAccount(Long id, boolean bar) {
-    super(id);
+  public BlueAccount(Long id, String name, boolean bar) {
+    super(id, name);
     this.bar = bar;
   }
 

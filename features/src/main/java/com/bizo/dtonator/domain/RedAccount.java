@@ -7,8 +7,8 @@ public class RedAccount extends Account {
   public RedAccount() {
   }
 
-  public RedAccount(Long id, boolean foo) {
-    super(id);
+  public RedAccount(Long id, String name, boolean foo) {
+    super(id, name);
     this.foo = foo;
   }
 
