@@ -66,16 +66,19 @@ EmployeeWithTypedAccountsDto:
 AccountDto:
   domain: Account
   properties: id, name
+  tessellModel: true
 
 RedAccountDto:
   extends: AccountDto
   domain: RedAccount
   properties: foo
+  tessellModel: true
 
 BlueAccountDto:
   extends: AccountDto
   domain: BlueAccount
   properties: bar
+  tessellModel: true
 
 # enums
 EmployeeType:

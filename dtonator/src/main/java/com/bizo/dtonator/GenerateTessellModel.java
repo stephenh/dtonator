@@ -42,7 +42,11 @@ public class GenerateTessellModel {
     // FooDto -> FooModel
     final String simpleName = dto.getSimpleName().replaceAll("Dto$", "") + "Model";
     baseClass = out.getClass(config.getModelPackage() + "." + simpleName + "Codegen").setAbstract().setPackagePrivate();
-    baseClass.baseClassName(config.getModelBaseClass() + "<" + dto.getDtoType() + ">");
+    if (dto.getBaseDto() != null) {
+      baseClass.baseClassName(dto.getBaseDtoSimpleName().replaceAll("Dto$", "") + "Model");
+    } else {
+      baseClass.baseClassName(config.getModelBaseClass() + "<" + dto.getDtoType() + ">");
+    }
 
     // Only create FooModel if it doesn't already exist
     final String subClassName = config.getModelPackage() + "." + simpleName;
@@ -63,6 +67,10 @@ public class GenerateTessellModel {
 
     // cstr
     final GMethod cstr = baseClass.getConstructor().setProtected();
+
+    if (dto.getBaseDto() != null) {
+      cstr.body.line("super(null);");
+    }
 
     for (final DtoProperty p : dto.getProperties()) {
       // the public final field for this XxxProperty
@@ -126,9 +134,19 @@ public class GenerateTessellModel {
     }
 
     // merge
-    final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto")).addOverride();
-    merge.body.line("this.dto = dto;");
-    merge.body.line("all.reassessAll();");
+    if (dto.getBaseDto() == null) {
+      final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto")).addOverride();
+      merge.body.line("this.dto = dto;");
+      merge.body.line("all.reassessAll();");
+    } else {
+      final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto"));
+      merge.body.line("this.dto = dto;");
+      merge.body.line("super.merge(({}) dto);", dto.getBaseDtoSimpleName());
+      baseClass.addImports(dto.getBaseDto().getDtoType());
+      // we need to override the merge(BaseDto) and make sure we can cast to our specific subclass
+      final GMethod merge2 = baseClass.getMethod("merge", arg(dto.getBaseDto().getDtoType(), "dto")).addOverride();
+      merge2.body.line("this.merge(({}) dto);", dto.getSimpleName());
+    }
 
     // getDto
     final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType()).addOverride();

@@ -6,8 +6,10 @@ import static org.hamcrest.Matchers.instanceOf;
 
 import java.util.ArrayList;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import com.bizo.dtonator.client.model.RedAccountModel;
 import com.bizo.dtonator.dtos.AccountDto;
 import com.bizo.dtonator.dtos.BlueAccountDto;
 import com.bizo.dtonator.dtos.EmployeeWithTypedAccountsDto;
@@ -108,6 +110,25 @@ public class EmployeeWithTypedAccountsDtoTest {
     assertThat(o.getName(), is("name2"));
     assertThat(o.getAccounts().get(0).getName(), is("two1"));
     assertThat(o.getAccounts().get(1).getName(), is("three1"));
+  }
+
+  @Test
+  public void testChildModel() {
+    RedAccountModel red = new RedAccountModel(new RedAccountDto(1L, "one", true));
+    assertThat(red.id.get(), is(1L));
+    assertThat(red.name.get(), is("one"));
+    assertThat(red.foo.get(), is(true));
+
+    red.merge(new RedAccountDto(2L, "two", false));
+    assertThat(red.id.get(), is(2L));
+    assertThat(red.name.get(), is("two"));
+    assertThat(red.foo.get(), is(false));
+
+    try {
+      red.merge(new BlueAccountDto(3L, "three", true));
+      Assert.fail();
+    } catch (ClassCastException e) {
+    }
   }
 
 }
