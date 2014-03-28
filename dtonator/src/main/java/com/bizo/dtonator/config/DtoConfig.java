@@ -165,6 +165,10 @@ public class DtoConfig {
     return !isManualDto() && oracle.isEnum(getDomainType());
   }
 
+  public boolean isAbstract() {
+    return !isManualDto() && oracle.isAbstract(getDomainType());
+  }
+
   public List<String> getEnumValues() {
     return oracle.getEnumValues(getDomainType());
   }

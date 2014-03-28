@@ -13,6 +13,8 @@ public interface TypeOracle {
 
   boolean isEnum(final String className);
 
+  boolean isAbstract(final String className);
+
   List<String> getEnumValues(final String className);
 
 }

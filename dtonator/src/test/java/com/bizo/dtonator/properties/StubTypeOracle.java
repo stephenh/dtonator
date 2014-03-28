@@ -27,6 +27,11 @@ public class StubTypeOracle implements TypeOracle {
   }
 
   @Override
+  public boolean isAbstract(String className) {
+    return false;
+  }
+
+  @Override
   public List<String> getEnumValues(final String className) {
     return enumValues.get(className);
   }

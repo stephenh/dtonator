@@ -3,6 +3,7 @@ package com.bizo.dtonator.domain;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.startsWith;
 
 import java.util.ArrayList;
 
@@ -128,6 +129,16 @@ public class EmployeeWithTypedAccountsDtoTest {
       red.merge(new BlueAccountDto(3L, "three", true));
       Assert.fail();
     } catch (ClassCastException e) {
+    }
+  }
+
+  @Test
+  public void testAbstractDomainBaseClass() {
+    try {
+      mapper.fromDto(new AccountDto(1L, "one"));
+      Assert.fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e.getMessage(),  startsWith("AccountDto[1, one] must be a subclass"));
     }
   }
 

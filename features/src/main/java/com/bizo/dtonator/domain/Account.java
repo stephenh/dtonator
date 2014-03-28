@@ -1,6 +1,6 @@
 package com.bizo.dtonator.domain;
 
-public class Account {
+public abstract class Account {
 
   private Long id;
   private String name;

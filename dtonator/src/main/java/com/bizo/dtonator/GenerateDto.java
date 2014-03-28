@@ -293,14 +293,18 @@ public class GenerateDto {
       fromDto.body.line("_ return fromDto(({}) dto);", subClass.getDtoType());
       fromDto.body.line("}");
     }
-    fromDto.body.line("final {} o;", dto.getDomainType());
-    fromDto.body.line("if (dto.id != null) {");
-    fromDto.body.line("_ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());
-    fromDto.body.line("} else {");
-    fromDto.body.line("_ o = new {}();", dto.getDomainType());
-    fromDto.body.line("}");
-    fromDto.body.line("fromDto(o, dto);");
-    fromDto.body.line("return o;");
+    if (dto.isAbstract()) {
+      fromDto.body.line("throw new IllegalArgumentException(dto + \" must be a subclass because " + dto.getDomainType() + " is abstract\");");
+    } else {
+      fromDto.body.line("final {} o;", dto.getDomainType());
+      fromDto.body.line("if (dto.id != null) {");
+      fromDto.body.line("_ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());
+      fromDto.body.line("} else {");
+      fromDto.body.line("_ o = new {}();", dto.getDomainType());
+      fromDto.body.line("}");
+      fromDto.body.line("fromDto(o, dto);");
+      fromDto.body.line("return o;");
+    }
   }
 
   private static String extensionGetter(final DtoProperty p) {

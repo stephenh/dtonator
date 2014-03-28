@@ -3,6 +3,7 @@ package com.bizo.dtonator.properties;
 import static joist.util.Copy.list;
 
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.apache.commons.beanutils.PropertyUtils;
@@ -31,6 +32,15 @@ public class ReflectionTypeOracle implements TypeOracle {
   public boolean isEnum(final String className) {
     try {
       return getClass(className).isEnum();
+    } catch (final IllegalArgumentException iae) {
+      return false; // for primitives like boolean
+    }
+  }
+
+  @Override
+  public boolean isAbstract(String className) {
+    try {
+      return Modifier.isAbstract(getClass(className).getModifiers());
     } catch (final IllegalArgumentException iae) {
       return false; // for primitives like boolean
     }
