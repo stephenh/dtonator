@@ -50,6 +50,7 @@ public class GenerateDto {
     addToString();
     addToFromMethodsToMapperIfNeeded();
     createMapperTypeIfNeeded();
+    makeAbstractIfNeeded();
   }
 
   private void addBaseClassIfNeeded() {
@@ -172,6 +173,10 @@ public class GenerateDto {
       toDto.body.line("if (o instanceof {}) {", subClass.getDomainType());
       toDto.body.line("_ return to{}(({}) o);", subClass.getSimpleName(), subClass.getDomainType());
       toDto.body.line("}");
+    }
+    if (dto.isAbstract()) {
+      toDto.body.line("throw new IllegalArgumentException(o + \" should be a subclass\");");
+      return;
     }
     toDto.body.line("return new {}(", dto.getDtoType());
     for (final DtoProperty dp : dto.getAllProperties()) {
@@ -304,6 +309,12 @@ public class GenerateDto {
       fromDto.body.line("}");
       fromDto.body.line("fromDto(o, dto);");
       fromDto.body.line("return o;");
+    }
+  }
+
+  private void makeAbstractIfNeeded() {
+    if (dto.isAbstract()) {
+      gc.setAbstract();
     }
   }
 

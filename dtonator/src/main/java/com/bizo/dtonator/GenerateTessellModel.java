@@ -128,7 +128,11 @@ public class GenerateTessellModel {
             to.body.line("}");
             baseClass.addImports(subclass.getDtoType());
           }
-          to.body.line("return new {}(dto);", modelType);
+          if (other.isAbstract()) {
+            to.body.line("throw new IllegalArgumentException(dto + \" should be a subclass\");");
+          } else {
+            to.body.line("return new {}(dto);", modelType);
+          }
 
           // model -> dto
           final GMethod from = converter.getMethod("from", arg(modelType, "model")).returnType(dtoType).addAnnotation("@Override");
