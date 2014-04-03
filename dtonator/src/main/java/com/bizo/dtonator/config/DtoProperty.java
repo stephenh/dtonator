@@ -11,6 +11,7 @@ public class DtoProperty {
 
   private final TypeOracle oracle;
   private final RootConfig config;
+  private final DtoConfig dto;
   private final String name;
   private final boolean readOnly;
   private final boolean isChainedId;
@@ -24,6 +25,7 @@ public class DtoProperty {
   public DtoProperty(
     final TypeOracle oracle,
     final RootConfig config,
+    final DtoConfig dto,
     final String name,
     final boolean readOnly,
     final boolean isChainedId,
@@ -33,6 +35,7 @@ public class DtoProperty {
     final String setterNameMethod) {
     this.oracle = oracle;
     this.config = config;
+    this.dto = dto;
     this.name = name;
     this.readOnly = readOnly;
     this.isChainedId = isChainedId;
@@ -40,6 +43,10 @@ public class DtoProperty {
     this.domainType = domainType;
     this.getterMethodName = getterMethodName;
     this.setterNameMethod = setterNameMethod;
+  }
+
+  public DtoConfig getDto() {
+    return dto;
   }
 
   public String getDtoType() {
@@ -103,7 +110,8 @@ public class DtoProperty {
 
   /** only meaningful for non-manual dtos, otherwise everything is manual... */
   public boolean isExtension() {
-    return getterMethodName == null && setterNameMethod == null && !isChainedId();
+    return (getterMethodName == null && setterNameMethod == null && !isChainedId()) //
+      || dto.getForcedMappers().contains(name);
   }
 
   @Override

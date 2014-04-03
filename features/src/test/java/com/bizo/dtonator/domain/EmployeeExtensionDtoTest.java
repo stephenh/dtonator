@@ -7,13 +7,15 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import com.bizo.dtonator.dtos.EmployeeExtensionDto;
+import com.bizo.dtonator.dtos.RedAccountDto;
 import com.bizo.dtonator.mapper.DefaultDollarsMapper;
 import com.bizo.dtonator.mapper.Mapper;
 
 public class EmployeeExtensionDtoTest {
 
   private final StubEmployeeExtensionMapper employeeExtMapper = new StubEmployeeExtensionMapper();
-  private final Mapper mapper = new Mapper(null, null, employeeExtMapper, null, new DefaultDollarsMapper());
+  private final StubAccountMapper accountMapper = new StubAccountMapper("1");
+  private final Mapper mapper = new Mapper(null, null, accountMapper, employeeExtMapper, null, new DefaultDollarsMapper());
 
   @Test
   public void testToDto() {
@@ -33,4 +35,15 @@ public class EmployeeExtensionDtoTest {
     mapper.fromDto(e, dto);
     assertThat(employeeExtMapper.extensionValues, contains(2));
   }
+
+  @Test
+  public void testForceMapperMethods() {
+    RedAccountDto d = new RedAccountDto(null, "a", false);
+    RedAccount a = mapper.fromDto(d);
+    assertThat(a.getName(), is("a1"));
+
+    RedAccountDto d2 = mapper.toDto(a);
+    assertThat(d2.name, is("a11"));
+  }
+
 }

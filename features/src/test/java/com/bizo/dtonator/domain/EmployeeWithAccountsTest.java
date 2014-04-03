@@ -15,7 +15,7 @@ import com.bizo.dtonator.mapper.Mapper;
 public class EmployeeWithAccountsTest {
 
   private final StubDomainLookup lookup = new StubDomainLookup();
-  private final Mapper mapper = new Mapper(lookup, null, null, null, null);
+  private final Mapper mapper = new Mapper(lookup, null, null, null, null, null);
 
   @Test
   public void testToDto() {

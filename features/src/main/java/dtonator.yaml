@@ -68,6 +68,7 @@ AccountDto:
   domain: Account
   properties: id, name
   tessellModel: true
+  forceMapperMethods: name
 
 RedAccountDto:
   extends: AccountDto

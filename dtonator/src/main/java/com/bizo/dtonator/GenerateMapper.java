@@ -40,7 +40,7 @@ public class GenerateMapper {
     args.add(arg(DomainObjectLookup.class.getName(), "lookup"));
     // add arguments for extension mappers, if any
     for (final DtoConfig dto : config.getDtos()) {
-      if (!dto.isManualDto() && dto.hasExtensionProperties()) {
+      if (dto.requiresMapperType()) {
         args.add(arg(mapperInterface(config, dto), mapperFieldName(dto)));
       }
     }

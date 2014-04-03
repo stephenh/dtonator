@@ -131,7 +131,7 @@ public class GenerateDto {
   }
 
   private void createMapperTypeIfNeeded() {
-    if (dto.isManualDto() || !dto.hasExtensionProperties()) {
+    if (!dto.requiresMapperType()) {
       return;
     }
     final GClass mb = out.getClass(mapperInterface(config, dto)).setInterface();
@@ -177,7 +177,7 @@ public class GenerateDto {
     for (final DtoProperty dp : dto.getAllProperties()) {
       if (dp.isExtension()) {
         // delegate to the user's mapper method for this property
-        toDto.body.line("_ {}.{}(this, o),", mapperFieldName(dto), extensionGetter(dp));
+        toDto.body.line("_ {}.{}(this, o),", mapperFieldName(dp.getDto()), extensionGetter(dp));
       } else if (dp.isValueType()) {
         // delegate to the user type mapper for this property
         toDto.body.line(

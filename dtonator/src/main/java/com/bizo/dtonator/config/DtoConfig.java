@@ -177,6 +177,15 @@ public class DtoConfig {
     return getDomainType() == null;
   }
 
+  /** @return a list of properties that we want to force mapper methods for */
+  public List<String> getForcedMappers() {
+    return YamlUtils.parseExpectedStringToList("forceMapperMethods", map.get("forceMapperMethods"));
+  }
+
+  public boolean requiresMapperType() {
+    return !isManualDto() && (hasExtensionProperties() || !getForcedMappers().isEmpty());
+  }
+
   public boolean hasIdProperty() {
     for (final DtoProperty p : getAllProperties()) {
       if (p.getName().equals("id")) {
@@ -217,6 +226,7 @@ public class DtoConfig {
         properties.add(new DtoProperty(//
           oracle,
           root,
+          this,
           pc != null ? pc.name : p.name, // use the potentially aliased if we have one
           pc != null ? pc.isReadOnly : p.readOnly,
           true,
@@ -289,10 +299,12 @@ public class DtoConfig {
         continue;
       }
 
+      String name = pc != null ? pc.name : p.name; // use the potentially aliased if we have one
       properties.add(new DtoProperty(//
         oracle,
         root,
-        pc != null ? pc.name : p.name, // use the potentially aliased if we have one
+        this,
+        name,
         pc != null ? pc.isReadOnly : p.readOnly,
         false,
         dtoType,
@@ -339,7 +351,17 @@ public class DtoConfig {
         dtoType = pc.type;
         domainType = dtoType;
       }
-      properties.add(new DtoProperty(oracle, root, pc.name, pc.isReadOnly, false, dtoType, domainType, null, null));
+      properties.add(new DtoProperty(//
+        oracle,
+        root,
+        this,
+        pc.name,
+        pc.isReadOnly,
+        false,
+        dtoType,
+        domainType,
+        null,
+        null));
     }
   }
 
@@ -361,14 +383,7 @@ public class DtoConfig {
 
   /** @return the raw strings of parsing {@code properties} by {@code ,} or an empty list */
   private List<String> getPropertiesConfigRaw() {
-    final Object rawValue = map.get("properties");
-    if (rawValue == null) {
-      return list();
-    }
-    if (!(rawValue instanceof String)) {
-      throw new IllegalStateException("Expecting a string value for key properties: " + rawValue);
-    }
-    return list(((String) rawValue).split(", ?"));
+    return YamlUtils.parseExpectedStringToList("properties", map.get("properties"));
   }
 
   /** Small abstraction around the property strings in the YAML file. */
