@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.bizo.dtonator.client.model.EmployeeWithTypedAccountsModel;
 import com.bizo.dtonator.client.model.RedAccountModel;
 import com.bizo.dtonator.dtos.AccountDto;
 import com.bizo.dtonator.dtos.BlueAccountDto;
@@ -130,6 +131,11 @@ public class EmployeeWithTypedAccountsDtoTest {
       Assert.fail();
     } catch (ClassCastException e) {
     }
+
+    EmployeeWithTypedAccountsModel parent = new EmployeeWithTypedAccountsModel(
+      new EmployeeWithTypedAccountsDto(1L, null, new ArrayList<AccountDto>()));
+    parent.accounts.add(new RedAccountDto(2L, "red", true));
+    assertThat(parent.accountModels.get().get(0), is(instanceOf(RedAccountModel.class)));
   }
 
   @Test
@@ -138,7 +144,7 @@ public class EmployeeWithTypedAccountsDtoTest {
       mapper.fromDto(new AccountDto(1L, "one"));
       Assert.fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e.getMessage(),  startsWith("AccountDto[1, one] must be a subclass"));
+      assertThat(e.getMessage(), startsWith("AccountDto[1, one] must be a subclass"));
     }
   }
 

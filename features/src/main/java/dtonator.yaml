@@ -62,6 +62,7 @@ EmployeeWithOnlyNameDto:
 EmployeeWithTypedAccountsDto:
   domain: EmployeeWithTypedAccounts
   properties: id, name, accounts
+  tessellModel: true
 
 AccountDto:
   domain: Account
