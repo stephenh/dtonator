@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 
 import org.junit.Test;
+import org.tessell.model.validation.rules.Required;
 
 import com.bizo.dtonator.dtos.Dollars;
 import com.bizo.dtonator.dtos.EmployeeAccountTslDto;
@@ -53,5 +54,19 @@ public class EmployeeWithAccountsTslModelTest {
     assertThat(e.accountModels.get().size(), is(1));
     assertThat(e.otherAccounts.get().size(), is(1));
     assertThat(e.otherAccountModels.get().size(), is(1));
+  }
+
+  @Test
+  public void invalidListOfDtosMeansInvalidParent() {
+    e.accounts.addRule(new Required());
+    e.accounts.touch();
+    assertThat(e.allValid().get(), is(false));
+  }
+
+  @Test
+  public void invalidListOfModelsMeansInvalidParent() {
+    e.accountModels.addRule(new Required());
+    e.accountModels.touch();
+    assertThat(e.allValid().get(), is(false));
   }
 }

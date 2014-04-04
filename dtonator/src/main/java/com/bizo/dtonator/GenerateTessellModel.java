@@ -113,7 +113,7 @@ public class GenerateTessellModel {
 
           // setup the xxxModels field
           final GField m = baseClass.getField(modelFieldName).type("ListProperty<{}>", modelType).setPublic().setFinal();
-          m.initialValue("{}.as(new {}())", p.getName(), converterName);
+          m.initialValue("add({}.as(new {}()))", p.getName(), converterName);
 
           // add a converter back/forth
           final GClass converter = baseClass.getInnerClass(converterName).setPrivate();
