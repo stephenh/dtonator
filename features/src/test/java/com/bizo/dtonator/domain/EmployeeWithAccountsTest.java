@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.sameInstance;
 
 import org.junit.Test;
 
@@ -71,5 +72,14 @@ public class EmployeeWithAccountsTest {
     final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", null);
     final Employee ee = mapper.fromDto(dto);
     assertThat(ee.getAccounts(), is(nullValue()));
+  }
+
+  @Test
+  public void testFromDtoWithARepeatedChild() {
+    EmployeeAccountDto a = new EmployeeAccountDto(null, null, "name");
+    final EmployeeWithAccountsDto dto = new EmployeeWithAccountsDto(null, "e1", list(a, a));
+    final Employee ee = mapper.fromDto(dto);
+    assertThat(ee.getAccounts().size(), is(2));
+    assertThat(ee.getAccounts().get(0), is(sameInstance(ee.getAccounts().get(1))));
   }
 }

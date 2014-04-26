@@ -27,6 +27,7 @@ public class GenerateMapper {
 
   public void generate() {
     addConstructorAndFields();
+    mapper.addImports(DomainObjectContext.class);
   }
 
   public GClass getMapper() {

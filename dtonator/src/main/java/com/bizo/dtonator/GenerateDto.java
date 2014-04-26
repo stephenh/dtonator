@@ -236,6 +236,8 @@ public class GenerateDto {
     final GMethod fromDto = mapper.getMethod("fromDto", //
       arg(dto.getDomainType(), "o"),
       arg(dto.getDtoType(), "dto"));
+    fromDto.body.line("DomainObjectContext c = DomainObjectContext.push();");
+    fromDto.body.line("try {");
     for (final DtoProperty dp : dto.getProperties()) {
       if (dp.isReadOnly()) {
         continue;
@@ -245,27 +247,26 @@ public class GenerateDto {
         continue;
       }
       if (dp.isExtension()) {
-        fromDto.body.line("{}.{}(this, o, dto.{});", mapperFieldName(dto), extensionSetter(dp), dp.getName());
+        fromDto.body.line("_ {}.{}(this, o, dto.{});", mapperFieldName(dto), extensionSetter(dp), dp.getName());
       } else if (dp.isValueType()) {
-        fromDto.body.line(
-          "o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));",
+        fromDto.body.line("_ o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));", //
           dp.getSetterMethodName(),
           dp.getName(),
           mapperFieldName(dp.getValueTypeConfig()),
           dp.getName());
       } else if (dp.isEnum()) {
-        fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+        fromDto.body.line("_ o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
       } else if (dp.isChainedId()) {
-        fromDto.body.line("if (dto.{} != null) {", dp.getName());
-        fromDto.body.line("_ o.{}(lookup.lookup({}.class, dto.{}));", dp.getSetterMethodName(), dp.getDomainType(), dp.getName());
-        fromDto.body.line("} else {");
-        fromDto.body.line("_ o.{}(null);", dp.getSetterMethodName());
-        fromDto.body.line("}");
+        fromDto.body.line("_ if (dto.{} != null) {", dp.getName());
+        fromDto.body.line("_ _ o.{}(lookup.lookup({}.class, dto.{}));", dp.getSetterMethodName(), dp.getDomainType(), dp.getName());
+        fromDto.body.line("_ } else {");
+        fromDto.body.line("_ _ o.{}(null);", dp.getSetterMethodName());
+        fromDto.body.line("_ }");
       } else if (dp.isEntity()) {
-        fromDto.body.line("o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
+        fromDto.body.line("_ o.{}(fromDto(dto.{}));", dp.getSetterMethodName(), dp.getName());
       } else if (dp.isListOfEntities()) {
         final String helperMethod = dp.getName() + "For" + dto.getSimpleName();
-        fromDto.body.line("o.{}({}(dto.{}));", dp.getSetterMethodName(), helperMethod, dp.getName());
+        fromDto.body.line("_ o.{}({}(dto.{}));", dp.getSetterMethodName(), helperMethod, dp.getName());
         final GMethod c = mapper.getMethod(helperMethod, arg(dp.getDtoType(), "dtos"));
         c.returnType(dp.getDomainType()).setPrivate();
         // assumes List->ArrayList
@@ -278,38 +279,49 @@ public class GenerateDto {
         c.body.line("}");
         c.body.line("return os;");
       } else {
-        fromDto.body.line("o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
+        fromDto.body.line("_ o.{}(dto.{});", dp.getSetterMethodName(), dp.getName());
       }
     }
     if (dto.getBaseDto() != null) {
-      fromDto.body.line("fromDto(o, ({}) dto);", dto.getBaseDto().getDtoType());
+      fromDto.body.line("_ fromDto(o, ({}) dto);", dto.getBaseDto().getDtoType());
     }
+    fromDto.body.line("} finally {");
+    fromDto.body.line("_ c.pop();");
+    fromDto.body.line("}");
   }
 
   /** Adds {@code mapper.fromDto(dto)}, using the {@code id} and {@link DomainObjectLookup}. */
   private void addFromOnlyDtoMethodToMapper() {
     final GMethod fromDto = mapper.getMethod("fromDto", arg(dto.getDtoType(), "dto"));
     fromDto.returnType(dto.getDomainType());
-    fromDto.body.line("if (dto == null) {");
-    fromDto.body.line("_ return null;");
-    fromDto.body.line("}");
+    fromDto.body.line("DomainObjectContext c = DomainObjectContext.push();");
+    fromDto.body.line("try {");
+    fromDto.body.line("_ if (dto == null) {");
+    fromDto.body.line("_ _ return null;");
+    fromDto.body.line("_ }");
     for (DtoConfig subClass : dto.getSubClassDtos()) {
-      fromDto.body.line("if (dto instanceof {}) {", subClass.getDtoType());
-      fromDto.body.line("_ return fromDto(({}) dto);", subClass.getDtoType());
-      fromDto.body.line("}");
+      fromDto.body.line("_ if (dto instanceof {}) {", subClass.getDtoType());
+      fromDto.body.line("_ _ return fromDto(({}) dto);", subClass.getDtoType());
+      fromDto.body.line("_ }");
     }
     if (dto.isAbstract()) {
-      fromDto.body.line("throw new IllegalArgumentException(dto + \" must be a subclass because " + dto.getDomainType() + " is abstract\");");
+      fromDto.body.line("_ throw new IllegalArgumentException(dto + \" must be a subclass because " + dto.getDomainType() + " is abstract\");");
     } else {
-      fromDto.body.line("final {} o;", dto.getDomainType());
-      fromDto.body.line("if (dto.id != null) {");
-      fromDto.body.line("_ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());
-      fromDto.body.line("} else {");
-      fromDto.body.line("_ o = new {}();", dto.getDomainType());
-      fromDto.body.line("}");
-      fromDto.body.line("fromDto(o, dto);");
-      fromDto.body.line("return o;");
+      fromDto.body.line("_ final {} o;", dto.getDomainType());
+      fromDto.body.line("_ if (dto.id != null) {");
+      fromDto.body.line("_ _ o = lookup.lookup({}.class, dto.id);", dto.getDomainType());
+      fromDto.body.line("_ } else if (c.get(dto) != null) {");
+      fromDto.body.line("_ _ o = ({}) c.get(dto);", dto.getDomainType());
+      fromDto.body.line("_ } else {");
+      fromDto.body.line("_ _ o = new {}();", dto.getDomainType());
+      fromDto.body.line("_ _ c.store(dto, o);");
+      fromDto.body.line("_ }");
+      fromDto.body.line("_ fromDto(o, dto);");
+      fromDto.body.line("_ return o;");
     }
+    fromDto.body.line("} finally {");
+    fromDto.body.line("_ c.pop();");
+    fromDto.body.line("}");
   }
 
   private void makeAbstractIfNeeded() {
