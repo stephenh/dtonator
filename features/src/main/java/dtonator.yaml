@@ -82,6 +82,12 @@ BlueAccountDto:
   properties: bar
   tessellModel: true
 
+BlueHueAccountDto:
+  extends: BlueAccountDto
+  domain: BlueHueAccount
+  properties: zaz
+  tessellModel: true
+
 # enums
 EmployeeType:
   domain: EmployeeType

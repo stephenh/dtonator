@@ -49,12 +49,22 @@ public class DtoConfig {
 
   public List<DtoProperty> getInheritedProperties() {
     List<DtoProperty> p = list();
-    if (getBaseDtoSimpleName() != null) {
-      // TODO support deeper inheritance levels
-      for (DtoProperty dp : getBaseDto().getProperties()) {
-        p.add(dp);
-      }
+    for (DtoConfig base : getBaseDtos()) {
+      p.addAll(base.getProperties());
     }
+    return p;
+  }
+
+  /** @return the base dtos, with the root dto first. */
+  private List<DtoConfig> getBaseDtos() {
+    List<DtoConfig> p = list();
+    String currentName = getBaseDtoSimpleName();
+    while (currentName != null) {
+      DtoConfig dto = root.getDto(currentName);
+      p.add(dto);
+      currentName = dto.getBaseDtoSimpleName();
+    }
+    Collections.reverse(p);
     return p;
   }
 
@@ -109,14 +119,21 @@ public class DtoConfig {
     return null;
   }
 
+  /** @return subclasses, with the leaf classes (e.g. grand children) first */
   public List<DtoConfig> getSubClassDtos() {
     List<DtoConfig> subClasses = list();
-    for (DtoConfig other : root.getDtos()) {
-      // TODO Support more than 1 level of inheritance
-      if (getSimpleName().equals(other.getBaseDtoSimpleName())) {
-        subClasses.add(other);
+    List<DtoConfig> toProbe = list(this);
+    while (!toProbe.isEmpty()) {
+      DtoConfig current = toProbe.remove(0);
+      // scan for subclasses of current
+      for (DtoConfig other : root.getDtos()) {
+        if (current.getSimpleName().equals(other.getBaseDtoSimpleName())) {
+          subClasses.add(other);
+          toProbe.add(other);
+        }
       }
     }
+    Collections.reverse(subClasses);
     return subClasses;
   }
 

@@ -9,10 +9,12 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.bizo.dtonator.client.model.BlueHueAccountModel;
 import com.bizo.dtonator.client.model.EmployeeWithTypedAccountsModel;
 import com.bizo.dtonator.client.model.RedAccountModel;
 import com.bizo.dtonator.dtos.AccountDto;
 import com.bizo.dtonator.dtos.BlueAccountDto;
+import com.bizo.dtonator.dtos.BlueHueAccountDto;
 import com.bizo.dtonator.dtos.EmployeeWithTypedAccountsDto;
 import com.bizo.dtonator.dtos.RedAccountDto;
 import com.bizo.dtonator.mapper.DefaultDollarsMapper;
@@ -135,6 +137,32 @@ public class EmployeeWithTypedAccountsDtoTest {
       new EmployeeWithTypedAccountsDto(1L, null, new ArrayList<AccountDto>()));
     parent.accounts.add(new RedAccountDto(2L, "red", true));
     assertThat(parent.accountModels.get().get(0), is(instanceOf(RedAccountModel.class)));
+  }
+
+  @Test
+  public void testGrandChildModel() {
+    BlueHueAccountModel m = new BlueHueAccountModel(new BlueHueAccountDto(1L, "one", true, false));
+    assertThat(m.id.get(), is(1L));
+    assertThat(m.name.get(), is("one"));
+    assertThat(m.bar.get(), is(true));
+    assertThat(m.zaz.get(), is(false));
+
+    m.merge(new BlueHueAccountDto(2L, "two", false, true));
+    assertThat(m.id.get(), is(2L));
+    assertThat(m.name.get(), is("two"));
+    assertThat(m.bar.get(), is(false));
+    assertThat(m.zaz.get(), is(true));
+
+    try {
+      m.merge(new BlueAccountDto(3L, "three", true));
+      Assert.fail();
+    } catch (ClassCastException e) {
+    }
+
+    EmployeeWithTypedAccountsModel parent = new EmployeeWithTypedAccountsModel(
+      new EmployeeWithTypedAccountsDto(1L, null, new ArrayList<AccountDto>()));
+    parent.accounts.add(m.getDto());
+    assertThat(parent.accountModels.get().get(0), is(instanceOf(BlueHueAccountModel.class)));
   }
 
 }
