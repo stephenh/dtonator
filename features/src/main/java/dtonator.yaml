@@ -9,9 +9,11 @@ config:
 
 EmployerDto:
   domain: Employer
+  properties: '*'
 
 EmployeeDto:
   domain: Employee
+  properties: '*'
   equality: '*'
 
 # testing a list of ids
@@ -28,6 +30,7 @@ EmployeeWithAccountsDto:
 # need the EmployeeAccountDto
 EmployeeAccountDto:
   domain: EmployeeAccount
+  properties: '*'
 
 # testing a list of entities that uses an explicit child dto
 EmployeeWithSimpleAccountsDto:
@@ -104,6 +107,7 @@ ClientOnlyDto:
 EmployeeTslDto:
   domain: Employee
   tessellModel: true
+  properties: '*'
 
 # tessell list of models generation
 EmployeeWithAccountsTslDto:
@@ -113,6 +117,7 @@ EmployeeWithAccountsTslDto:
 
 EmployeeAccountTslDto:
   domain: EmployeeAccount
+  properties: '*'
   tessellModel: true
 
 EmployeeAccountHasName:

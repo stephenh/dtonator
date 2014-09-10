@@ -32,7 +32,7 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     // and no overrides
-    addDto("FooDto", domain("Foo"));
+    addDto("FooDto", domain("Foo"), properties("*"));
     // then we have both
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(2));
@@ -147,7 +147,7 @@ public class DtoConfigTest {
     // given a domain object with a value types
     oracle.addProperty("com.domain.Foo", "a", "com.domain.ValueType");
     valueTypes().put("com.domain.ValueType", "com.dto.ValueType");
-    addDto("FooDto", domain("Foo"));
+    addDto("FooDto", domain("Foo"), properties("*"));
     // then we know the right dto type
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.ValueType"));
@@ -188,7 +188,7 @@ public class DtoConfigTest {
     oracle.setEnumValues("com.domain.Type", list("ONE", "TWO"));
     oracle.addProperty("com.domain.Foo", "type", "com.domain.Type");
     // when enums are mapped automatically
-    addDto("FooDto", domain("Foo"));
+    addDto("FooDto", domain("Foo"), properties("*"));
     // they have the client/server types
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().get(0).getDtoType(), is("com.dto.Type"));
@@ -305,9 +305,9 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Parent", "children", "java.util.List<com.domain.Child>");
     oracle.addProperty("com.domain.Child", "id", "java.lang.Integer");
     // and the child dto has an entry in the yaml file
-    addDto("ChildDto");
-    // and but the parent doesn't opt in the children
-    addDto("ParentDto", domain("Parent"));
+    addDto("ChildDto", properties("*"));
+    // and the parent doesn't opt in the children
+    addDto("ParentDto", domain("Parent"), properties("*"));
     // then it only has the name property
     final DtoConfig dc = rootConfig.getDto("ParentDto");
     assertThat(dc.getProperties().size(), is(1));
@@ -438,7 +438,7 @@ public class DtoConfigTest {
     oracle.addProperty("com.domain.Foo", "b", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "a", "java.lang.String");
     oracle.addProperty("com.domain.Foo", "id", "java.lang.Integer");
-    addDto("FooDto", domain("Foo"));
+    addDto("FooDto", domain("Foo"), properties("*"));
     // then we've sorted them
     final DtoConfig dc = rootConfig.getDto("FooDto");
     assertThat(dc.getProperties().size(), is(3));

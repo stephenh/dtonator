@@ -256,7 +256,6 @@ public class DtoConfig {
   }
 
   private void addPropertiesFromDomainObject(final List<PropConfig> pcs) {
-    final boolean includeUnmapped = pcs.size() == 0 || hasPropertiesInclude();
     for (final Prop p : oracle.getProperties(getDomainType())) {
       final PropConfig pc = findPropConfig(pcs, p.name);
       if (pc != null) {
@@ -264,7 +263,7 @@ public class DtoConfig {
         pc.markNotExtensionProperty();
       }
 
-      if (doNotMap(p, pc, includeUnmapped)) {
+      if (doNotMap(p, pc, hasPropertiesInclude())) {
         continue;
       }
 
