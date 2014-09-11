@@ -1,6 +1,6 @@
 package com.bizo.dtonator.domain;
 
-public class BlueAccount extends Account {
+public abstract class BlueAccount extends Account {
 
   private boolean bar;
 

@@ -122,11 +122,13 @@ public class GenerateTessellModel {
           // dto -> model
           final GMethod to = converter.getMethod("to", arg(dtoType, "dto")).returnType(modelType).addAnnotation("@Override");
           for (DtoConfig subclass : other.getSubClassDtos()) {
-            final String subclassModel = subclass.getSimpleName().replaceAll("Dto$", "") + "Model";
-            to.body.line("if (dto instanceof {}) { ", subclass.getSimpleName());
-            to.body.line("_  return new {}(({}) dto);", subclassModel, subclass.getSimpleName());
-            to.body.line("}");
-            baseClass.addImports(subclass.getDtoType());
+            if (!subclass.isAbstract()) {
+              final String subclassModel = subclass.getSimpleName().replaceAll("Dto$", "") + "Model";
+              to.body.line("if (dto instanceof {}) { ", subclass.getSimpleName());
+              to.body.line("_  return new {}(({}) dto);", subclassModel, subclass.getSimpleName());
+              to.body.line("}");
+              baseClass.addImports(subclass.getDtoType());
+            }
           }
           if (other.isAbstract()) {
             to.body.line("throw new IllegalArgumentException(dto + \" should be a subclass\");");

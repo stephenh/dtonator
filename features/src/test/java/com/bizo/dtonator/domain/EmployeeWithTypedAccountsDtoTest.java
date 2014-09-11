@@ -65,7 +65,7 @@ public class EmployeeWithTypedAccountsDtoTest {
   public void testParentToDto() {
     EmployeeWithTypedAccounts e = new EmployeeWithTypedAccounts(1L, "name");
     e.getAccounts().add(new RedAccount(2L, "two", true));
-    e.getAccounts().add(new BlueAccount(3L, "three", true));
+    e.getAccounts().add(new BlueHueAccount(3L, "three", true, false));
 
     EmployeeWithTypedAccountsDto d = mapper.toEmployeeWithTypedAccountsDto(e);
     assertThat(d.name, is("name"));
@@ -103,11 +103,11 @@ public class EmployeeWithTypedAccountsDtoTest {
   public void testParentFromDto() {
     lookup.store(1L, new EmployeeWithTypedAccounts(1L, "name"));
     lookup.store(2L, new RedAccount(2L, "two", true));
-    lookup.store(3L, new BlueAccount(3L, "three", false));
+    lookup.store(3L, new BlueHueAccount(3L, "three", false, false));
 
     EmployeeWithTypedAccountsDto d = new EmployeeWithTypedAccountsDto(1L, "name2", new ArrayList<AccountDto>());
     d.accounts.add(new RedAccountDto(2L, "two1", false));
-    d.accounts.add(new BlueAccountDto(3L, "three1", true));
+    d.accounts.add(new BlueHueAccountDto(3L, "three1", true, true));
 
     EmployeeWithTypedAccounts o = mapper.fromDto(d);
     assertThat(o.getName(), is("name2"));
@@ -128,7 +128,7 @@ public class EmployeeWithTypedAccountsDtoTest {
     assertThat(red.foo.get(), is(false));
 
     try {
-      red.merge(new BlueAccountDto(3L, "three", true));
+      red.merge(new BlueHueAccountDto(3L, "three", true, true));
       Assert.fail();
     } catch (ClassCastException e) {
     }
@@ -152,12 +152,6 @@ public class EmployeeWithTypedAccountsDtoTest {
     assertThat(m.name.get(), is("two"));
     assertThat(m.bar.get(), is(false));
     assertThat(m.zaz.get(), is(true));
-
-    try {
-      m.merge(new BlueAccountDto(3L, "three", true));
-      Assert.fail();
-    } catch (ClassCastException e) {
-    }
 
     EmployeeWithTypedAccountsModel parent = new EmployeeWithTypedAccountsModel(
       new EmployeeWithTypedAccountsDto(1L, null, new ArrayList<AccountDto>()));
