@@ -112,8 +112,15 @@ public class GenerateTessellModel {
           final String converterName = capitalize(p.getName()) + "Converter";
 
           // setup the xxxModels field
-          final GField m = baseClass.getField(modelFieldName).type("ListProperty<{}>", modelType).setPublic().setFinal();
-          m.initialValue("add({}.as(new {}()))", p.getName(), converterName);
+          baseClass.getField(modelFieldName).type("ListProperty<{}>", modelType);
+
+          // generate a method to lazily init id
+          final GMethod g = baseClass.getMethod(modelFieldName).returnType("ListProperty<{}>", modelType);
+          g.body.line("if (this.{} == null) {", modelFieldName);
+          g.body.line("_ this.{} = add({}.as(new {}()));", modelFieldName, p.getName(), converterName);
+          g.body.line("_ PropertyUtils.syncModelsToGroup(all, {});", modelFieldName);
+          g.body.line("}");
+          g.body.line("return this.{};", modelFieldName);
 
           // add a converter back/forth
           final GClass converter = baseClass.getInnerClass(converterName).setPrivate();
@@ -140,7 +147,6 @@ public class GenerateTessellModel {
           final GMethod from = converter.getMethod("from", arg(modelType, "model")).returnType(dtoType).addAnnotation("@Override");
           from.body.line("return model.getDto();");
 
-          cstr.body.line("PropertyUtils.syncModelsToGroup(all, {});", modelFieldName);
           baseClass.addImports("org.tessell.util.PropertyUtils");
         }
       }

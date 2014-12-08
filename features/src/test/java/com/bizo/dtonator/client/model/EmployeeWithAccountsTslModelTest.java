@@ -22,15 +22,15 @@ public class EmployeeWithAccountsTslModelTest {
 
   @Test
   public void hasAccountModels() {
-    assertThat(e.accountModels.get().size(), is(0));
-    assertThat(e.otherAccountModels.get().size(), is(0));
+    assertThat(e.accountModels().get().size(), is(0));
+    assertThat(e.otherAccountModels().get().size(), is(0));
   }
 
   @Test
   public void addingDtoAddsModel() {
     e.accounts.add(new EmployeeAccountTslDto(1l, new Dollars(0), "a"));
-    assertThat(e.accountModels.get().size(), is(1));
-    assertThat(e.accountModels.get().get(0).name.get(), is("a"));
+    assertThat(e.accountModels().get().size(), is(1));
+    assertThat(e.accountModels().get().get(0).name.get(), is("a"));
   }
 
   @Test
@@ -38,9 +38,9 @@ public class EmployeeWithAccountsTslModelTest {
     // name is required
     final EmployeeAccountTslDto c1 = new EmployeeAccountTslDto(1l, new Dollars(0), null);
     e.accounts.add(c1);
-    e.accountModels.get().get(0).name.setTouched(true);
-    assertThat(e.accountModels.get().get(0).allValid().get(), is(false));
-    assertThat(e.accountModels.get().get(0).allValid().isTouched(), is(true));
+    e.accountModels().get().get(0).name.setTouched(true);
+    assertThat(e.accountModels().get().get(0).allValid().get(), is(false));
+    assertThat(e.accountModels().get().get(0).allValid().isTouched(), is(true));
     assertThat(e.allValid().isTouched(), is(true));
     assertThat(e.allValid().get(), is(false));
   }
@@ -51,9 +51,9 @@ public class EmployeeWithAccountsTslModelTest {
     final EmployeeWithAccountsTslModel e = new EmployeeWithAccountsTslModel(//
       new EmployeeWithAccountsTslDto("e", list(c1), list(c1)));
     assertThat(e.accounts.get().size(), is(1));
-    assertThat(e.accountModels.get().size(), is(1));
+    assertThat(e.accountModels().get().size(), is(1));
     assertThat(e.otherAccounts.get().size(), is(1));
-    assertThat(e.otherAccountModels.get().size(), is(1));
+    assertThat(e.otherAccountModels().get().size(), is(1));
   }
 
   @Test
@@ -65,8 +65,8 @@ public class EmployeeWithAccountsTslModelTest {
 
   @Test
   public void invalidListOfModelsMeansInvalidParent() {
-    e.accountModels.addRule(new Required());
-    e.accountModels.touch();
+    e.accountModels().addRule(new Required());
+    e.accountModels().touch();
     assertThat(e.allValid().get(), is(false));
   }
 }

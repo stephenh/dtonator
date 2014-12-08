@@ -136,7 +136,7 @@ public class EmployeeWithTypedAccountsDtoTest {
     EmployeeWithTypedAccountsModel parent = new EmployeeWithTypedAccountsModel(
       new EmployeeWithTypedAccountsDto(1L, null, new ArrayList<AccountDto>()));
     parent.accounts.add(new RedAccountDto(2L, "red", true));
-    assertThat(parent.accountModels.get().get(0), is(instanceOf(RedAccountModel.class)));
+    assertThat(parent.accountModels().get().get(0), is(instanceOf(RedAccountModel.class)));
   }
 
   @Test
@@ -156,7 +156,7 @@ public class EmployeeWithTypedAccountsDtoTest {
     EmployeeWithTypedAccountsModel parent = new EmployeeWithTypedAccountsModel(
       new EmployeeWithTypedAccountsDto(1L, null, new ArrayList<AccountDto>()));
     parent.accounts.add(m.getDto());
-    assertThat(parent.accountModels.get().get(0), is(instanceOf(BlueHueAccountModel.class)));
+    assertThat(parent.accountModels().get().get(0), is(instanceOf(BlueHueAccountModel.class)));
   }
 
 }
