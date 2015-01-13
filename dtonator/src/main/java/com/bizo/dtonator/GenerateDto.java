@@ -46,6 +46,7 @@ public class GenerateDto {
     addDtoFields();
     addDefaultConstructor();
     addFullConstructor();
+    addCopyConstructor();
     addEqualityIfNeeded();
     addToString();
     addToFromMethodsToMapperIfNeeded();
@@ -108,6 +109,32 @@ public class GenerateDto {
     cstr.body.line("super({});", Join.commaSpace(superParams));
     for (final DtoProperty dp : dto.getProperties()) {
       cstr.body.line("this.{} = {};", dp.getName(), dp.getName());
+    }
+  }
+
+  private void addCopyConstructor() {
+    final GMethod cstr = gc.getConstructor(Argument.arg(dto.getDtoType(), "o"));
+    for (final DtoProperty dp : dto.getAllProperties()) {
+      if (dp.isListOfDtos()) {
+        DtoConfig child = dp.getSingleDto();
+        cstr.body.line("this.{} = new java.util.ArrayList<{}>();", dp.getName(), dp.getSingleDto());
+        cstr.body.line("for ({} e : o.{}) {", dp.getSingleDto(), dp.getName());
+        if (child.getSubClassDtos().isEmpty()) {
+          cstr.body.line("_ this.{}.add(new {}(e));", dp.getName(), dp.getSingleDto());
+        } else {
+          for (DtoConfig subclass : child.getSubClassDtos()) {
+            if (!subclass.isAbstract()) {
+              cstr.body.line("_ if (e instanceof {}) {", subclass.getDtoType());
+              cstr.body.line("_ _ this.{}.add(new {}(({}) e));", dp.getName(), subclass.getDtoType(), subclass.getDtoType());
+              cstr.body.line("_ _ continue;");
+              cstr.body.line("_ }");
+            }
+          }
+        }
+        cstr.body.line("}");
+      } else {
+        cstr.body.line("this.{} = o.{};", dp.getName(), dp.getName());
+      }
     }
   }
 

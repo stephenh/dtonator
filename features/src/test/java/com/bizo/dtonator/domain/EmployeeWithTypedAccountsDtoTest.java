@@ -13,7 +13,6 @@ import com.bizo.dtonator.client.model.BlueHueAccountModel;
 import com.bizo.dtonator.client.model.EmployeeWithTypedAccountsModel;
 import com.bizo.dtonator.client.model.RedAccountModel;
 import com.bizo.dtonator.dtos.AccountDto;
-import com.bizo.dtonator.dtos.BlueAccountDto;
 import com.bizo.dtonator.dtos.BlueHueAccountDto;
 import com.bizo.dtonator.dtos.EmployeeWithTypedAccountsDto;
 import com.bizo.dtonator.dtos.RedAccountDto;
