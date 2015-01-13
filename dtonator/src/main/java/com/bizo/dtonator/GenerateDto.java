@@ -14,6 +14,7 @@ import joist.sourcegen.Argument;
 import joist.sourcegen.GClass;
 import joist.sourcegen.GDirectory;
 import joist.sourcegen.GMethod;
+import joist.util.Copy;
 import joist.util.Join;
 
 import com.bizo.dtonator.config.DtoConfig;
@@ -43,10 +44,11 @@ public class GenerateDto {
     addBaseClassIfNeeded();
     addAnnotations();
     addInterfaces();
+    addCopyOfMethod();
     addDtoFields();
     addDefaultConstructor();
     addFullConstructor();
-    addCopyConstructor();
+    addCopyMethod();
     addEqualityIfNeeded();
     addToString();
     addToFromMethodsToMapperIfNeeded();
@@ -112,30 +114,52 @@ public class GenerateDto {
     }
   }
 
-  private void addCopyConstructor() {
-    final GMethod cstr = gc.getConstructor(Argument.arg(dto.getDtoType(), "o"));
-    for (final DtoProperty dp : dto.getAllProperties()) {
-      if (dp.isListOfDtos()) {
-        DtoConfig child = dp.getSingleDto();
-        cstr.body.line("this.{} = new java.util.ArrayList<{}>();", dp.getName(), dp.getSingleDto());
-        cstr.body.line("for ({} e : o.{}) {", dp.getSingleDto(), dp.getName());
-        if (child.getSubClassDtos().isEmpty()) {
-          cstr.body.line("_ this.{}.add(new {}(e));", dp.getName(), dp.getSingleDto());
-        } else {
-          for (DtoConfig subclass : child.getSubClassDtos()) {
-            if (!subclass.isAbstract()) {
-              cstr.body.line("_ if (e instanceof {}) {", subclass.getDtoType());
-              cstr.body.line("_ _ this.{}.add(new {}(({}) e));", dp.getName(), subclass.getDtoType(), subclass.getDtoType());
-              cstr.body.line("_ _ continue;");
-              cstr.body.line("_ }");
-            }
-          }
+  private void addCopyOfMethod() {
+    final GMethod m = gc.getMethod("copyOf", Argument.arg(dto.getDtoType(), "o")).returnType(dto.getDtoType()).setStatic();
+    // if there are subclasses, we'll have to probe which type of subclass to create
+    List<DtoConfig> allTypes = Copy.list(dto.getSubClassDtos()).with(dto);
+    boolean hasMoreThanOneType = allTypes.size() > 1;
+    for (DtoConfig c : allTypes) {
+      if (c.isAbstract()) {
+        continue;
+      }
+      if (hasMoreThanOneType) {
+        m.body.line("if (o instanceof {}) {", c.getDtoType());
+      }
+      // first make copies of children if needed
+      for (final DtoProperty dp : c.getAllProperties()) {
+        if (dp.isListOfDtos()) {
+          m.body.line("_ ArrayList<{}> {}Copy = new ArrayList<{}>();", dp.getSingleDto(), dp.getName(), dp.getSingleDto());
+          m.body.line("_ for ({} e : (({}) o).{}) {", dp.getSingleDto(), c.getDtoType(), dp.getName());
+          m.body.line("_ _ {}Copy.add({}.copyOf(e));", dp.getName(), dp.getSingleDto());
+          m.body.line("_ }");
         }
-        cstr.body.line("}");
-      } else {
-        cstr.body.line("this.{} = o.{};", dp.getName(), dp.getName());
+      }
+      // now call the constructor
+      m.body.line("_ return new {}(", c.getDtoType());
+      for (final DtoProperty dp : c.getAllProperties()) {
+        if (dp.isListOfDtos()) {
+          m.body.line("_ _ {}Copy,", dp.getName());
+        } else if (dp.isDto()) {
+          m.body.line("_ _ {}.copyOf((({}) o).{}),", dp.getDtoType(), c.getDtoType(), dp.getName());
+        } else {
+          m.body.line("_ _ (({}) o).{},", c.getDtoType(), dp.getName());
+        }
+      }
+      m.body.stripLastCharacterOnPreviousLine();
+      m.body.line("_ _ );");
+      if (hasMoreThanOneType) {
+        m.body.line("}");
       }
     }
+    if (hasMoreThanOneType) {
+      m.body.line("throw new IllegalStateException(\"Unreachable.\");");
+    }
+  }
+
+  private void addCopyMethod() {
+    GMethod m = gc.getMethod("copy").returnType(dto.getDtoType());
+    m.body.line("return {}.copyOf(this);", dto.getDtoType());
   }
 
   private void addEqualityIfNeeded() {

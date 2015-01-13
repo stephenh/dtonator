@@ -539,7 +539,7 @@ public class DtoConfig {
   }
 
   static boolean isEntity(final RootConfig config, final String domainType) {
-    return domainType.startsWith(config.getDomainPackage());
+    return domainType.startsWith(config.getDomainPackage()) && config.getValueTypeForDomainType(domainType) == null;
   }
 
   static boolean isListOfDtos(final RootConfig config, final String pcType) {

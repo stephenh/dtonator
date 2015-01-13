@@ -61,6 +61,10 @@ public class DtoProperty {
     return DtoConfig.isEntity(config, domainType);
   }
 
+  public boolean isDto() {
+    return config.getDto(dtoType) != null && !config.getDto(dtoType).isEnum();
+  }
+
   public boolean isList() {
     return dtoType.startsWith("java.util.ArrayList");
   }
