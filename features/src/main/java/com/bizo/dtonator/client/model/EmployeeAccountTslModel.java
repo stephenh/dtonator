@@ -5,6 +5,7 @@ import com.bizo.dtonator.dtos.EmployeeAccountTslDto;
 public class EmployeeAccountTslModel extends EmployeeAccountTslModelCodegen {
 
   public EmployeeAccountTslModel(final EmployeeAccountTslDto dto) {
+    super(dto);
     addRules();
     merge(dto);
   }

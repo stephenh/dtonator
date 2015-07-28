@@ -54,6 +54,7 @@ public class GenerateTessellModel {
       // Add just enough methods for it to compile and let the user go from there
       final GClass subClass = source.getClass(subClassName).baseClassName(simpleName + "Codegen");
       final GMethod cstr = subClass.getConstructor(arg(dto.getDtoType(), "dto"));
+      cstr.body.line("super(dto);");
       cstr.body.line("addRules();");
       cstr.body.line("merge(dto);");
       // addRules
@@ -62,15 +63,8 @@ public class GenerateTessellModel {
   }
 
   public void generate() {
-    // field to hold the dto
-    baseClass.getField("dto").type(dto.getDtoType());
-
-    // cstr
-    final GMethod cstr = baseClass.getConstructor().setProtected();
-
-    if (dto.getBaseDto() != null) {
-      cstr.body.line("super(null);");
-    }
+    final GMethod cstr = baseClass.getConstructor(arg(dto.getDtoType(), "dto")).setProtected();
+    cstr.body.line("super(dto);");
 
     for (final DtoProperty p : dto.getProperties()) {
       // the public final field for this XxxProperty
@@ -89,11 +83,11 @@ public class GenerateTessellModel {
         p.getName());
       // set(value)
       innerValue.getMethod("set", arg(p.getDtoTypeBoxed(), "v")).addOverride().body.line(//
-        "dto.{} = v;",
+        "getDto().{} = v;",
         p.getName());
       // get(), avoiding NPEs on read
       innerValue.getMethod("get").returnType(p.getDtoTypeBoxed()).addOverride().body.line(//
-        "return dto == null ? null : dto.{};",
+        "return getDto() == null ? null : getDto().{};",
         p.getName());
       // isReadOnly()
       innerValue.getMethod("isReadOnly").returnType("boolean").addOverride().body.line(//
@@ -152,24 +146,11 @@ public class GenerateTessellModel {
       }
     }
 
-    // merge
-    if (dto.getBaseDto() == null) {
-      final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto")).addOverride();
-      merge.body.line("this.dto = dto;");
-      merge.body.line("all.reassessAll();");
-    } else {
-      final GMethod merge = baseClass.getMethod("merge", arg(dto.getDtoType(), "dto"));
-      merge.body.line("this.dto = dto;");
-      merge.body.line("super.merge(({}) dto);", dto.getBaseDtoSimpleName());
-      baseClass.addImports(dto.getBaseDto().getDtoType());
-      // we need to override the merge(BaseDto) and make sure we can cast to our specific subclass
-      final GMethod merge2 = baseClass.getMethod("merge", arg(dto.getBaseDto().getDtoType(), "dto")).addOverride();
-      merge2.body.line("this.merge(({}) dto);", dto.getSimpleName());
+    // getDto, add an override for subclasses
+    if (dto.getBaseDto() != null) {
+      final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType()).addOverride();
+      getDto.body.line("return ({}) super.getDto();", dto.getDtoType());
     }
-
-    // getDto
-    final GMethod getDto = baseClass.getMethod("getDto").returnType(dto.getDtoType()).addOverride();
-    getDto.body.line("return dto;");
   }
 
   private String getPropertyType(final DtoProperty p) {
