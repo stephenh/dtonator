@@ -131,7 +131,11 @@ public class GenerateDto {
         if (dp.isListOfDtos()) {
           m.body.line("_ ArrayList<{}> {}Copy = new ArrayList<{}>();", dp.getSingleDto(), dp.getName(), dp.getSingleDto());
           m.body.line("_ for ({} e : (({}) o).{}) {", dp.getSingleDto(), c.getDtoType(), dp.getName());
-          m.body.line("_ _ {}Copy.add({}.copyOf(e));", dp.getName(), dp.getSingleDto());
+          if (dp.getSingleDto().isEnum()) {
+            m.body.line("_ _ {}Copy.add(e);", dp.getName());
+          } else {
+            m.body.line("_ _ {}Copy.add({}.copyOf(e));", dp.getName(), dp.getSingleDto());
+          }
           m.body.line("_ }");
         }
       }
