@@ -183,6 +183,16 @@ It can also be setup in IDEs to run "on save".
 * In IntelliJ, you can probably use something like the [File Watchers plugin](https://www.jetbrains.com/idea/help/file-watchers.html) to watch for changes to the input `.class` files or the `dtonator.yaml` config file, similar to the Eclipse External Tool Builder setup.
 * In gradle or Maven, you should be able to translate the ant "exec" task into a respective pre-compilation task/goal/etc.
 
+Here is a gradle snippet that should work:
+
+```groovy
+task dtonator(type: JavaExec) {
+  classpath sourceSets.main.compileClasspath
+  main = 'com.bizo.dtonator.Dtonator'
+}
+compileJava.dependsOn(dtonator)
+```
+
 Assumptions about Build Order
 =============================
 
