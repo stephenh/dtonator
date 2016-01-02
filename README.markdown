@@ -3,6 +3,11 @@ dtonator is a code generator that generates DTOs and mapping code for sending yo
 
 It was built for using with GWT-RPC, but it's not coupled to GWT itself.
 
+Download
+========
+
+dtonator artifacts are available at the [repo.joist.ws](http://repo.joist.ws) Maven repository, with org `com.bizo` and module `dtonator`.
+
 Configuration
 =============
 
@@ -161,8 +166,32 @@ Other Configuration Options
       commonInterface: java.io.Serializable
     ```
 
-Building
-========
+Integrating with your Build Environment
+=======================================
+
+dtonator is a pre-compilation code generation, e.g. you should invoke it in your build process before calling `javac`.
+
+It can also be setup in IDEs to run "on save".
+
+* In ant, use an "exec" task with `com.bizo.dtonator.Dtonator` as the main class, and the dtonator jar on the classpath
+* In Eclipse, you can setup an [External Tool Builder](http://www.ibm.com/developerworks/opensource/tutorials/os-eclipse-tools/) to invoke the `java` system command with `com.bizo.dtonator.Dtonator` as the main class, and a `-cp` argument of the dtonator jar + your config file. You can set it up to run automatically with the "Build Options" tab when configuring the builder.
+* In IntelliJ, you can probably use something like the [File Watchers plugin](https://www.jetbrains.com/idea/help/file-watchers.html) to watch for changes to the input `.class` files or the `dtonator.yaml` config file
+* In gradle or Maven, you should be able to translate the ant "exec" task into a respective pre-compilation task/goal/etc.
+
+Assumptions about Build Order
+=============================
+
+Because dtonator is a pre-compilation code generator, any information it gains via reflection (e.g. automatically inferring the types of properties on mapped objects) must already be available/compiled in `.class` files. This means if you want to generate DTOs for your domain objects, you would need a build flow like:
+
+1. Compile your domain objects into `.class` files
+2. Run dtonator with `dtonator.yaml` + domain object `.class` files on the classpath
+  * This creates various `Mapper.java`/etc. output files
+3. Compile your webapp/API code + generated `Mapper.java`/etc. together
+
+Depending on your project setup, this might best be achieved by having your domain objects be a separate project (so a separate Maven/gradle/etc.) build than your webapp/API layer.
+
+Building dtonator itself
+========================
 
 For Eclipse:
 
