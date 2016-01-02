@@ -176,8 +176,11 @@ dtonator is a pre-compilation code generation, e.g. you should invoke it in your
 It can also be setup in IDEs to run "on save".
 
 * In ant, use an "exec" task with `com.bizo.dtonator.Dtonator` as the main class, and the dtonator jar on the classpath
-* In Eclipse, you can setup an [External Tool Builder](http://www.ibm.com/developerworks/opensource/tutorials/os-eclipse-tools/) to invoke the `java` system command with `com.bizo.dtonator.Dtonator` as the main class, and a `-cp` argument of the dtonator jar + your config file. You can set it up to run automatically with the "Build Options" tab when configuring the builder.
-* In IntelliJ, you can probably use something like the [File Watchers plugin](https://www.jetbrains.com/idea/help/file-watchers.html) to watch for changes to the input `.class` files or the `dtonator.yaml` config file
+* In Eclipse, you can setup an [External Tool Builder](http://www.ibm.com/developerworks/opensource/tutorials/os-eclipse-tools/) to invoke the `java` system command with `com.bizo.dtonator.Dtonator` as the main class, and a `-cp` argument of the dtonator jar + your config file. You can set it up to run automatically with the "Build Options" tab when configuring the builder. For example, something like:
+  * Location: `${system_path:java}`
+  * Working Directory: `${workspace_loc:/fooproject-web}`
+  * Arguments: `-cp "../fooproject-domain/target/classes:src/main/webapp/WEB-INF/classes:lib/eclipse/*" com.bizo.dtonator.Dtonator`
+* In IntelliJ, you can probably use something like the [File Watchers plugin](https://www.jetbrains.com/idea/help/file-watchers.html) to watch for changes to the input `.class` files or the `dtonator.yaml` config file, similar to the Eclipse External Tool Builder setup.
 * In gradle or Maven, you should be able to translate the ant "exec" task into a respective pre-compilation task/goal/etc.
 
 Assumptions about Build Order
