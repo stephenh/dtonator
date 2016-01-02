@@ -1,6 +1,8 @@
 
 dtonator is a code generator that generates DTOs and mapping code for sending your domain objects over the wire.
 
+It's differentiating feature (from alternatives like [dozer](http://dozer.sourceforge.net/)) is that it doesn't use any runtime reflection, and instead generates code at build-time to do all of the mappings. This is actually less for performance (which is usually the goal for avoiding reflection, at least historically) and primarily for simplicity. You can look/debug through the generated code to see exactly what's happening in the mapping logic. It's all very straightforward.
+
 It was built for using with GWT-RPC, but it's not coupled to GWT itself.
 
 Download
