@@ -1,13 +1,13 @@
 package com.bizo.dtonator;
 
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 /** Tracks new DTOs -> new domain objects so we can avoid making dups. */
 public class DomainObjectContext {
 
   private static final ThreadLocal<DomainObjectContext> context = new ThreadLocal<DomainObjectContext>();
-  private final Map<Object, Object> objects = new HashMap<Object, Object>();
+  private final Map<Object, Object> objects = new IdentityHashMap<Object, Object>();
   private int outstanding;
 
   public static DomainObjectContext push() {
