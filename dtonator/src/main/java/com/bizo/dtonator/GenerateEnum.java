@@ -1,9 +1,10 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
+import static joist.util.Copy.list;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import joist.sourcegen.GClass;
 import joist.sourcegen.GDirectory;
@@ -52,20 +53,30 @@ public class GenerateEnum {
   private void addEnumGetters() throws ClassNotFoundException {
     final Class<?> clazz = Class.forName(dto.getDomainType());
     for (final Method method : clazz.getDeclaredMethods()) {
+      final List<String> genMethod = list();
       if (method.getName().startsWith("get")) {
-        final GMethod getter = gc.getMethod("{}", method.getName()).returnType(method.getReturnType());
-        getter.body.line("switch (this) {");
+        boolean error = false;
+        genMethod.add("switch (this) {");
         for (final String value : dto.getEnumValues()) {
           @SuppressWarnings({ "unchecked", "rawtypes" })
           final Enum enumInstance = Enum.valueOf((Class<? extends Enum>) clazz, value);
           try {
             final Object returnValue = method.invoke(enumInstance);
-            getter.body.line("_ case {}: return {};", value, returnValue instanceof Integer ? returnValue : "\"" + returnValue.toString() + "\"");
-          } catch (IllegalAccessException | InvocationTargetException ignore) {
+            genMethod.add(String.format("_ case %s: return %s;", value, returnValue instanceof Integer ? returnValue : "\""
+              + returnValue.toString()
+              + "\""));
+          } catch (final Exception e) {
+            error = true;
           }
         }
-        getter.body.line("}");
-        getter.body.line("return null;");
+        if (!error) {
+          final GMethod getter = gc.getMethod("{}", method.getName()).returnType(method.getReturnType());
+          for (final String line : genMethod) {
+            getter.body.line(line);
+          }
+          getter.body.line("}");
+          getter.body.line("return null;");
+        }
       }
     }
   }

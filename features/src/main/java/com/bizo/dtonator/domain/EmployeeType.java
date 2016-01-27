@@ -18,4 +18,8 @@ public enum EmployeeType {
   public Integer getSize() {
     return size;
   }
+
+  public String getPropertyWhichThrowsException() {
+    throw new RuntimeException();
+  }
 }
