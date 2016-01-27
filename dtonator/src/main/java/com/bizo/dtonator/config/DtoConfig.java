@@ -8,12 +8,7 @@ import static org.apache.commons.lang.StringUtils.defaultString;
 import static org.apache.commons.lang.StringUtils.substringBefore;
 import static org.apache.commons.lang.StringUtils.substringBetween;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.bizo.dtonator.properties.Prop;
 import com.bizo.dtonator.properties.TypeOracle;
@@ -48,8 +43,8 @@ public class DtoConfig {
   }
 
   public List<DtoProperty> getInheritedProperties() {
-    List<DtoProperty> p = list();
-    for (DtoConfig base : getBaseDtos()) {
+    final List<DtoProperty> p = list();
+    for (final DtoConfig base : getBaseDtos()) {
       p.addAll(base.getProperties());
     }
     return p;
@@ -57,10 +52,10 @@ public class DtoConfig {
 
   /** @return the base dtos, with the root dto first. */
   private List<DtoConfig> getBaseDtos() {
-    List<DtoConfig> p = list();
+    final List<DtoConfig> p = list();
     String currentName = getBaseDtoSimpleName();
     while (currentName != null) {
-      DtoConfig dto = root.getDto(currentName);
+      final DtoConfig dto = root.getDto(currentName);
       p.add(dto);
       currentName = dto.getBaseDtoSimpleName();
     }
@@ -121,12 +116,12 @@ public class DtoConfig {
 
   /** @return subclasses, with the leaf classes (e.g. grand children) first */
   public List<DtoConfig> getSubClassDtos() {
-    List<DtoConfig> subClasses = list();
-    List<DtoConfig> toProbe = list(this);
+    final List<DtoConfig> subClasses = list();
+    final List<DtoConfig> toProbe = list(this);
     while (!toProbe.isEmpty()) {
-      DtoConfig current = toProbe.remove(0);
+      final DtoConfig current = toProbe.remove(0);
       // scan for subclasses of current
-      for (DtoConfig other : root.getDtos()) {
+      for (final DtoConfig other : root.getDtos()) {
         if (current.getSimpleName().equals(other.getBaseDtoSimpleName())) {
           subClasses.add(other);
           toProbe.add(other);
@@ -315,7 +310,7 @@ public class DtoConfig {
         continue;
       }
 
-      String name = pc != null ? pc.name : p.name; // use the potentially aliased if we have one
+      final String name = pc != null ? pc.name : p.name; // use the potentially aliased if we have one
       properties.add(new DtoProperty(//
         oracle,
         root,
@@ -472,26 +467,24 @@ public class DtoConfig {
 
   /** Sorts the properties based on their order in the YAML file, whether they're {@code id}, or alphabetically. */
   private static void sortProperties(final List<PropConfig> pcs, final List<DtoProperty> properties) {
-    Collections.sort(properties, new Comparator<DtoProperty>() {
-      public int compare(final DtoProperty o1, final DtoProperty o2) {
-        final PropConfig pc1 = findPropConfig(pcs, o1.getName());
-        final PropConfig pc2 = findPropConfig(pcs, o2.getName());
-        if (pc1 != null && pc2 != null) {
-          return indexOfPropConfig(pcs, o1.getName()) - indexOfPropConfig(pcs, o2.getName());
-        } else if (pc1 != null && pc2 == null) {
+    Collections.sort(properties, (o1, o2) -> {
+      final PropConfig pc1 = findPropConfig(pcs, o1.getName());
+      final PropConfig pc2 = findPropConfig(pcs, o2.getName());
+      if (pc1 != null && pc2 != null) {
+        return indexOfPropConfig(pcs, o1.getName()) - indexOfPropConfig(pcs, o2.getName());
+      } else if (pc1 != null && pc2 == null) {
+        return -1;
+      } else if (pc1 == null && pc2 != null) {
+        return 1;
+      } else {
+        if ("id".equals(o1.getName()) && "id".equals(o2.getName())) {
+          return 0;
+        } else if ("id".equals(o1.getName())) {
           return -1;
-        } else if (pc1 == null && pc2 != null) {
+        } else if ("id".equals(o2.getName())) {
           return 1;
-        } else {
-          if ("id".equals(o1.getName()) && "id".equals(o2.getName())) {
-            return 0;
-          } else if ("id".equals(o1.getName())) {
-            return -1;
-          } else if ("id".equals(o2.getName())) {
-            return 1;
-          }
-          return o1.getName().compareTo(o2.getName());
         }
+        return o1.getName().compareTo(o2.getName());
       }
     });
   }
