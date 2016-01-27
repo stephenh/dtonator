@@ -1,16 +1,13 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
-import static org.apache.commons.lang.StringUtils.capitalize;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import joist.sourcegen.GClass;
 import joist.sourcegen.GDirectory;
 import joist.sourcegen.GMethod;
-
-import org.apache.commons.beanutils.PropertyUtils;
 
 import com.bizo.dtonator.config.DtoConfig;
 
@@ -26,7 +23,7 @@ public class GenerateEnum {
     gc = out.getClass(dto.getDtoType()).setEnum();
   }
 
-  public void generate() {
+  public void generate() throws ClassNotFoundException {
     System.out.println("Generating " + dto.getSimpleName());
     addAnnotations();
     addInterfaces();
@@ -52,26 +49,24 @@ public class GenerateEnum {
     }
   }
 
-  private void addEnumGetters() {
-    try {
-      final Class<?> clazz = Class.forName(dto.getDomainType());
-      for (final Field field : clazz.getDeclaredFields()) {
-        if (!field.isEnumConstant() && !field.isSynthetic()) {
-          final GMethod getter = gc.getMethod("get{}", capitalize(field.getName())).returnType(field.getType());
-          getter.body.line("switch (this) {");
-          for (final String value : dto.getEnumValues()) {
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            final Enum enumClass = Enum.valueOf((Class<? extends Enum>) clazz, value);
-            final Object returnValue = PropertyUtils.getProperty(enumClass, field.getName());
-            getter.body.line("_ case {}: return {};", value, returnValue instanceof String ? "\"" + returnValue + "\"" : returnValue);
+  private void addEnumGetters() throws ClassNotFoundException {
+    final Class<?> clazz = Class.forName(dto.getDomainType());
+    for (final Method method : clazz.getDeclaredMethods()) {
+      if (method.getName().startsWith("get")) {
+        final GMethod getter = gc.getMethod("{}", method.getName()).returnType(method.getReturnType());
+        getter.body.line("switch (this) {");
+        for (final String value : dto.getEnumValues()) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          final Enum enumInstance = Enum.valueOf((Class<? extends Enum>) clazz, value);
+          try {
+            final Object returnValue = method.invoke(enumInstance);
+            getter.body.line("_ case {}: return {};", value, returnValue instanceof Integer ? returnValue : "\"" + returnValue.toString() + "\"");
+          } catch (IllegalAccessException | InvocationTargetException ignore) {
           }
-          getter.body.line("}");
-          getter.body.line("return null;");
         }
+        getter.body.line("}");
+        getter.body.line("return null;");
       }
-    } catch (SecurityException | ClassNotFoundException | IllegalAccessException | InvocationTargetException | IllegalArgumentException
-      | NoSuchMethodException e) {
-      e.printStackTrace();
     }
   }
 
