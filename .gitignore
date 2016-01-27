@@ -1,6 +1,6 @@
 .settings
-target
-reports
+.gradle
+build
 lib
 demo
 _site

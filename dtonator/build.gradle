@@ -1,0 +1,45 @@
+
+apply plugin: 'java'
+apply plugin: 'maven'
+
+group = 'com.bizo'
+version = [System.env.TRAVIS_TAG, 'SNAPSHOT'].find { it != null }
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+
+configurations {
+  deployerJars
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+  archives sourcesJar
+}
+
+repositories {
+  mavenCentral()
+  maven { url 'http://repo.joist.ws' }
+}
+
+dependencies {
+  compile 'commons-lang:commons-lang:2.6'
+  compile 'commons-beanutils:commons-beanutils:1.8.2'
+  compile 'org.yaml:snakeyaml:1.8'
+  compile 'joist:joist-util:1.9.1'
+  testCompile 'junit:junit:4.12'
+  testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
+  deployerJars 'org.apache.maven.wagon:wagon-ssh:2.6'
+}
+
+uploadArchives {
+  repositories.mavenDeployer {
+    configuration = configurations.deployerJars
+    repository(url: 'scp://repo.joist.ws/var/www/joist.repo') {
+      authentication(userName: 'root', password: '/home/stephen/.ssh/id_rsa')
+    }
+  }
+}
