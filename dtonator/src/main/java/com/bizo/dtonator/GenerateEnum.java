@@ -55,21 +55,18 @@ public class GenerateEnum {
   private void addEnumGetters() {
     try {
       final Class<?> clazz = Class.forName(dto.getDomainType());
-      final Field[] fields = clazz.getDeclaredFields();
-      if (fields.length > 0) {
-        for (final Field field : fields) {
-          if (!field.isEnumConstant() && !field.isSynthetic()) {
-            final GMethod getter = gc.getMethod("get{}", capitalize(field.getName())).returnType(field.getType());
-            getter.body.line("switch (this) {");
-            for (final String value : dto.getEnumValues()) {
-              @SuppressWarnings({ "unchecked", "rawtypes" })
-              final Enum enumClass = Enum.valueOf((Class<? extends Enum>) clazz, value);
-              final String returnValue = PropertyUtils.getProperty(enumClass, field.getName()).toString();
-              getter.body.line("_ case {}: return \"{}\";", value, returnValue);
-            }
-            getter.body.line("}");
-            getter.body.line("return null;");
+      for (final Field field : clazz.getDeclaredFields()) {
+        if (!field.isEnumConstant() && !field.isSynthetic()) {
+          final GMethod getter = gc.getMethod("get{}", capitalize(field.getName())).returnType(field.getType());
+          getter.body.line("switch (this) {");
+          for (final String value : dto.getEnumValues()) {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
+            final Enum enumClass = Enum.valueOf((Class<? extends Enum>) clazz, value);
+            final Object returnValue = PropertyUtils.getProperty(enumClass, field.getName());
+            getter.body.line("_ case {}: return {};", value, returnValue instanceof String ? "\"" + returnValue + "\"" : returnValue);
           }
+          getter.body.line("}");
+          getter.body.line("return null;");
         }
       }
     } catch (SecurityException | ClassNotFoundException | IllegalAccessException | InvocationTargetException | IllegalArgumentException
