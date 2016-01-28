@@ -11,6 +11,7 @@ import joist.sourcegen.GDirectory;
 import joist.sourcegen.GMethod;
 
 import com.bizo.dtonator.config.DtoConfig;
+import com.bizo.dtonator.config.TypeUtils;
 
 public class GenerateEnum {
 
@@ -56,21 +57,22 @@ public class GenerateEnum {
       final List<String> genMethod = list();
       if (method.getName().startsWith("get")) {
         boolean error = false;
+        final Class<?> returnType = method.getReturnType().equals(String.class)
+          || method.getReturnType().equals(Integer.class)
+          || method.getReturnType().equals(Long.class) ? method.getReturnType() : String.class;
         genMethod.add("switch (this) {");
         for (final String value : dto.getEnumValues()) {
           @SuppressWarnings({ "unchecked", "rawtypes" })
           final Enum enumInstance = Enum.valueOf((Class<? extends Enum>) clazz, value);
           try {
             final Object returnValue = method.invoke(enumInstance);
-            genMethod.add(String.format("_ case %s: return %s;", value, returnValue instanceof Integer ? returnValue : "\""
-              + returnValue.toString()
-              + "\""));
+            genMethod.add(String.format("_ case %s: return %s;", value, TypeUtils.formatForCodeGeneration(returnValue, returnType)));
           } catch (final Exception e) {
             error = true;
           }
         }
         if (!error) {
-          final GMethod getter = gc.getMethod("{}", method.getName()).returnType(method.getReturnType());
+          final GMethod getter = gc.getMethod("{}", method.getName()).returnType(returnType);
           for (final String line : genMethod) {
             getter.body.line(line);
           }
