@@ -1,6 +1,11 @@
 package com.bizo.dtonator;
 
 import static joist.sourcegen.Argument.arg;
+import static joist.util.Copy.list;
+
+import java.lang.reflect.Method;
+import java.util.List;
+
 import joist.sourcegen.GClass;
 import joist.sourcegen.GDirectory;
 import joist.sourcegen.GMethod;
@@ -19,11 +24,12 @@ public class GenerateEnum {
     gc = out.getClass(dto.getDtoType()).setEnum();
   }
 
-  public void generate() {
+  public void generate() throws ClassNotFoundException {
     System.out.println("Generating " + dto.getSimpleName());
     addAnnotations();
     addInterfaces();
     addEnumValues();
+    addEnumGetters();
     addMapperToDto();
     addMapperFromDto();
   }
@@ -41,6 +47,37 @@ public class GenerateEnum {
   private void addEnumValues() {
     for (final String name : dto.getEnumValues()) {
       gc.addEnumValue(name);
+    }
+  }
+
+  private void addEnumGetters() throws ClassNotFoundException {
+    final Class<?> clazz = Class.forName(dto.getDomainType());
+    for (final Method method : clazz.getDeclaredMethods()) {
+      final List<String> genMethod = list();
+      if (method.getName().startsWith("get")) {
+        boolean error = false;
+        genMethod.add("switch (this) {");
+        for (final String value : dto.getEnumValues()) {
+          @SuppressWarnings({ "unchecked", "rawtypes" })
+          final Enum enumInstance = Enum.valueOf((Class<? extends Enum>) clazz, value);
+          try {
+            final Object returnValue = method.invoke(enumInstance);
+            genMethod.add(String.format("_ case %s: return %s;", value, returnValue instanceof Integer ? returnValue : "\""
+              + returnValue.toString()
+              + "\""));
+          } catch (final Exception e) {
+            error = true;
+          }
+        }
+        if (!error) {
+          final GMethod getter = gc.getMethod("{}", method.getName()).returnType(method.getReturnType());
+          for (final String line : genMethod) {
+            getter.body.line(line);
+          }
+          getter.body.line("}");
+          getter.body.line("return null;");
+        }
+      }
     }
   }
 

@@ -15,8 +15,13 @@ public class EmployeeWithTypeDtoTest {
 
   @Test
   public void test() {
-    EmployeeWithTypeModel m = new EmployeeWithTypeModel(new EmployeeWithTypeDto("asdf", EmployeeType.SMALL));
+    final EmployeeWithTypeModel m = new EmployeeWithTypeModel(new EmployeeWithTypeDto("asdf", EmployeeType.SMALL));
     assertThat(m.type, is(instanceOf(EnumProperty.class)));
   }
 
+  @Test
+  public void testGetters() {
+    final EmployeeWithTypeModel m = new EmployeeWithTypeModel(new EmployeeWithTypeDto("asdf", EmployeeType.SMALL));
+    assertThat(m.type.get().getDisplayText(), is("Small"));
+  }
 }

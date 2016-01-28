@@ -20,13 +20,13 @@ import com.bizo.dtonator.properties.ReflectionTypeOracle;
 
 /**
  * Runs the dtonator code generation process.
- * 
+ *
  * Loads a {@code /dtonator.yaml} file from the classpath, parses it, then generates DTOs to {@code target/gen-java-src}
  * . Both are currently hard coded.
  */
 public class Dtonator {
 
-  public static void main(final String args[]) {
+  public static void main(final String args[]) throws ClassNotFoundException {
     final Object root = new Yaml().load(Dtonator.class.getResourceAsStream("/dtonator.yaml"));
     new Dtonator(new RootConfig(new ReflectionTypeOracle(), root)).run();
   }
@@ -43,7 +43,7 @@ public class Dtonator {
     GSettings.setDefaultIndentation(root.getIndent());
   }
 
-  public void run() {
+  public void run() throws ClassNotFoundException {
     final GenerateMapper gm = new GenerateMapper(out, config);
     gm.generate();
     final GClass mapper = gm.getMapper();
