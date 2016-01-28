@@ -4,8 +4,8 @@ apply plugin: 'maven'
 
 group = 'com.bizo'
 version = [System.env.TRAVIS_TAG, 'SNAPSHOT'].find { it != null }
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 configurations {
   deployerJars
