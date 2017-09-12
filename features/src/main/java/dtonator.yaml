@@ -96,11 +96,13 @@ GreenAccountDto:
   extends: AccountDto
   domain: GreenAccount
   properties: '*'
+  tessellModel: true
   
 GreenHueAccountDto:
   extends: GreenAccountDto
   domain: GreenHueAccount
   properties: '*'
+  tessellModel: true
   
 YellowAccountDto:
   domain: RedAccount
