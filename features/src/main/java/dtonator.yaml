@@ -91,6 +91,21 @@ BlueHueAccountDto:
   properties: zaz
   tessellModel: true
 
+#test inheritance with all properties included
+GreenAccountDto:
+  extends: AccountDto
+  domain: GreenAccount
+  properties: '*'
+  
+GreenHueAccountDto:
+  extends: GreenAccountDto
+  domain: GreenHueAccount
+  properties: '*'
+  
+YellowAccountDto:
+  domain: RedAccount
+  properties: '*'
+
 # enums
 EmployeeType:
   domain: EmployeeType
