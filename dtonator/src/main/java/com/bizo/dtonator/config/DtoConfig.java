@@ -101,6 +101,10 @@ public class DtoConfig {
     return interfaces;
   }
 
+  public boolean isChildClass() {
+    return getBaseDtoSimpleName() != null;
+  }
+
   /** @return this DTOs base class simple name, or {@code null} */
   public String getBaseDtoSimpleName() {
     return (String) map.get("extends");
@@ -229,7 +233,7 @@ public class DtoConfig {
       if (pc == null) {
         continue;
       }
-      final boolean hasGetterSetter = p.getterMethodName != null && p.setterNameMethod != null;
+      final boolean hasGetterSetter = p.getGetterMethodName() != null && p.getSetterNameMethod() != null;
       final boolean isDomainObject = isDomainObject(oracle, p.type);
       final boolean dtoTypesMatch = pc.type == null || pc.type.equals("java.lang.Long"); // we currently only support ids (longs)
       final boolean alreadyMapped = pc.mapped; // found a fooId prop config, but it mapped to an existing getFooId/setFooId domain property
@@ -244,8 +248,8 @@ public class DtoConfig {
           true,
           "java.lang.Long",
           p.type,
-          p.getterMethodName,
-          p.setterNameMethod));
+          p.getGetterMethodName(),
+          p.getSetterNameMethod()));
       }
     }
   }
@@ -259,6 +263,11 @@ public class DtoConfig {
       }
 
       if (doNotMap(p, pc, hasPropertiesInclude())) {
+        continue;
+      }
+
+      // if this DTO has a parent class we want to exclude inherited properties
+      if (isChildClass() && !getDomainType().equals(p.getGetterMethodNameDeclaredIn())) {
         continue;
       }
 
@@ -320,8 +329,8 @@ public class DtoConfig {
         false,
         dtoType,
         domainType,
-        extension ? null : p.getterMethodName,
-        extension ? null : p.setterNameMethod));
+        extension ? null : p.getGetterMethodName(),
+        extension ? null : p.getSetterNameMethod()));
     }
   }
 

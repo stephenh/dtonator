@@ -6,21 +6,43 @@ public class Prop {
   public final String name;
   public final String type;
   public final boolean readOnly;
-  public final String getterMethodName;
-  public final String setterNameMethod;
+  private final String getterMethodName;
+  private final String setterNameMethod;
+  private final String getterMethodNameDeclaredIn;
+  private final String setterNameMethodDeclaredIn;
 
   public Prop(
-      final String name,
-      final String type,
-      final boolean readOnly,
-      final String getterMethodName,
-      final String setterNameMethod) {
+    String name,
+    String type,
+    boolean readOnly,
+    String getterMethodName,
+    String setterNameMethod,
+    String getterMethodNameDeclaredIn,
+    String setterNameMethodDeclaredIn) {
     super();
     this.name = name;
     this.type = type;
     this.readOnly = readOnly;
     this.getterMethodName = getterMethodName;
     this.setterNameMethod = setterNameMethod;
+    this.getterMethodNameDeclaredIn = getterMethodNameDeclaredIn;
+    this.setterNameMethodDeclaredIn = setterNameMethodDeclaredIn;
+  }
+
+  public String getGetterMethodName() {
+    return getterMethodName;
+  }
+
+  public String getSetterNameMethod() {
+    return setterNameMethod;
+  }
+
+  public String getGetterMethodNameDeclaredIn() {
+    return getterMethodNameDeclaredIn;
+  }
+
+  public String getSetterNameMethodDeclaredIn() {
+    return setterNameMethodDeclaredIn;
   }
 
   @Override

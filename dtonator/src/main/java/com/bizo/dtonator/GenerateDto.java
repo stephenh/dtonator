@@ -8,6 +8,7 @@ import static joist.util.Copy.list;
 import static org.apache.commons.lang.StringUtils.capitalize;
 import static org.apache.commons.lang.StringUtils.uncapitalize;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import joist.sourcegen.Argument;
@@ -30,7 +31,12 @@ public class GenerateDto {
   private final DtoConfig dto;
   private final GClass gc;
 
-  public GenerateDto(final RootConfig config, final GDirectory out, final GClass mapper, final List<String> takenToDtoOverloads, final DtoConfig dto) {
+  public GenerateDto(
+    final RootConfig config,
+    final GDirectory out,
+    final GClass mapper,
+    final List<String> takenToDtoOverloads,
+    final DtoConfig dto) {
     this.config = config;
     this.out = out;
     this.mapper = mapper;
@@ -126,8 +132,13 @@ public class GenerateDto {
       if (hasMoreThanOneType) {
         m.body.line("if (o instanceof {}) {", c.getDtoType());
       }
-      // first make copies of children if needed
-      for (final DtoProperty dp : c.getAllProperties()) {
+
+      List<DtoProperty> properties = new ArrayList<DtoProperty>();
+
+      properties.addAll(c.getAllProperties());
+
+      // first make copies of children if needed      
+      for (final DtoProperty dp : properties) {
         if (dp.isListOfDtos()) {
           m.body.line("_ ArrayList<{}> {}Copy = new ArrayList<{}>();", dp.getSingleDto(), dp.getName(), dp.getSingleDto());
           m.body.line("_ for ({} e : (({}) o).{}) {", dp.getSingleDto(), c.getDtoType(), dp.getName());
@@ -141,7 +152,7 @@ public class GenerateDto {
       }
       // now call the constructor
       m.body.line("_ return new {}(", c.getDtoType());
-      for (final DtoProperty dp : c.getAllProperties()) {
+      for (final DtoProperty dp : properties) {
         if (dp.isListOfDtos()) {
           m.body.line("_ _ {}Copy,", dp.getName());
         } else if (dp.isDto()) {
@@ -288,7 +299,8 @@ public class GenerateDto {
 
   /** Adds {@code mapper.fromDto(domain, dto)}, the client is responsible for finding {@code domain}. */
   private void addFromDtoMethodToMapper() {
-    final GMethod fromDto = mapper.getMethod("fromDto", //
+    final GMethod fromDto = mapper.getMethod(
+      "fromDto", //
       arg(dto.getDomainType(), "o"),
       arg(dto.getDtoType(), "dto"));
     fromDto.body.line("DomainObjectContext c = DomainObjectContext.push();");
@@ -304,7 +316,8 @@ public class GenerateDto {
       if (dp.isExtension()) {
         fromDto.body.line("_ {}.{}(this, o, dto.{});", mapperFieldName(dto), extensionSetter(dp), dp.getName());
       } else if (dp.isValueType()) {
-        fromDto.body.line("_ o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));", //
+        fromDto.body.line(
+          "_ o.{}(dto.{} == null ? null : {}.fromDto(dto.{}));", //
           dp.getSetterMethodName(),
           dp.getName(),
           mapperFieldName(dp.getValueTypeConfig()),

@@ -23,7 +23,9 @@ public class ReflectionTypeOracle implements TypeOracle {
         pd.getReadMethod() == null ? pd.getPropertyType().getName() : pd.getReadMethod().getGenericReturnType().toString().replaceAll("^class ", ""),
         pd.getWriteMethod() == null,
         pd.getReadMethod() == null ? null : pd.getReadMethod().getName(),
-        pd.getWriteMethod() == null ? null : pd.getWriteMethod().getName()));
+        pd.getWriteMethod() == null ? null : pd.getWriteMethod().getName(),
+        pd.getReadMethod() == null ? null : pd.getReadMethod().getDeclaringClass().getName(),
+        pd.getWriteMethod() == null ? null : pd.getWriteMethod().getDeclaringClass().getName()));
     }
     return ps;
   }
