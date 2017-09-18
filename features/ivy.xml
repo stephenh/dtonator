@@ -16,10 +16,10 @@
   <dependencies defaultconfmapping="sources->sources();%->default" defaultconf="compile;sources">
     <!-- default (compile, test, runtime) dependencies -->
     <dependency org="commons-lang" name="commons-lang" rev="2.6"/>
-    <dependency org="com.bizo" name="dtonator" rev="${dtonator.version}"/>
     <dependency org="org.tessell" name="tessell-user" rev="3.1.6"/>
     <dependency org="com.google.gwt" name="gwt-user" rev="2.4.0"/>
     <dependency org="org.slf4j" name="slf4j-simple" rev="1.6.6"/>
+    <dependency org="joist" name="joist-util" rev="1.9.1"/>
 
     <!-- test time only dependencies -->
     <dependency org="junit" name="junit-dep" rev="4.10" conf="test"/>
