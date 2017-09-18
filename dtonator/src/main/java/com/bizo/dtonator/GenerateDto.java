@@ -133,12 +133,8 @@ public class GenerateDto {
         m.body.line("if (o instanceof {}) {", c.getDtoType());
       }
 
-      List<DtoProperty> properties = new ArrayList<DtoProperty>();
-
-      properties.addAll(c.getAllProperties());
-
       // first make copies of children if needed      
-      for (final DtoProperty dp : properties) {
+      for (final DtoProperty dp : c.getAllProperties()) {
         if (dp.isListOfDtos()) {
           m.body.line("_ ArrayList<{}> {}Copy = new ArrayList<{}>();", dp.getSingleDto(), dp.getName(), dp.getSingleDto());
           m.body.line("_ for ({} e : (({}) o).{}) {", dp.getSingleDto(), c.getDtoType(), dp.getName());
@@ -152,7 +148,7 @@ public class GenerateDto {
       }
       // now call the constructor
       m.body.line("_ return new {}(", c.getDtoType());
-      for (final DtoProperty dp : properties) {
+      for (final DtoProperty dp : c.getAllProperties()) {
         if (dp.isListOfDtos()) {
           m.body.line("_ _ {}Copy,", dp.getName());
         } else if (dp.isDto()) {

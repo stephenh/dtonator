@@ -64,7 +64,7 @@ public class DtoConfig {
   }
 
   public List<DtoProperty> getAllProperties() {
-    return list(getInheritedProperties()).with(getProperties()).unique();
+    return list(getInheritedProperties()).with(getProperties());
   }
 
   public String getSimpleName() {
