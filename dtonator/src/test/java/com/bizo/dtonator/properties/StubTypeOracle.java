@@ -13,7 +13,7 @@ public class StubTypeOracle implements TypeOracle {
   private final Map<String, List<String>> enumValues = new HashMap<String, List<String>>();
 
   @Override
-  public List<Prop> getProperties(final String className) {
+  public List<Prop> getProperties(final String className, boolean excludeInherited) {
     final List<Prop> properties = this.properties.get(className);
     if (properties == null) {
       return list();
@@ -42,7 +42,7 @@ public class StubTypeOracle implements TypeOracle {
       properties = list();
       this.properties.put(className, properties);
     }
-    properties.add(new Prop(name, type, false, "get" + capitalize(name), "set" + capitalize(name), className, className));
+    properties.add(new Prop(name, type, false, "get" + capitalize(name), "set" + capitalize(name)));
   }
 
   public void setProperties(final String className, final List<Prop> properties) {

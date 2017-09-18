@@ -226,7 +226,7 @@ public class DtoConfig {
   }
 
   private void addChainedPropertiesFromDomainObject(final List<PropConfig> pcs) {
-    for (final Prop p : oracle.getProperties(getDomainType())) {
+    for (final Prop p : oracle.getProperties(getDomainType(), isChildClass())) {
       // if we found "getFoo()/setFoo()" via reflection, look for a "fooId" prop config,
       // that would tell us the user wants to get/set Foo as its id
       final PropConfig pc = findChainedPropConfig(pcs, p.name);
@@ -255,7 +255,7 @@ public class DtoConfig {
   }
 
   private void addPropertiesFromDomainObject(final List<PropConfig> pcs) {
-    for (final Prop p : oracle.getProperties(getDomainType())) {
+    for (final Prop p : oracle.getProperties(getDomainType(), isChildClass())) {
       final PropConfig pc = findPropConfig(pcs, p.name);
       if (pc != null) {
         // if we found a property in the oracle, we know this isn't an extension
@@ -267,9 +267,9 @@ public class DtoConfig {
       }
 
       // if this DTO has a parent class we want to exclude inherited properties
-      if (isChildClass() && !getDomainType().equals(p.getGetterMethodNameDeclaredIn())) {
-        continue;
-      }
+      //      if (isChildClass() && !getDomainType().equals(p.getGetterMethodNameDeclaredIn())) {
+      //        continue;
+      //      }
 
       // domainType has to be p.type, it came from reflection (right?)
       final String domainType = p.type;
@@ -553,7 +553,7 @@ public class DtoConfig {
   }
 
   static boolean isDomainObject(final TypeOracle oracle, final String type) {
-    for (final Prop p : oracle.getProperties(type)) {
+    for (final Prop p : oracle.getProperties(type, false)) {
       if (p.name.equals("id") && p.type.equals("java.lang.Long")) {
         return true;
       }
